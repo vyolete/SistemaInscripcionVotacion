@@ -49,28 +49,32 @@ else:
     st.subheader("Resumen por docente")
     st.dataframe(resumen_docente)
 
-    # --- Filtro por docente ---
-    docentes = df['docenteSel'].unique()
+    # Detalle completo
+    st.subheader("Detalle de inscripciones")
+    st.dataframe(df)
+
+    # Filtro por docente
+    docentes = df['Docente'].unique()
     docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
-    df_filtrado = df if docente_sel == "Todos" else df[df['docenteSel'] == docente_sel]
+    df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
 
-    # --- Métricas principales ---
-    st.metric("Total Equipos", df_filtrado['equipo'].nunique())
-    st.metric("Total Estudiantes", df_filtrado['participantes'].count())
+    # Métricas principales
+    st.metric("Total Inscripciones", len(df_filtrado))
+    st.metric("Total Equipos", df_filtrado['Id_equipo'].nunique())
 
-    # --- Tabla filtrada ---
-    st.subheader("📋 Equipos registrados")
-    # Mostrar solo equipo y docente, sin datos sensibles
-    st.dataframe(df_filtrado[["docenteSel", "equipo"]].drop_duplicates())
+    # Tabla filtrada
+    st.subheader("📋 Detalles de Inscripciones")
+    st.dataframe(df_filtrado)
 
-    # --- Gráfico ---
-    st.subheader("📈 Equipos por Docente")
-    inscripciones_docente = df.groupby('docenteSel')['equipo'].nunique().reset_index()
-    inscripciones_docente = inscripciones_docente.rename(columns={'equipo': 'Cantidad de Equipos'})
-    st.bar_chart(inscripciones_docente.set_index('docenteSel'))
+    # Gráfico: Inscripciones por docente
+    st.subheader("📈 Inscripciones por Docente")
+    inscripciones_docente = df.groupby('Docente')['Id_equipo'].nunique().reset_index()
+    inscripciones_docente = inscripciones_docente.rename(columns={'Id_equipo': 'Cantidad de Equipos'})
+    st.bar_chart(inscripciones_docente.set_index('Docente'))
 
     # --- Información adicional ---
     st.info(
-        "Cada equipo tiene un código único asociado, pero los participantes individuales no se muestran para proteger su información."
+         "Cada inscripción tiene un código único que se asociará al sistema de votación. "
+         "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
     )
 
