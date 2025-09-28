@@ -106,6 +106,22 @@ def modulo_dashboard():
         "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
     )
 
+# --- UI: HOME ---
+def modulo_home():
+    st.header("Bienvenido al Concurso Analítica Financiera ITM")
+    st.write("Por favor, selecciona tu rol para continuar:")
+    rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio")
+    st.session_state["rol"] = rol
+
+# --- MODULOS DE VOTACION Y RESULTADOS ---
+def modulo_votacion():
+    st.header("Módulo de Votación")
+    st.info("Aquí irá el sistema de votación (por implementar).")
+
+def modulo_resultados():
+    st.header("Resultados")
+    st.info("Aquí se mostrarán los resultados (por implementar).")
+
 # --- MAIN ---
 def main():
     st.set_page_config(
@@ -114,26 +130,57 @@ def main():
         layout="wide"
     )
 
-    # --- TÍTULO GLOBAL ---
     st.title("🏆 Concurso Analítica Financiera ITM")
 
-    # --- MENÚ LATERAL ---
+    # --- INICIALIZACIÓN DE SESSION_STATE ---
     if 'active_tab' not in st.session_state:
-        st.session_state.active_tab = 'Inscripción'
+        st.session_state.active_tab = 'Home'
+    if 'rol' not in st.session_state:
+        st.session_state.rol = None
 
+    # --- MENÚ LATERAL DINÁMICO ---
     with st.sidebar:
         st.header("Menú")
-        if st.button("📝 Inscripción"):
-            st.session_state.active_tab = 'Inscripción'
-        if st.button("📊 Dashboard"):
-            st.session_state.active_tab = 'Dashboard'
-        if st.button("🗳 Votación"):
-            st.session_state.active_tab = 'Votación'
-        if st.button("📈 Resultados"):
-            st.session_state.active_tab = 'Resultados'
+        if st.button("🏠 Home"):
+            st.session_state.active_tab = 'Home'
+        # Menú según rol
+        if st.session_state.rol == "Docente":
+            if st.button("📝 Inscripción"):
+                st.session_state.active_tab = 'Inscripción'
+            if st.button("📊 Dashboard"):
+                st.session_state.active_tab = 'Dashboard'
+            if st.button("🗳 Votación"):
+                st.session_state.active_tab = 'Votación'
+            if st.button("📈 Resultados"):
+                st.session_state.active_tab = 'Resultados'
+        elif st.session_state.rol == "Estudiante":
+            if st.button("📝 Inscripción"):
+                st.session_state.active_tab = 'Inscripción'
+            if st.button("🗳 Votación"):
+                st.session_state.active_tab = 'Votación'
+            if st.button("📈 Resultados"):
+                st.session_state.active_tab = 'Resultados'
+
+    # --- PROTECCIÓN DE ACCESO SEGÚN ROL ---
+    allowed_tabs = []
+    if st.session_state.rol == "Docente":
+        allowed_tabs = ['Inscripción', 'Dashboard', 'Votación', 'Resultados', 'Home']
+    elif st.session_state.rol == "Estudiante":
+        allowed_tabs = ['Inscripción', 'Votación', 'Resultados', 'Home']
+    else:
+        allowed_tabs = ['Home']
+
+    # Si el usuario intenta acceder a una pestaña no permitida, redirige a Home
+    if st.session_state.active_tab not in allowed_tabs:
+        st.session_state.active_tab = 'Home'
 
     # --- MOSTRAR MODULO ACTIVO ---
-    if st.session_state.active_tab == 'Inscripción':
+    if st.session_state.active_tab == 'Home':
+        modulo_home()
+        if st.session_state.rol is None:
+            st.warning("Por favor selecciona tu rol para continuar.")
+            return
+    elif st.session_state.active_tab == 'Inscripción':
         modulo_inscripcion()
     elif st.session_state.active_tab == 'Dashboard':
         modulo_dashboard()
@@ -144,4 +191,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
