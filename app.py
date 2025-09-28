@@ -119,10 +119,10 @@ def modulo_home():
         if st.button("Continuar"):
             st.session_state["rol_seleccionado"] = True
 
-    # BOTÓN CONTINUAR
-    if st.button("🏠 Home"):
-        st.session_state.active_tab = 'Home'
-        st.session_state.rol_seleccionado = False
+# BOTÓN CONTINUAR
+if st.button("🏠 Home"):
+    st.session_state.active_tab = 'Home'
+    st.session_state.rol_seleccionado = False
 
 # --- MAIN ---
 def main():
