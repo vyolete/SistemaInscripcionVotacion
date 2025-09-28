@@ -17,26 +17,55 @@ st.markdown(
 )
 
 # --- CONEXIÓN CON GOOGLE SHEETS ---
-# Requiere que tengas un archivo de credenciales JSON de un service account
-SERVICE_ACCOUNT_FILE = "credenciales.json"  # <- coloca tu archivo de credenciales
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+# app.py
+import os
+import json
+import streamlit as st
+import gspread
+from google.oauth2.service_account import Credentials
+import pandas as pd
 
-creds = Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE,
-    scopes=SCOPES
-)
-gc = gspread.authorize(creds)
+st.set_page_config(page_title="Dashboard Concurso ITM", layout="wide")
 
-# ID de la hoja de cálculo
-SPREADSHEET_ID = "TU_ID_DE_GOOGLE_SHEET_AQUI"
-SHEET_NAME = "Respuestas de formulario 1"
+# --- Leer variables de entorno ---
+SPREADSHEET_ID = os.environ.get("SPREADSHEET_ID")
+SERVICE_ACCOUNT_JSON = os.environ.get("SERVICE_ACCOUNT_JSON")
 
-sheet = gc.open_by_key(SPREADSHEET_ID)
-worksheet = sheet.worksheet(SHEET_NAME)
-data = worksheet.get_all_records()
+if not SPREADSHEET_ID or not SERVICE_ACCOUNT_JSON:
+    st.error("❌ No se encontraron las variables de entorno. Por favor configúralas en Streamlit.")
+    st.stop()
 
-# --- CONVERTIR A DATAFRAME ---
+# --- Convertir el JSON a diccionario ---
+try:
+    creds_dict = json.loads(SERVICE_ACCOUNT_JSON)
+except json.JSONDecodeError:
+    st.error("❌ Error al leer SERVICE_ACCOUNT_JSON. Revisa el formato del JSON.")
+    st.stop()
+
+# --- Autenticación con Google Sheets ---
+try:
+    creds = Credentials.from_service_account_info(creds_dict)
+    gc = gspread.authorize(creds)
+    sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
+except Exception as e:
+    st.error(f"❌ Error al conectar con Google Sheets: {e}")
+    st.stop()
+
+# --- Leer datos ---
+data = sheet.get_all_records()
 df = pd.DataFrame(data)
+
+st.title("📊 Dashboard Concurso ITM")
+
+if df.empty:
+    st.warning("No hay inscripciones registradas todavía.")
+else:
+    st.subheader("Resumen por docente")
+    resumen_docente = df.groupby("Docente seleccionado").size().reset_index(name="Cantidad de inscritos")
+    st.dataframe(resumen_docente)
+
+    st.subheader("Detalle de inscripciones")
+    st.dataframe(df)
 
 # --- FILTRO POR DOCENTE ---
 docentes = df['docenteSel'].unique()
