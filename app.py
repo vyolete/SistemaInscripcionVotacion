@@ -21,6 +21,18 @@ def conectar_google_sheets(secrets):
     data = worksheet.get_all_records()
     return pd.DataFrame(data)
 
+def cargar_docentes(secrets):
+    """Lee la hoja 'Docentes' y devuelve DataFrame con los correos permitidos"""
+    credentials = service_account.Credentials.from_service_account_info(
+        secrets["gcp"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    gc = gspread.authorize(credentials)
+    sh = gc.open_by_key(secrets["spreadsheet"]["id"])
+    ws_docentes = sh.worksheet("Docentes")
+    data = ws_docentes.get_all_records()
+    return pd.DataFrame(data)
+
 def contar_participantes(participantes_str):
     if not participantes_str:
         return 0
@@ -35,6 +47,7 @@ def preparar_dataframe(df):
         "Id_equipo": "ID Equipo"
     })
     return df
+
 
 # ======================================================
 # 🔹 MÓDULO INSCRIPCIÓN
@@ -138,6 +151,8 @@ def modulo_votacion():
     correo = st.text_input("Ingresa tu correo institucional para validar el voto:")
     equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
 
+    puntaje_total = 0
+
     if rol == "Docente":
         rigor = st.slider("Rigor técnico", 1, 5, 3)
         viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
@@ -154,29 +169,50 @@ def modulo_votacion():
         if not correo or not equipo_id:
             st.error("❌ Debes ingresar tu correo y el código de equipo")
             return
-    
+
         try:
-            # Conexión con inscripciones para validar equipos
+            # --- Validar que el equipo exista ---
+            df_insc = conectar_google_sheets(st.secrets)
+            df_insc = preparar_dataframe(df_insc)
+            if equipo_id not in df_insc["ID Equipo"].values:
+                st.error("❌ El código de equipo no es válido")
+                return
 
-    
-            if rol == "Docente":
-                # 🔹 Validar que el correo esté en la hoja de Docentes
-                try:
-                    df_docentes = cargar_docentes(st.secrets)
-                    if correo not in df_docentes["Correo"].values:
-                        st.error("❌ Tu correo no está autorizado como jurado docente.")
-                        return
-                except Exception as e:
-                    st.error(f"⚠️ Error al validar docentes: {e}")
-                    return
-
-    
-            # Conectar con Google Sheets
+            # --- Conexión a Google Sheets ---
             credentials = service_account.Credentials.from_service_account_info(
                 st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
             )
             gc = gspread.authorize(credentials)
             sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+
+            # --- Seleccionar hoja según rol ---
+            hoja_votos = "VotacionesDocentes" if rol == "Docente" else "VotacionesEstudiantes"
+            ws_votos = sh.worksheet(hoja_votos)
+
+            # --- Validación especial para docentes ---
+            if rol == "Docente":
+                df_docentes = cargar_docentes(st.secrets)
+                if correo not in df_docentes["Correo"].values:
+                    st.error("❌ Tu correo no está autorizado como jurado docente.")
+                    return
+
+            # --- Validar duplicados (correo + equipo) ---
+            votos = pd.DataFrame(ws_votos.get_all_records())
+            if not votos.empty:
+                existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
+                if not existe.empty:
+                    st.error("❌ Ya registraste un voto para este equipo")
+                    return
+
+            # --- Guardar voto ---
+            ws_votos.append_row([
+                str(datetime.now()), rol, correo, equipo_id, puntaje_total
+            ])
+            st.success("✅ ¡Tu voto ha sido registrado!")
+
+        except Exception as e:
+            st.error(f"⚠️ Error al registrar el voto: {e}")
+
 
 # ======================================================
 # 🔹 CARGA DE DOCENTES
