@@ -102,17 +102,20 @@ def modulo_home():
 
     with col2:
         # Video institucional embebido con autoplay, loop y muted para evitar bloqueos
-        video_id = "1f8KM3zFtFAjytzsRH63UV_ThWZgIRiUL"
-        video_url = f"https://drive.google.com/uc?export=download&id={video_id}"
-        st.markdown(
-            f"""
-            <video width="100%" height="320" autoplay loop muted playsinline style="border-radius:10px; box-shadow: 0 2px 12px #0002; margin-bottom: 14px;">
-                <source src="{video_url}" type="video/mp4">
-                Tu navegador no soporta la reproducción de video.
-            </video>
-            """,
-            unsafe_allow_html=True
-        )
+    st.image("https://media4.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp", 
+                 caption="¡Bienvenido!", 
+                 use_column_width=True)
+        st.markdown("<h4 style='text-align:center; color:#27ACE2;'>🏅 Ganadores anteriores</h4>", unsafe_allow_html=True)
+        items = [
+            {
+                "title": "Equipo 1",
+                "img": "https://i.imgur.com/yourimageid.jpg",
+                "subtitle": "Ganador 2023",
+                "text": "Descripción breve del equipo o del logro"
+            },
+            # Agrega más items aquí...
+        ]
+        carousel(items)
         st.markdown("<h4 style='text-align:center; color:#27ACE2;'>🏅 Ganadores anteriores</h4>", unsafe_allow_html=True)
         items = [
             {
@@ -123,7 +126,6 @@ def modulo_home():
             },
             # Agrega más imágenes aquí si tienes más:
         ]
-        carousel(items)  # 
 
 # --- MODULOS DE VOTACION Y RESULTADOS ---
 def modulo_votacion():
