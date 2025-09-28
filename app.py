@@ -4,6 +4,9 @@ import pandas as pd
 import gspread
 from google.oauth2 import service_account
 from datetime import datetime
+import qrcode
+from io import BytesIO
+import base64
 
 # ======================================================
 # 🔹 UTILIDADES DE DATOS
@@ -36,23 +39,28 @@ def preparar_dataframe(df):
     return df
 
 # ======================================================
-# 🔹 CARGA DE DOCENTES
+# 🔹 QR GENERATOR
 # ======================================================
-def cargar_docentes(secrets):
-    credentials = service_account.Credentials.from_service_account_info(
-        secrets["gcp"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+def generar_qr(data: str):
+    qr = qrcode.QRCode(
+        version=1,
+        box_size=6,
+        border=2
     )
-    gc = gspread.authorize(credentials)
-    sh = gc.open_by_key(secrets["spreadsheet"]["id"])
-    ws_docentes = sh.worksheet("Docentes")   # Hoja "Docentes" en tu spreadsheet
-    data = ws_docentes.get_all_records()
-    return pd.DataFrame(data)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    return img
+
+def qr_to_base64(img):
+    """Convierte la imagen QR en string base64 para insertarla en correos"""
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 # ======================================================
 # 🔹 MÓDULO INSCRIPCIÓN
 # ======================================================
-
 def modulo_inscripcion():
     st.header("Formulario de Inscripción")
     st.markdown("Completa el formulario a través del siguiente módulo:")
@@ -63,10 +71,31 @@ def modulo_inscripcion():
         """,
         unsafe_allow_html=True
     )
+    st.info("Al completar la inscripción recibirás un correo con el QR único de tu equipo.")
 
 # ======================================================
 # 🔹 MÓDULO DASHBOARD
 # ======================================================
+def mostrar_qr_equipos(df_filtrado):
+    st.subheader("📲 Códigos QR por equipo")
+
+    for _, row in df_filtrado.iterrows():
+        equipo_id = row["ID Equipo"]
+        equipo_nombre = row["Equipo"]
+
+        # URL directa al módulo de votación (ajusta con tu dominio real de Streamlit)
+        url_qr = f"https://tuapp.streamlit.app/?tab=Votación&equipo={equipo_id}"
+
+        img = generar_qr(url_qr)
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            st.image(buf.getvalue(), caption=f"QR {equipo_id}", width=120)
+        with col2:
+            st.markdown(f"**{equipo_nombre}** ({equipo_id})")
+            st.write(f"[Abrir link directo al voto]({url_qr})")
 
 def resumen_docente(df_filtrado):
     resumen = df_filtrado.groupby("Docente")['Cantidad de Estudiantes'].sum().reset_index()
@@ -77,15 +106,6 @@ def resumen_docente(df_filtrado):
 def detalle_inscripciones(df_filtrado):
     st.subheader("Detalle de inscripciones")
     st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
-
-def metricas_principales(df_filtrado):
-    st.metric("Total Inscripciones", len(df_filtrado))
-    st.metric("Total Equipos", df_filtrado['ID Equipo'].nunique())
-    st.metric("Total Estudiantes", df_filtrado['Cantidad de Estudiantes'].sum())
-
-def grafico_barra_docente(resumen):
-    st.subheader("📈 Inscripciones por Docente")
-    st.bar_chart(resumen.set_index('Docente'))
 
 def modulo_dashboard():
     st.header("Dashboard de Inscripciones")
@@ -100,67 +120,56 @@ def modulo_dashboard():
         return
 
     df = preparar_dataframe(df)
-    docentes = df['Docente'].unique()
-    docente_sel = st.sidebar.selectbox("Filtrar por docente", ["Todos"] + list(docentes))
-    df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
-    df_filtrado['Cantidad de Estudiantes'] = df_filtrado['Participantes'].apply(contar_participantes)
+    df['Cantidad de Estudiantes'] = df['Participantes'].apply(contar_participantes)
 
-    resumen = resumen_docente(df_filtrado)
-    detalle_inscripciones(df_filtrado)
-    metricas_principales(df_filtrado)
-    grafico_barra_docente(resumen)
-
-    st.info(
-        "Cada inscripción tiene un código único que se asociará al sistema de votación. "
-        "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
-    )
+    detalle_inscripciones(df)
+    resumen_docente(df)
+    mostrar_qr_equipos(df)
 
 # ======================================================
 # 🔹 MÓDULO HOME
 # ======================================================
-
 def modulo_home():
     col1, col2 = st.columns([1,2])
-
     with col1:
         st.markdown("<h2 style='color:#1B396A'>¡Bienvenido!</h2>", unsafe_allow_html=True)
         st.write("Selecciona tu rol para comenzar:")
         rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio")
         st.session_state["rol"] = rol
-
         if not st.session_state.get("rol_seleccionado", False):
             if st.button("Continuar"):
                 st.session_state["rol_seleccionado"] = True
                 st.rerun()
-
     with col2:
-        st.image(
-            "https://media4.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
-            caption="¡Bienvenido!",
-            use_container_width=True
-        )
+        st.image("https://media4.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
+                 caption="¡Bienvenido!", use_container_width=True)
 
 # ======================================================
 # 🔹 MÓDULO VOTACIÓN
 # ======================================================
-
 def modulo_votacion():
     st.subheader("🗳 Votación de Equipos")
 
+    # Leer parámetros de la URL
+    query_params = st.query_params
+    equipo_preseleccionado = query_params.get("equipo", [""])[0]
+
     rol = st.radio("Selecciona tu rol:", ["Docente", "Estudiante/Asistente"])
     correo = st.text_input("Ingresa tu correo institucional para validar el voto:")
-    equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
+    equipo_id = st.text_input("Ingresa el código del equipo a evaluar:", value=equipo_preseleccionado)
 
     if rol == "Docente":
         rigor = st.slider("Rigor técnico", 1, 5, 3)
         viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
         innovacion = st.slider("Innovación", 1, 5, 3)
-        puntaje_total = rigor + viabilidad + innovacion
+        criterios = [rigor, viabilidad, innovacion]
     else:
         creatividad = st.slider("Creatividad", 1, 5, 3)
         claridad = st.slider("Claridad de la presentación", 1, 5, 3)
         impacto = st.slider("Impacto percibido", 1, 5, 3)
-        puntaje_total = creatividad + claridad + impacto
+        criterios = [creatividad, claridad, impacto]
+
+    puntaje_total = sum(criterios)
 
     if st.button("Enviar voto"):
         if not correo or not equipo_id:
@@ -168,21 +177,6 @@ def modulo_votacion():
             return
 
         try:
-            # Validar equipo
-            df_insc = conectar_google_sheets(st.secrets)
-            df_insc = preparar_dataframe(df_insc)
-            if equipo_id not in df_insc["ID Equipo"].values:
-                st.error("❌ El código de equipo no es válido")
-                return
-
-            # Si es docente → validar en hoja Docentes
-            if rol == "Docente":
-                df_docentes = cargar_docentes(st.secrets)
-                if correo not in df_docentes["Correo"].values:
-                    st.error("❌ Tu correo no está autorizado como jurado docente.")
-                    return
-
-            # Abrir hoja de votaciones
             credentials = service_account.Credentials.from_service_account_info(
                 st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
             )
@@ -190,7 +184,6 @@ def modulo_votacion():
             sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
             ws_votos = sh.worksheet("Votaciones")
 
-            # Validar duplicados
             votos = pd.DataFrame(ws_votos.get_all_records())
             if not votos.empty:
                 existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
@@ -198,10 +191,12 @@ def modulo_votacion():
                     st.error("❌ Ya registraste un voto para este equipo")
                     return
 
-            # Guardar voto
-            registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
+            registro = [str(datetime.now()), rol, correo, equipo_id, "", *criterios, puntaje_total, hash(f"{correo}{equipo_id}")]
             ws_votos.append_row(registro)
+
             st.success("✅ ¡Tu voto ha sido registrado!")
+            st.session_state["reset_voto"] = True
+            st.rerun()
 
         except Exception as e:
             st.error(f"⚠️ Error al registrar el voto: {e}")
@@ -209,50 +204,35 @@ def modulo_votacion():
 # ======================================================
 # 🔹 MÓDULO RESULTADOS
 # ======================================================
-
 def modulo_resultados():
-    st.info("📊 Los resultados estarán disponibles durante el evento.")
+    st.info("Los resultados estarán disponibles al finalizar el evento.")
 
 # ======================================================
 # 🔹 MAIN APP
 # ======================================================
-
 def main():
-    st.set_page_config(
-        page_title="Concurso Analítica Financiera",
-        page_icon="📊",
-        layout="wide"
-    )
+    st.set_page_config(page_title="Concurso Analítica Financiera", page_icon="📊", layout="wide")
 
-    # Logo ITM
-    st.markdown(
-        f'<div style="display:flex;justify-content:center;margin-bottom:8px">'
-        f'<img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_ITM.svg" '
-        f'width="160" /></div>',
-        unsafe_allow_html=True
-    )
+    # Inicialización
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = 'Home'
+    if 'rol' not in st.session_state:
+        st.session_state.rol = None
+    if 'rol_seleccionado' not in st.session_state:
+        st.session_state.rol_seleccionado = False
 
-    st.markdown("<h1 style='text-align: center; color: #1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
+    # Router de módulos
+    tab = st.session_state.active_tab
+    if tab == 'Home': modulo_home()
+    elif tab == 'Inscripción': modulo_inscripcion()
+    elif tab == 'Dashboard': modulo_dashboard()
+    elif tab == 'Votación': modulo_votacion()
+    elif tab == 'Resultados': modulo_resultados()
 
-    # Inicialización de estado
-    if 'active_tab' not in st.session_state: st.session_state.active_tab = 'Home'
-    if 'rol' not in st.session_state: st.session_state.rol = None
-    if 'rol_seleccionado' not in st.session_state: st.session_state.rol_seleccionado = False
-
-    # HOME
-    if st.session_state.active_tab == 'Home':
-        modulo_home()
-        if not st.session_state.rol_seleccionado or st.session_state.rol is None:
-            st.warning("Por favor selecciona tu rol y presiona 'Continuar' para acceder al menú.")
-            return
-
-    # SIDEBAR
+    # Sidebar
     with st.sidebar:
         st.header("Menú")
-        if st.button("🏠 Home"):
-            st.session_state.active_tab = 'Home'
-            st.session_state.rol_seleccionado = False
-
+        if st.button("🏠 Home"): st.session_state.active_tab = 'Home'; st.session_state.rol_seleccionado = False
         if st.session_state.rol_seleccionado:
             if st.session_state.rol == "Docente":
                 if st.button("📝 Inscripción"): st.session_state.active_tab = 'Inscripción'
@@ -264,19 +244,6 @@ def main():
                 if st.button("🗳 Votación"): st.session_state.active_tab = 'Votación'
                 if st.button("📈 Resultados"): st.session_state.active_tab = 'Resultados'
 
-    # Router de módulos
-    if st.session_state.active_tab == 'Inscripción':
-        modulo_inscripcion()
-    elif st.session_state.active_tab == 'Dashboard':
-        modulo_dashboard()
-    elif st.session_state.active_tab == 'Votación':
-        modulo_votacion()
-    elif st.session_state.active_tab == 'Resultados':
-        modulo_resultados()
-    elif st.session_state.active_tab == 'Home':
-        st.info("Usa el menú lateral para navegar entre los módulos.")
-
 if __name__ == "__main__":
     main()
-
 
