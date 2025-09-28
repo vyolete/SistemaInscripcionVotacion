@@ -49,10 +49,6 @@ else:
     st.subheader("Resumen por docente")
     st.dataframe(resumen_docente)
 
-    # Detalle completo
-    st.subheader("📈 Detalle de inscripciones")
-    st.dataframe(df)
-
     # Filtro por docente
     docentes = df['Docente'].unique()
     docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
