@@ -110,17 +110,23 @@ def modulo_home():
 # --- MODULOS DE VOTACION Y RESULTADOS ---
 def modulo_votacion():
     html_warning = """
-    <div style="text-align:center; font-size:1.05em;
-                background:#fff3cd; border-left:6px solid #ffeeba;
-                padding:12px; border-radius:6px;">
-      <strong>⚠️ Atención:</strong><br>
-      El sistema de votación está habilitado <b>solo durante el evento</b>.<br>
-      Por favor, escanee el QR y complete la evaluación con responsabilidad.
+    <div style="
+        text-align:center;
+        font-size:1.05em;
+        background:#fff8e6; 
+        border-left:6px solid #ffb84d;
+        padding:16px; 
+        border-radius:10px;
+        font-family:Arial, sans-serif;
+        color:#5a4a00;">
+      <div style="font-size:1.4em; margin-bottom:6px;">⚠️ Atención</div>
+      <div>
+        El sistema de votación estará disponible <b>solo durante el evento</b>.<br>
+        Escanea el QR y completa tu evaluación con <b>responsabilidad</b>.
+      </div>
     </div>
     """
     st.markdown(html_warning, unsafe_allow_html=True)
-
-    # ... resto del código del módulo (inputs, QR, lógica de votación, etc.)
 
 
 def modulo_resultados():
