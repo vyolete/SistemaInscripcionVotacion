@@ -57,8 +57,6 @@ else:
         Cantidad_de_Estudiantes=("Cantidad_estudiantes_equipo", "sum")
     ).reset_index()
     st.dataframe(resumen_docente)
-    st.subheader("Resumen por docente")
-    st.dataframe(resumen_docente)
 
     # Filtro por docente
     docentes = df['Docente'].unique()
