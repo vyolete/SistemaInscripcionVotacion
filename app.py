@@ -118,7 +118,8 @@ def modulo_home():
             {
                 "title": "Equipo 1",
                 "img": "https://drive.google.com/uc?id=1axYBBucuLnEWkcrxb_dY7kJFj7grOiBa",
-                "subtitle": "Ganador 2023"
+                "subtitle": "Ganador 2023",
+                "text": "Descripción breve del equipo o del logro"
             },
             # Agrega más imágenes aquí si tienes más:
         ]
