@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2 import service_account
+from datetime import datetime
 
 
 # ======================================================
@@ -153,44 +154,69 @@ def modulo_votacion():
         if not correo or not equipo_id:
             st.error("❌ Debes ingresar tu correo y el código de equipo")
             return
-
-        # Conexión con Google Sheets
+    
         try:
-            df_insc = conectar_google_sheets(st.secrets)
-            df_insc = preparar_dataframe(df_insc)
+            # Conexión con inscripciones para validar equipos
 
-            # validar que el equipo exista
-            if equipo_id not in df_insc["ID Equipo"].values:
-                st.error("❌ El código de equipo no es válido")
-                return
+    
+            if rol == "Docente":
+                # 🔹 Validar que el correo esté en la hoja de Docentes
+                try:
+                    df_docentes = cargar_docentes(st.secrets)
+                    if correo not in df_docentes["Correo"].values:
+                        st.error("❌ Tu correo no está autorizado como jurado docente.")
+                        return
+                except Exception as e:
+                    st.error(f"⚠️ Error al validar docentes: {e}")
+                    return
 
-            # abrir hoja de votaciones
+    
+            # Conectar con Google Sheets
             credentials = service_account.Credentials.from_service_account_info(
                 st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
             )
             gc = gspread.authorize(credentials)
             sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-            ws_votos = sh.worksheet("Votaciones")
 
-            # convertir hoja de votaciones en dataframe para validar duplicados
+# ======================================================
+# 🔹 CARGA DE DOCENTES
+# ======================================================
+def cargar_docentes(secrets):
+    credentials = service_account.Credentials.from_service_account_info(
+        secrets["gcp"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    gc = gspread.authorize(credentials)
+    sh = gc.open_by_key(secrets["spreadsheet"]["id"])
+    ws_docentes = sh.worksheet("Docentes")
+    data = ws_docentes.get_all_records()
+    return pd.DataFrame(data)
+        if rol == "Docente":
+            # 🔹 Validar que el correo esté en la hoja de Docentes
+            try:
+                df_docentes = cargar_docentes(st.secrets)
+                if correo not in df_docentes["Correo"].values:
+                    st.error("❌ Tu correo no está autorizado como jurado docente.")
+                    return
+            except Exception as e:
+                st.error(f"⚠️ Error al validar docentes: {e}")
+                return
+
+    
+            # Validar que no haya duplicado (correo + equipo)
             votos = pd.DataFrame(ws_votos.get_all_records())
             if not votos.empty:
-                existe = votos[
-                    (votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)
-                ]
+                existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
                 if not existe.empty:
                     st.error("❌ Ya registraste un voto para este equipo")
                     return
-
-            # si pasa validaciones → registrar voto
-            ws_votos.append_row([
-                str(pd.Timestamp.now()), rol, correo, equipo_id, puntaje_total
-            ])
+    
+            # Guardar voto
+            ws_votos.append_row(registro)
             st.success("✅ ¡Tu voto ha sido registrado!")
-
+    
         except Exception as e:
             st.error(f"⚠️ Error al registrar el voto: {e}")
-
 
 def modulo_resultados():
     html_warning = """
