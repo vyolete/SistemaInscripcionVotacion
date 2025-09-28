@@ -114,6 +114,11 @@ def modulo_home():
     rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio")
     st.session_state["rol"] = rol
 
+    # Mostrar el botón SOLO si no se ha seleccionado rol_seleccionado
+    if not st.session_state.get("rol_seleccionado", False):
+        if st.button("Continuar"):
+            st.session_state["rol_seleccionado"] = True
+
     # BOTÓN CONTINUAR
     if st.button("🏠 Home"):
         st.session_state.active_tab = 'Home'
