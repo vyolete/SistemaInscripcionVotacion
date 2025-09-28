@@ -29,26 +29,23 @@ except Exception as e:
 # --- TÍTULO ---
 st.title("📊 Dashboard Concurso ITM")
 st.markdown(
-    "Visualiza la cantidad de equipos y estudiantes registrados por docente, sin mostrar datos sensibles de los participantes."
+    "Visualiza las inscripciones por docente, el estado de cada equipo y los participantes registrados."
 )
 
 # --- VALIDAR DATOS ---
 if df.empty:
     st.warning("No hay inscripciones registradas todavía.")
 else:
-    # --- Renombrar columnas para uso interno ---
-    df = df.rename(columns={
-        "Docente": "docenteSel",
-        "Nombre del Equipo": "equipo",
-        "Inscripción Participantes": "participantes"
-    })
+    # Crear columna temporal con cantidad de estudiantes por equipo
+    df['Cantidad_estudiantes_equipo'] = df['Inscripción Participantes'].apply(lambda x: len([p.strip() for p in x.split(',')]))
 
-    # --- Resumen por docente ---
-    resumen_docente = df.groupby("docenteSel").agg(
-        Cantidad_de_Equipos=("equipo", "nunique"),
-        Cantidad_de_Estudiantes=("participantes", "count")
+    # Resumen por docente
+    st.subheader("Resumen por docente")
+    resumen_docente = df.groupby("Docente").agg(
+        Cantidad_de_Equipos=("Nombre del Equipo", "nunique"),
+        Cantidad_de_Estudiantes=("Cantidad_estudiantes_equipo", "sum")
     ).reset_index()
-
+    st.dataframe(resumen_docente)
     st.subheader("Resumen por docente")
     st.dataframe(resumen_docente)
 
