@@ -50,7 +50,7 @@ else:
     st.dataframe(resumen_docente)
 
     # Detalle completo
-    st.subheader("Detalle de inscripciones")
+    st.subheader("📈 Detalle de inscripciones")
     st.dataframe(df)
 
     # Filtro por docente
