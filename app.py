@@ -1,29 +1,70 @@
+# app.py
 import streamlit as st
+import pandas as pd
+import gspread
+from google.oauth2.service_account import Credentials
 
-st.set_page_config(page_title="Concurso ITM - Dashboard", layout="wide")
+# --- CONFIGURACIÓN DE LA APP ---
+st.set_page_config(
+    page_title="Dashboard Concurso Analítica Financiera",
+    page_icon="📊",
+    layout="wide"
+)
 
-st.image("https://c0.klipartz.com/pngpicture/349/183/gratis-png-instituto-tecnologico-metropolitano-de-medellin-universidad-itm-campus-prado-technology-institute-medellin.png", width=120)
-st.title("Concurso de Analítica Financiera – Panel de Inscripciones")
+st.title("📊 Dashboard Concurso ITM de Analítica Financiera")
+st.markdown(
+    "Visualiza las inscripciones por docente, el estado de cada equipo y los participantes registrados."
+)
 
-# Métricas generales
-st.metric("Total de equipos", data['Equipo'].nunique())
-st.metric("Total de participantes", sum(data['Integrantes'].apply(lambda x: len(x.split(',')))))
-st.metric("Total de docentes vinculados", data['Docente'].nunique())
+# --- CONEXIÓN CON GOOGLE SHEETS ---
+# Requiere que tengas un archivo de credenciales JSON de un service account
+SERVICE_ACCOUNT_FILE = "credenciales.json"  # <- coloca tu archivo de credenciales
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
-# Filtro por docente
-docente_sel = st.selectbox("Seleccione docente:", options=["Todos"] + data['Docente'].unique().tolist())
+creds = Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE,
+    scopes=SCOPES
+)
+gc = gspread.authorize(creds)
+
+# ID de la hoja de cálculo
+SPREADSHEET_ID = "TU_ID_DE_GOOGLE_SHEET_AQUI"
+SHEET_NAME = "Respuestas de formulario 1"
+
+sheet = gc.open_by_key(SPREADSHEET_ID)
+worksheet = sheet.worksheet(SHEET_NAME)
+data = worksheet.get_all_records()
+
+# --- CONVERTIR A DATAFRAME ---
+df = pd.DataFrame(data)
+
+# --- FILTRO POR DOCENTE ---
+docentes = df['docenteSel'].unique()
+docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
 
 if docente_sel != "Todos":
-    df_filtrado = data[data['Docente'] == docente_sel]
+    df_filtrado = df[df['docenteSel'] == docente_sel]
 else:
-    df_filtrado = data
+    df_filtrado = df
 
-# Tabla de detalle
-st.dataframe(df_filtrado[['Equipo', 'Integrantes', 'Docente', 'Código']])
+# --- METRICAS PRINCIPALES ---
+st.metric("Total Inscripciones", len(df_filtrado))
+st.metric("Total Equipos", df_filtrado['equipo'].nunique())
 
-# Gráficos
-import plotly.express as px
+# --- TABLA DE INSCRIPCIONES ---
+st.subheader("📋 Detalles de Inscripciones")
+st.dataframe(df_filtrado)
 
-fig_bar = px.bar(df_filtrado.groupby('Docente')['Equipo'].nunique().reset_index(),
-                 x='Docente', y='Equipo', labels={'Equipo': 'Número de equipos'})
-st.plotly_chart(fig_bar, use_container_width=True)
+# --- GRÁFICO: Inscripciones por docente ---
+st.subheader("📈 Inscripciones por Docente")
+inscripciones_docente = df.groupby('docenteSel')['equipo'].nunique().reset_index()
+inscripciones_docente = inscripciones_docente.rename(columns={'equipo': 'Cantidad de Equipos'})
+
+st.bar_chart(inscripciones_docente.set_index('docenteSel'))
+
+# --- INFORMACION ADICIONAL ---
+st.info(
+    "Cada inscripción tiene un código único que se asociará al sistema de votación. "
+    "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
+)
+
