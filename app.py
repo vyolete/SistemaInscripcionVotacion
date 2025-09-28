@@ -46,31 +46,42 @@ if df.empty:
 else:
     # Resumen por docente
     st.subheader("Resumen por docente")
-    resumen_docente = df.groupby("Docente").size().reset_index(name="Cantidad de inscritos")
+    resumen_docente = df.groupby("Docente").size().reset_index(name="Cantidad de estudiantes")
     st.dataframe(resumen_docente)
 
     # Detalle completo
-    st.subheader("Detalle de inscripciones")
-    st.dataframe(df)
+    #st.subheader("Detalle de inscripciones")
+    #st.dataframe(df)
+    
+    # --- Resumen de equipos por docente ---
+    st.subheader("Cantidad de equipos por docente")
+    resumen_equipos = df.groupby("Docente")['Id_equipo'].nunique().reset_index(name="Cantidad de equipos")
+    st.dataframe(resumen_equipos)
 
     # Filtro por docente
     docentes = df['Docente'].unique()
     docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
     df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
 
-    # Métricas principales
-    st.metric("Total Inscripciones", len(df_filtrado))
-    st.metric("Total Equipos", df_filtrado['Id_equipo'].nunique())
+    # --- Métricas principales ---
+    total_estudiantes = len(df)
+    total_equipos = df['Id_equipo'].nunique()
+    st.metric("Total Estudiantes", total_estudiantes)
+    st.metric("Total Equipos", total_equipos)
+
+        # --- Gráfico: Equipos por docente ---
+    st.subheader("📈 Equipos por Docente")
+    st.bar_chart(resumen_equipos.set_index('Docente'))
 
     # Tabla filtrada
-    st.subheader("📋 Detalles de Inscripciones")
-    st.dataframe(df_filtrado)
+    #st.subheader("📋 Detalles de Inscripciones")
+    #st.dataframe(df_filtrado)
 
     # Gráfico: Inscripciones por docente
-    st.subheader("📈 Inscripciones por Docente")
-    inscripciones_docente = df.groupby('Docente')['Id_equipo'].nunique().reset_index()
-    inscripciones_docente = inscripciones_docente.rename(columns={'Id_equipo': 'Cantidad de Equipos'})
-    st.bar_chart(inscripciones_docente.set_index('Docente'))
+    #st.subheader("📈 Inscripciones por Docente")
+    #inscripciones_docente = df.groupby('Docente')['Id_equipo'].nunique().reset_index()
+    #inscripciones_docente = inscripciones_docente.rename(columns={'Id_equipo': 'Cantidad de Equipos'})
+    #st.bar_chart(inscripciones_docente.set_index('Docente'))
 
     # Información adicional
     st.info(
