@@ -45,7 +45,7 @@ else:
         partes = [p.strip() for p in participantes_str.split(',') if p.strip()]
         # Contar solo aquellos que parecen tener un correo (contienen '@')
         estudiantes_validos = [p for p in partes if '@' in p]
-    return len(estudiantes_validos)
+        return len(estudiantes_validos)
     # Crear columna temporal con cantidad de estudiantes por equipo
     df['Cantidad_estudiantes_equipo'] = df['Inscripción Participantes'].apply(contar_estudiantes)
 
