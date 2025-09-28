@@ -13,74 +13,99 @@ st.set_page_config(
     layout="wide"
 )
 
+# --- PESTAÑAS ---
+tab1, tab2 = st.tabs(["📝 Inscripción", "📊 Dashboard"])
+
+# ----------------------
+# PESTAÑA 1: INSCRIPCIÓN
+# ----------------------
+with tab1:
+    st.header("Formulario de Inscripción")
+    st.markdown(
+        "Completa el formulario a través del siguiente enlace:"
+    )
+    # Insertar código embebido de Google Forms
+    st.markdown(
+        """
+        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfJaqrVwZHRbbDB8UIl4Jne9F9KMjVPMjZMM9IrD2LVWaFAwQ/viewform?embedded=true" width="640" height="1177" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ----------------------
+# PESTAÑA 2: DASHBOARD
+# ----------------------
+with tab2:
+    st.header("Dashboard de Inscripciones")
+
 # --- CONEXIÓN CON GOOGLE SHEETS ---
-try:
-    credentials = service_account.Credentials.from_service_account_info(
-        st.secrets["gcp"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    try:
+        credentials = service_account.Credentials.from_service_account_info(
+            st.secrets["gcp"],
+            scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
+        gc = gspread.authorize(credentials)
+        sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+        worksheet = sh.sheet1
+        data = worksheet.get_all_records()
+        df = pd.DataFrame(data)
+    except Exception as e:
+        st.error(f"❌ Error al conectar con Google Sheets: {e}")
+        st.stop()
+    
+    # --- TÍTULO ---
+    st.title("📊 Dashboard Concurso ITM")
+    st.markdown(
+        "Visualiza las inscripciones por docente, el estado de cada equipo y los participantes registrados."
     )
-    gc = gspread.authorize(credentials)
-    sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-    worksheet = sh.sheet1
-    data = worksheet.get_all_records()
-    df = pd.DataFrame(data)
-except Exception as e:
-    st.error(f"❌ Error al conectar con Google Sheets: {e}")
-    st.stop()
-
-# --- TÍTULO ---
-st.title("📊 Dashboard Concurso ITM")
-st.markdown(
-    "Visualiza las inscripciones por docente, el estado de cada equipo y los participantes registrados."
-)
-
-# --- VALIDAR DATOS ---
-if df.empty:
-    st.warning("No hay inscripciones registradas todavía.")
-else:
-    def contar_estudiantes(participantes_str):
-        if not participantes_str:
-            return 0
-        # Separar por comas
-        partes = [p.strip() for p in participantes_str.split(',') if p.strip()]
-        # Contar solo aquellos que parecen tener un correo (contienen '@')
-        estudiantes_validos = [p for p in partes if '@' in p]
-        return len(estudiantes_validos)
-    # Crear columna temporal con cantidad de estudiantes por equipo
-    df['Cantidad_estudiantes_equipo'] = df['Inscripción Participantes'].apply(contar_estudiantes)
-
-
-    # Resumen por docente
-    st.subheader("Resumen por docente")
-    resumen_docente = df.groupby("Docente").agg(
-        Cantidad_de_Equipos=("Nombre del Equipo", "nunique"),
-        Cantidad_de_Estudiantes=("Cantidad_estudiantes_equipo", "sum")
-    ).reset_index()
-    st.dataframe(resumen_docente)
-
-    # Filtro por docente
-    docentes = df['Docente'].unique()
-    docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
-    df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
-
-    # Métricas principales
-    st.metric("Total Inscripciones", len(df_filtrado))
-    st.metric("Total Estudiantes", df['Cantidad_estudiantes_equipo'].sum())
-
-
-    # Tabla filtrada
-    st.subheader("📋 Detalles de Inscripciones")
-    st.dataframe(df_filtrado)
-
-    # Gráfico: Inscripciones por docente
-    st.subheader("📈 Inscripciones por Docente")
-    inscripciones_docente = df.groupby('Docente')['Id_equipo'].nunique().reset_index()
-    inscripciones_docente = inscripciones_docente.rename(columns={'Id_equipo': 'Cantidad de Equipos'})
-    st.bar_chart(inscripciones_docente.set_index('Docente'))
-
-    # --- Información adicional ---
-    st.info(
-         "Cada inscripción tiene un código único que se asociará al sistema de votación. "
-         "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
-    )
+    
+    # --- VALIDAR DATOS ---
+    if df.empty:
+        st.warning("No hay inscripciones registradas todavía.")
+    else:
+        def contar_estudiantes(participantes_str):
+            if not participantes_str:
+                return 0
+            # Separar por comas
+            partes = [p.strip() for p in participantes_str.split(',') if p.strip()]
+            # Contar solo aquellos que parecen tener un correo (contienen '@')
+            estudiantes_validos = [p for p in partes if '@' in p]
+            return len(estudiantes_validos)
+        # Crear columna temporal con cantidad de estudiantes por equipo
+        df['Cantidad_estudiantes_equipo'] = df['Inscripción Participantes'].apply(contar_estudiantes)
+    
+    
+        # Resumen por docente
+        st.subheader("Resumen por docente")
+        resumen_docente = df.groupby("Docente").agg(
+            Cantidad_de_Equipos=("Nombre del Equipo", "nunique"),
+            Cantidad_de_Estudiantes=("Cantidad_estudiantes_equipo", "sum")
+        ).reset_index()
+        st.dataframe(resumen_docente)
+    
+        # Filtro por docente
+        docentes = df['Docente'].unique()
+        docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
+        df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
+    
+        # Métricas principales
+        st.metric("Total Inscripciones", len(df_filtrado))
+        st.metric("Total Estudiantes", df['Cantidad_estudiantes_equipo'].sum())
+    
+    
+        # Tabla filtrada
+        st.subheader("📋 Detalles de Inscripciones")
+        st.dataframe(df_filtrado)
+    
+        # Gráfico: Inscripciones por docente
+        st.subheader("📈 Inscripciones por Docente")
+        inscripciones_docente = df.groupby('Docente')['Id_equipo'].nunique().reset_index()
+        inscripciones_docente = inscripciones_docente.rename(columns={'Id_equipo': 'Cantidad de Equipos'})
+        st.bar_chart(inscripciones_docente.set_index('Docente'))
+    
+        # --- Información adicional ---
+        st.info(
+             "Cada inscripción tiene un código único que se asociará al sistema de votación. "
+             "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
+        )
 
