@@ -164,6 +164,19 @@ def modulo_votacion():
         st.slider("Creatividad", 1, 5, 3)
         st.slider("Claridad de la presentación", 1, 5, 3)
         st.slider("Impacto percibido", 1, 5, 3)
+        
+    if st.button("Enviar voto"):
+        if equipo_id not in df_inscripciones["ID Equipo"].values:
+            st.error("❌ El código de equipo no es válido. Verifica el QR o el número.")
+        else:
+            # registrar voto en Hoja 'Votaciones'
+            sh_votos = gc.open_by_key(st.secrets["spreadsheet"]["id"]).worksheet("Votaciones")
+            sh_votos.append_row([
+                str(pd.Timestamp.now()), rol, correo, equipo_id, equipo_nombre,
+                criterio1, criterio2, criterio3, puntaje_total, votante_id
+            ])
+            st.success("✅ ¡Tu voto ha sido registrado!")
+
 
 def modulo_resultados():
     html_warning = """
