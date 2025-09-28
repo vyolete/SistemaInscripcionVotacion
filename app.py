@@ -102,11 +102,11 @@ def modulo_home():
 
     with col2:
     # Muestra el GIF animado en vez del video
-    st.image(
-        "https://media4.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
-        caption="¡Bienvenido!",
-        use_container_width=True
-    )
+        st.image(
+            "https://media4.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
+            caption="¡Bienvenido!",
+            use_container_width=True
+        )
 # --- MODULOS DE VOTACION Y RESULTADOS ---
 def modulo_votacion():
     st.header("🗳️ Módulo de Votación")
