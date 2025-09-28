@@ -13,80 +13,67 @@ st.set_page_config(
 
 # --- CONEXIÓN CON GOOGLE SHEETS ---
 try:
-    # Credenciales desde los secretos de Streamlit
     credentials = service_account.Credentials.from_service_account_info(
         st.secrets["gcp"],
         scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
-
-    # Autorización con gspread
     gc = gspread.authorize(credentials)
-
-    # Abrir la hoja usando la ID almacenada en secrets
     sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
     worksheet = sh.sheet1
-
-    # Obtener todos los registros
     data = worksheet.get_all_records()
     df = pd.DataFrame(data)
-
 except Exception as e:
     st.error(f"❌ Error al conectar con Google Sheets: {e}")
-    st.stop()  # Detener la app si falla la conexión
+    st.stop()
 
 # --- TÍTULO ---
 st.title("📊 Dashboard Concurso ITM")
 st.markdown(
-    "Visualiza las inscripciones por docente, el estado de cada equipo y los participantes registrados."
+    "Visualiza la cantidad de equipos y estudiantes registrados por docente, sin mostrar datos sensibles de los participantes."
 )
 
 # --- VALIDAR DATOS ---
 if df.empty:
     st.warning("No hay inscripciones registradas todavía.")
 else:
-    # Resumen por docente
+    # --- Renombrar columnas para uso interno ---
+    df = df.rename(columns={
+        "Docente": "docenteSel",
+        "Nombre del Equipo": "equipo",
+        "Inscripción Participantes": "participantes"
+    })
+
+    # --- Resumen por docente ---
+    resumen_docente = df.groupby("docenteSel").agg(
+        Cantidad_de_Equipos=("equipo", "nunique"),
+        Cantidad_de_Estudiantes=("participantes", "count")
+    ).reset_index()
+
     st.subheader("Resumen por docente")
-    resumen_docente = df.groupby("Docente").size().reset_index(name="Cantidad de estudiantes")
     st.dataframe(resumen_docente)
 
-    # Detalle completo
-    #st.subheader("Detalle de inscripciones")
-    #st.dataframe(df)
-    
-    # --- Resumen de equipos por docente ---
-    st.subheader("Cantidad de equipos por docente")
-    resumen_equipos = df.groupby("Docente")['Id_equipo'].nunique().reset_index(name="Cantidad de equipos")
-    st.dataframe(resumen_equipos)
-
-    # Filtro por docente
-    docentes = df['Docente'].unique()
+    # --- Filtro por docente ---
+    docentes = df['docenteSel'].unique()
     docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
-    df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
+    df_filtrado = df if docente_sel == "Todos" else df[df['docenteSel'] == docente_sel]
 
     # --- Métricas principales ---
-    total_estudiantes = len(df)
-    total_equipos = df['Id_equipo'].nunique()
-    st.metric("Total Estudiantes", total_estudiantes)
-    st.metric("Total Equipos", total_equipos)
+    st.metric("Total Equipos", df_filtrado['equipo'].nunique())
+    st.metric("Total Estudiantes", df_filtrado['participantes'].count())
 
-        # --- Gráfico: Equipos por docente ---
+    # --- Tabla filtrada ---
+    st.subheader("📋 Equipos registrados")
+    # Mostrar solo equipo y docente, sin datos sensibles
+    st.dataframe(df_filtrado[["docenteSel", "equipo"]].drop_duplicates())
+
+    # --- Gráfico ---
     st.subheader("📈 Equipos por Docente")
-    st.bar_chart(resumen_equipos.set_index('Docente'))
+    inscripciones_docente = df.groupby('docenteSel')['equipo'].nunique().reset_index()
+    inscripciones_docente = inscripciones_docente.rename(columns={'equipo': 'Cantidad de Equipos'})
+    st.bar_chart(inscripciones_docente.set_index('docenteSel'))
 
-    # Tabla filtrada
-    #st.subheader("📋 Detalles de Inscripciones")
-    #st.dataframe(df_filtrado)
-
-    # Gráfico: Inscripciones por docente
-    #st.subheader("📈 Inscripciones por Docente")
-    #inscripciones_docente = df.groupby('Docente')['Id_equipo'].nunique().reset_index()
-    #inscripciones_docente = inscripciones_docente.rename(columns={'Id_equipo': 'Cantidad de Equipos'})
-    #st.bar_chart(inscripciones_docente.set_index('Docente'))
-
-    # Información adicional
+    # --- Información adicional ---
     st.info(
-        "Cada inscripción tiene un código único que se asociará al sistema de votación. "
-        "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
+        "Cada equipo tiene un código único asociado, pero los participantes individuales no se muestran para proteger su información."
     )
-
 
