@@ -127,6 +127,22 @@ def modulo_votacion():
     </div>
     """
     st.markdown(html_warning, unsafe_allow_html=True)
+    rol = st.radio("Selecciona tu rol:", ["Docente", "Estudiante/Asistente"])
+
+    equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
+    
+    if rol == "Docente":
+        st.subheader("Criterios de evaluación (Docente)")
+        rigor = st.slider("Rigor técnico", 1, 5, 3)
+        viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
+        innovacion = st.slider("Innovación", 1, 5, 3)
+    
+    elif rol == "Estudiante/Asistente":
+        st.subheader("Criterios de evaluación (Estudiante/Asistente)")
+        creatividad = st.slider("Creatividad", 1, 5, 3)
+        claridad = st.slider("Claridad de la presentación", 1, 5, 3)
+        impacto = st.slider("Impacto percibido", 1, 5, 3)
+
 
 
 def modulo_resultados():
