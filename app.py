@@ -104,15 +104,15 @@ def modulo_home():
         # Video institucional embebido con autoplay, loop y muted para evitar bloqueos
         st.image("https://media4.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp", 
                      caption="¡Bienvenido!", 
-                     use_column_width=True)
-            st.markdown("<h4 style='text-align:center; color:#27ACE2;'>🏅 Ganadores anteriores</h4>", unsafe_allow_html=True)
-            items = [
-                {
-                    "title": "Equipo 1",
-                    "img": "https://i.imgur.com/yourimageid.jpg",
-                    "subtitle": "Ganador 2023",
-                    "text": "Descripción breve del equipo o del logro"
-                },
+                 use_column_width=True)
+        st.markdown("<h4 style='text-align:center; color:#27ACE2;'>🏅 Ganadores anteriores</h4>", unsafe_allow_html=True)
+        items = [
+            {
+                "title": "Equipo 1",
+                "img": "https://i.imgur.com/yourimageid.jpg",
+                "subtitle": "Ganador 2023",
+                "text": "Descripción breve del equipo o del logro"
+            },
                 # Agrega más items aquí...
             ]
             carousel(items)
