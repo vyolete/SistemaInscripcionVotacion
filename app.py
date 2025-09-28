@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2 import service_account
+import re
+
 
 # --- CONFIGURACIÓN DE LA APP ---
 st.set_page_config(
@@ -36,8 +38,17 @@ st.markdown(
 if df.empty:
     st.warning("No hay inscripciones registradas todavía.")
 else:
+    def contar_estudiantes(participantes_str):
+    if not participantes_str:
+        return 0
+    # Separar por comas
+    partes = [p.strip() for p in participantes_str.split(',') if p.strip()]
+    # Contar solo aquellos que parecen tener un correo (contienen '@')
+    estudiantes_validos = [p for p in partes if '@' in p]
+    return len(estudiantes_validos)
     # Crear columna temporal con cantidad de estudiantes por equipo
-    df['Cantidad_estudiantes_equipo'] = df['Inscripción Participantes'].apply(lambda x: len([p.strip() for p in x.split(',')]))
+    df['Cantidad_estudiantes_equipo'] = df['Inscripción Participantes'].apply(contar_estudiantes)
+
 
     # Resumen por docente
     st.subheader("Resumen por docente")
@@ -56,7 +67,8 @@ else:
 
     # Métricas principales
     st.metric("Total Inscripciones", len(df_filtrado))
-    st.metric("Total Equipos", df_filtrado['Id_equipo'].nunique())
+    st.metric("Total Estudiantes", df['Cantidad_estudiantes_equipo'].sum())
+
 
     # Tabla filtrada
     st.subheader("📋 Detalles de Inscripciones")
