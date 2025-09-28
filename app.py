@@ -5,7 +5,6 @@ import gspread
 from google.oauth2 import service_account
 from datetime import datetime
 
-
 # ======================================================
 # 🔹 UTILIDADES DE DATOS
 # ======================================================
@@ -19,18 +18,6 @@ def conectar_google_sheets(secrets):
     sh = gc.open_by_key(secrets["spreadsheet"]["id"])
     worksheet = sh.sheet1
     data = worksheet.get_all_records()
-    return pd.DataFrame(data)
-
-def cargar_docentes(secrets):
-    """Lee la hoja 'Docentes' y devuelve DataFrame con los correos permitidos"""
-    credentials = service_account.Credentials.from_service_account_info(
-        secrets["gcp"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
-    )
-    gc = gspread.authorize(credentials)
-    sh = gc.open_by_key(secrets["spreadsheet"]["id"])
-    ws_docentes = sh.worksheet("Docentes")
-    data = ws_docentes.get_all_records()
     return pd.DataFrame(data)
 
 def contar_participantes(participantes_str):
@@ -48,6 +35,19 @@ def preparar_dataframe(df):
     })
     return df
 
+# ======================================================
+# 🔹 CARGA DE DOCENTES
+# ======================================================
+def cargar_docentes(secrets):
+    credentials = service_account.Credentials.from_service_account_info(
+        secrets["gcp"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    gc = gspread.authorize(credentials)
+    sh = gc.open_by_key(secrets["spreadsheet"]["id"])
+    ws_docentes = sh.worksheet("Docentes")   # Hoja "Docentes" en tu spreadsheet
+    data = ws_docentes.get_all_records()
+    return pd.DataFrame(data)
 
 # ======================================================
 # 🔹 MÓDULO INSCRIPCIÓN
@@ -141,7 +141,7 @@ def modulo_home():
         )
 
 # ======================================================
-# 🔹 MÓDULOS DE VOTACIÓN Y RESULTADOS
+# 🔹 MÓDULO VOTACIÓN
 # ======================================================
 
 def modulo_votacion():
@@ -151,15 +151,12 @@ def modulo_votacion():
     correo = st.text_input("Ingresa tu correo institucional para validar el voto:")
     equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
 
-    puntaje_total = 0
-
     if rol == "Docente":
         rigor = st.slider("Rigor técnico", 1, 5, 3)
         viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
         innovacion = st.slider("Innovación", 1, 5, 3)
         puntaje_total = rigor + viabilidad + innovacion
-
-    else:  # Estudiante/Asistente
+    else:
         creatividad = st.slider("Creatividad", 1, 5, 3)
         claridad = st.slider("Claridad de la presentación", 1, 5, 3)
         impacto = st.slider("Impacto percibido", 1, 5, 3)
@@ -171,32 +168,29 @@ def modulo_votacion():
             return
 
         try:
-            # --- Validar que el equipo exista ---
+            # Validar equipo
             df_insc = conectar_google_sheets(st.secrets)
             df_insc = preparar_dataframe(df_insc)
             if equipo_id not in df_insc["ID Equipo"].values:
                 st.error("❌ El código de equipo no es válido")
                 return
 
-            # --- Conexión a Google Sheets ---
-            credentials = service_account.Credentials.from_service_account_info(
-                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            )
-            gc = gspread.authorize(credentials)
-            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-
-            # --- Seleccionar hoja según rol ---
-            hoja_votos = "VotacionesDocentes" if rol == "Docente" else "VotacionesEstudiantes"
-            ws_votos = sh.worksheet(hoja_votos)
-
-            # --- Validación especial para docentes ---
+            # Si es docente → validar en hoja Docentes
             if rol == "Docente":
                 df_docentes = cargar_docentes(st.secrets)
                 if correo not in df_docentes["Correo"].values:
                     st.error("❌ Tu correo no está autorizado como jurado docente.")
                     return
 
-            # --- Validar duplicados (correo + equipo) ---
+            # Abrir hoja de votaciones
+            credentials = service_account.Credentials.from_service_account_info(
+                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            )
+            gc = gspread.authorize(credentials)
+            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+            ws_votos = sh.worksheet("Votaciones")
+
+            # Validar duplicados
             votos = pd.DataFrame(ws_votos.get_all_records())
             if not votos.empty:
                 existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
@@ -204,75 +198,20 @@ def modulo_votacion():
                     st.error("❌ Ya registraste un voto para este equipo")
                     return
 
-            # --- Guardar voto ---
-            ws_votos.append_row([
-                str(datetime.now()), rol, correo, equipo_id, puntaje_total
-            ])
-            st.success("✅ ¡Tu voto ha sido registrado!")
-
-        except Exception as e:
-            st.error(f"⚠️ Error al registrar el voto: {e}")
-
-
-# ======================================================
-# 🔹 CARGA DE DOCENTES
-# ======================================================
-def cargar_docentes(secrets):
-    credentials = service_account.Credentials.from_service_account_info(
-        secrets["gcp"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
-    )
-    gc = gspread.authorize(credentials)
-    sh = gc.open_by_key(secrets["spreadsheet"]["id"])
-    ws_docentes = sh.worksheet("Docentes")
-    data = ws_docentes.get_all_records()
-    return pd.DataFrame(data)
-        if rol == "Docente":
-            # 🔹 Validar que el correo esté en la hoja de Docentes
-            try:
-                df_docentes = cargar_docentes(st.secrets)
-                if correo not in df_docentes["Correo"].values:
-                    st.error("❌ Tu correo no está autorizado como jurado docente.")
-                    return
-            except Exception as e:
-                st.error(f"⚠️ Error al validar docentes: {e}")
-                return
-
-    
-            # Validar que no haya duplicado (correo + equipo)
-            votos = pd.DataFrame(ws_votos.get_all_records())
-            if not votos.empty:
-                existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
-                if not existe.empty:
-                    st.error("❌ Ya registraste un voto para este equipo")
-                    return
-    
             # Guardar voto
+            registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
             ws_votos.append_row(registro)
             st.success("✅ ¡Tu voto ha sido registrado!")
-    
+
         except Exception as e:
             st.error(f"⚠️ Error al registrar el voto: {e}")
 
+# ======================================================
+# 🔹 MÓDULO RESULTADOS
+# ======================================================
+
 def modulo_resultados():
-    html_warning = """
-    <div style="
-        text-align:center;
-        font-size:1.05em;
-        background:#fff8e6; 
-        border-left:6px solid #ffb84d;
-        padding:16px; 
-        border-radius:10px;
-        font-family:Arial, sans-serif;
-        color:#5a4a00;">
-      <div style="font-size:1.4em; margin-bottom:6px;">⚠️ Atención</div>
-      <div>
-        El sistema de votación estará disponible <b>solo durante el evento</b>.<br>
-        Escanea el QR y completa tu evaluación con <b>responsabilidad</b>.
-      </div>
-    </div>
-    """
-    st.markdown(html_warning, unsafe_allow_html=True)
+    st.info("📊 Los resultados estarán disponibles durante el evento.")
 
 # ======================================================
 # 🔹 MAIN APP
@@ -285,51 +224,20 @@ def main():
         layout="wide"
     )
 
-    # Banner superior animado
-    st.markdown("""
-    <div style="
-      height: 12px;
-      margin-bottom: 20px;
-      background: linear-gradient(270deg, #1B396A, #27ACE2, #1B396A, #27ACE2);
-      background-size: 600% 600%;
-      animation: gradientAnim 6s ease infinite;
-      border-radius: 8px;
-    ">
-    </div>
-    <style>
-    @keyframes gradientAnim {
-      0% {background-position:0% 50%}
-      50% {background-position:100% 50%}
-      100% {background-position:0% 50%}
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
     # Logo ITM
     st.markdown(
         f'<div style="display:flex;justify-content:center;margin-bottom:8px">'
         f'<img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_ITM.svg" '
-        f'width="160" style="border-radius:10px;border:1px solid #ccc" /></div>',
+        f'width="160" /></div>',
         unsafe_allow_html=True
     )
 
-    # Títulos
-    st.markdown(
-        "<h1 style='text-align: center; color: #1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        "<h4 style='text-align: center; color: #27ACE2;'>¡Participa, aprende y gana!</h4>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<h1 style='text-align: center; color: #1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
 
     # Inicialización de estado
-    if 'active_tab' not in st.session_state:
-        st.session_state.active_tab = 'Home'
-    if 'rol' not in st.session_state:
-        st.session_state.rol = None
-    if 'rol_seleccionado' not in st.session_state:
-        st.session_state.rol_seleccionado = False
+    if 'active_tab' not in st.session_state: st.session_state.active_tab = 'Home'
+    if 'rol' not in st.session_state: st.session_state.rol = None
+    if 'rol_seleccionado' not in st.session_state: st.session_state.rol_seleccionado = False
 
     # HOME
     if st.session_state.active_tab == 'Home':
@@ -356,15 +264,6 @@ def main():
                 if st.button("🗳 Votación"): st.session_state.active_tab = 'Votación'
                 if st.button("📈 Resultados"): st.session_state.active_tab = 'Resultados'
 
-    # Tabs permitidos según rol
-    allowed_tabs = {
-        "Docente": ['Inscripción', 'Dashboard', 'Votación', 'Resultados', 'Home'],
-        "Estudiante": ['Inscripción', 'Votación', 'Resultados', 'Home']
-    }.get(st.session_state.rol, ['Home'])
-
-    if st.session_state.active_tab not in allowed_tabs:
-        st.session_state.active_tab = 'Home'
-
     # Router de módulos
     if st.session_state.active_tab == 'Inscripción':
         modulo_inscripcion()
@@ -374,9 +273,10 @@ def main():
         modulo_votacion()
     elif st.session_state.active_tab == 'Resultados':
         modulo_resultados()
-    elif st.session_state.active_tab == 'Home' and st.session_state.rol_seleccionado and st.session_state.rol:
+    elif st.session_state.active_tab == 'Home':
         st.info("Usa el menú lateral para navegar entre los módulos.")
 
 if __name__ == "__main__":
     main()
+
 
