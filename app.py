@@ -46,7 +46,7 @@ if df.empty:
 else:
     # Resumen por docente
     st.subheader("Resumen por docente")
-    resumen_docente = df.groupby("docenteSel").size().reset_index(name="Cantidad de inscritos")
+    resumen_docente = df.groupby("Docente").size().reset_index(name="Cantidad de inscritos")
     st.dataframe(resumen_docente)
 
     # Detalle completo
@@ -54,13 +54,13 @@ else:
     st.dataframe(df)
 
     # Filtro por docente
-    docentes = df['docenteSel'].unique()
+    docentes = df['Docente'].unique()
     docente_sel = st.sidebar.selectbox("Selecciona un docente", ["Todos"] + list(docentes))
-    df_filtrado = df if docente_sel == "Todos" else df[df['docenteSel'] == docente_sel]
+    df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
 
     # Métricas principales
     st.metric("Total Inscripciones", len(df_filtrado))
-    st.metric("Total Equipos", df_filtrado['equipo'].nunique())
+    st.metric("Total Equipos", df_filtrado['Id_equipo'].nunique())
 
     # Tabla filtrada
     st.subheader("📋 Detalles de Inscripciones")
@@ -68,13 +68,14 @@ else:
 
     # Gráfico: Inscripciones por docente
     st.subheader("📈 Inscripciones por Docente")
-    inscripciones_docente = df.groupby('docenteSel')['equipo'].nunique().reset_index()
-    inscripciones_docente = inscripciones_docente.rename(columns={'equipo': 'Cantidad de Equipos'})
-    st.bar_chart(inscripciones_docente.set_index('docenteSel'))
+    inscripciones_docente = df.groupby('Docente')['Id_equipo'].nunique().reset_index()
+    inscripciones_docente = inscripciones_docente.rename(columns={'Id_equipo': 'Cantidad de Equipos'})
+    st.bar_chart(inscripciones_docente.set_index('Docente'))
 
     # Información adicional
     st.info(
         "Cada inscripción tiene un código único que se asociará al sistema de votación. "
         "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
     )
+
 
