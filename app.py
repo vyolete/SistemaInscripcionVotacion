@@ -98,7 +98,7 @@ def modulo_home():
         if not st.session_state.get("rol_seleccionado", False):
             if st.button("Continuar"):
                 st.session_state["rol_seleccionado"] = True
-                st.experimental_rerun()
+                st.rerun()
 
     with col2:
         # Video institucional embebido con autoplay, loop y muted para evitar bloqueos
