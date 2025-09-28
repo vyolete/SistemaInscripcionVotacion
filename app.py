@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import pandas as pd
 import gspread
@@ -11,15 +12,27 @@ st.set_page_config(
 )
 
 # --- CONEXIÓN CON GOOGLE SHEETS ---
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
-)
+try:
+    # Credenciales desde los secretos de Streamlit
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
 
-gc = gspread.authorize(credentials)
-sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-worksheet = sh.sheet1
-data = worksheet.get_all_records()
-df = pd.DataFrame(data)
+    # Autorización con gspread
+    gc = gspread.authorize(credentials)
+
+    # Abrir la hoja usando la ID almacenada en secrets
+    sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+    worksheet = sh.sheet1
+
+    # Obtener todos los registros
+    data = worksheet.get_all_records()
+    df = pd.DataFrame(data)
+
+except Exception as e:
+    st.error(f"❌ Error al conectar con Google Sheets: {e}")
+    st.stop()  # Detener la app si falla la conexión
 
 # --- TÍTULO ---
 st.title("📊 Dashboard Concurso ITM")
@@ -53,7 +66,7 @@ else:
     st.subheader("📋 Detalles de Inscripciones")
     st.dataframe(df_filtrado)
 
-    # Gráfico
+    # Gráfico: Inscripciones por docente
     st.subheader("📈 Inscripciones por Docente")
     inscripciones_docente = df.groupby('docenteSel')['equipo'].nunique().reset_index()
     inscripciones_docente = inscripciones_docente.rename(columns={'equipo': 'Cantidad de Equipos'})
