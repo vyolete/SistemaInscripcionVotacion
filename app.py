@@ -34,6 +34,26 @@ SERVICE_ACCOUNT_JSON = os.environ.get("SERVICE_ACCOUNT_JSON")
 if not SPREADSHEET_ID or not SERVICE_ACCOUNT_JSON:
     st.error("❌ No se encontraron las variables de entorno. Por favor configúralas en Streamlit.")
     st.stop()
+import streamlit as st
+import json
+import gspread
+from google.oauth2.service_account import Credentials
+
+# Leer secrets
+SPREADSHEET_ID = st.secrets["SPREADSHEET_ID"]
+SERVICE_ACCOUNT_JSON = st.secrets["SERVICE_ACCOUNT_JSON"]
+
+creds_dict = json.loads(SERVICE_ACCOUNT_JSON)
+
+# --- Especificar los scopes necesarios ---
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+gc = gspread.authorize(creds)
+
 
 # --- Convertir el JSON a diccionario ---
 try:
@@ -44,9 +64,9 @@ except json.JSONDecodeError:
 
 # --- Autenticación con Google Sheets ---
 try:
-    creds = Credentials.from_service_account_info(creds_dict)
-    gc = gspread.authorize(creds)
     sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
+    data = sheet.get_all_records()
+    st.write(data)
 except Exception as e:
     st.error(f"❌ Error al conectar con Google Sheets: {e}")
     st.stop()
