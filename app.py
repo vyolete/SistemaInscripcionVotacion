@@ -109,31 +109,19 @@ def modulo_home():
         )
 # --- MODULOS DE VOTACION Y RESULTADOS ---
 def modulo_votacion():
-    st.header("🗳️ Módulo de Votación")
-    st.warning("""
-        <div style='text-align:center;font-size:1.2em'>
-        🚧 <b>¡Próximamente!</b> 🚧<br>
-        Muy pronto podrás votar por tus equipos favoritos aquí.
-        </div>
-        """, unsafe_allow_html=True)
-    st.markdown("""
-    <div style="
-      height: 12px;
-      margin-top:20px;
-      background: linear-gradient(270deg, #1B396A, #27ACE2, #1B396A, #27ACE2);
-      background-size: 600% 600%;
-      animation: gradientAnim 6s ease infinite;
-      border-radius: 8px;
-    ">
+    html_warning = """
+    <div style="text-align:center; font-size:1.05em;
+                background:#fff3cd; border-left:6px solid #ffeeba;
+                padding:12px; border-radius:6px;">
+      <strong>⚠️ Atención:</strong><br>
+      El sistema de votación está habilitado <b>solo durante el evento</b>.<br>
+      Por favor, escanee el QR y complete la evaluación con responsabilidad.
     </div>
-    <style>
-    @keyframes gradientAnim {
-      0% {background-position:0% 50%}
-      50% {background-position:100% 50%}
-      100% {background-position:0% 50%}
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(html_warning, unsafe_allow_html=True)
+
+    # ... resto del código del módulo (inputs, QR, lógica de votación, etc.)
+
 
 def modulo_resultados():
     st.header("📈 Resultados")
