@@ -122,7 +122,7 @@ def modulo_home():
             },
             # Agrega más imágenes aquí si tienes más:
         ]
-        carousel(items, width=400, height=320)
+        carousel(items)  # 
 
 # --- MODULOS DE VOTACION Y RESULTADOS ---
 def modulo_votacion():
