@@ -124,31 +124,25 @@ def modulo_votacion():
 
 
 def modulo_resultados():
-    st.header("📈 Resultados")
-    st.info("""
-        <div style='text-align:center;font-size:1.2em'>
-        🔜 <b>Esta sección estará disponible al finalizar el concurso.</b><br>
-        ¡Mantente atento!
-        </div>
-        """, unsafe_allow_html=True)
-    st.markdown("""
+    html_warning = """
     <div style="
-      height: 12px;
-      margin-top:20px;
-      background: linear-gradient(270deg, #27ACE2, #1B396A, #27ACE2, #1B396A);
-      background-size: 600% 600%;
-      animation: gradientAnim 6s ease infinite;
-      border-radius: 8px;
-    ">
+        text-align:center;
+        font-size:1.05em;
+        background:#fff8e6; 
+        border-left:6px solid #ffb84d;
+        padding:16px; 
+        border-radius:10px;
+        font-family:Arial, sans-serif;
+        color:#5a4a00;">
+      <div style="font-size:1.4em; margin-bottom:6px;">⚠️ Atención</div>
+      <div>
+        El sistema de votación estará disponible <b>solo durante el evento</b>.<br>
+        Escanea el QR y completa tu evaluación con <b>responsabilidad</b>.
+      </div>
     </div>
-    <style>
-    @keyframes gradientAnim {
-      0% {background-position:0% 50%}
-      50% {background-position:100% 50%}
-      100% {background-position:0% 50%}
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(html_warning, unsafe_allow_html=True)
+
 
 # --- MAIN ---
 def main():
