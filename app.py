@@ -116,17 +116,6 @@ def modulo_home():
             # Agrega más items aquí...
         ]
         carousel(items)
-        st.markdown("<h4 style='text-align:center; color:#27ACE2;'>🏅 Ganadores anteriores</h4>", unsafe_allow_html=True)
-        items = [
-            {
-                "title": "Equipo 1",
-                "img": "https://drive.google.com/uc?id=1axYBBucuLnEWkcrxb_dY7kJFj7grOiBa",
-                "subtitle": "Ganador 2023",
-                "text": "Descripción breve del equipo o del logro"
-            },
-            # Agrega más imágenes aquí si tienes más:
-        ]
-
 # --- MODULOS DE VOTACION Y RESULTADOS ---
 def modulo_votacion():
     st.header("🗳️ Módulo de Votación")
