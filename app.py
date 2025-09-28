@@ -115,7 +115,7 @@ def modulo_home():
             },
                 # Agrega más items aquí...
             ]
-            carousel(items)
+        carousel(items)
 # --- MODULOS DE VOTACION Y RESULTADOS ---
 def modulo_votacion():
     st.header("🗳️ Módulo de Votación")
