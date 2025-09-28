@@ -131,51 +131,65 @@ def modulo_home():
 # ======================================================
 
 def modulo_votacion():
-    html_warning = """
-    <div style="
-        text-align:center;
-        font-size:1.05em;
-        background:#fff8e6; 
-        border-left:6px solid #ffb84d;
-        padding:16px; 
-        border-radius:10px;
-        font-family:Arial, sans-serif;
-        color:#5a4a00;">
-      <div style="font-size:1.4em; margin-bottom:6px;">⚠️ Atención</div>
-      <div>
-        El sistema de votación estará disponible <b>solo durante el evento</b>.<br>
-        Escanea el QR y completa tu evaluación con <b>responsabilidad</b>.
-      </div>
-    </div>
-    """
-    st.markdown(html_warning, unsafe_allow_html=True)
+    st.subheader("🗳 Votación de Equipos")
 
     rol = st.radio("Selecciona tu rol:", ["Docente", "Estudiante/Asistente"])
+    correo = st.text_input("Ingresa tu correo institucional para validar el voto:")
     equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
 
     if rol == "Docente":
-        st.subheader("Criterios de evaluación (Docente)")
-        st.slider("Rigor técnico", 1, 5, 3)
-        st.slider("Viabilidad financiera", 1, 5, 3)
-        st.slider("Innovación", 1, 5, 3)
+        rigor = st.slider("Rigor técnico", 1, 5, 3)
+        viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
+        innovacion = st.slider("Innovación", 1, 5, 3)
+        puntaje_total = rigor + viabilidad + innovacion
 
-    elif rol == "Estudiante/Asistente":
-        st.subheader("Criterios de evaluación (Estudiante/Asistente)")
-        st.slider("Creatividad", 1, 5, 3)
-        st.slider("Claridad de la presentación", 1, 5, 3)
-        st.slider("Impacto percibido", 1, 5, 3)
-        
+    else:  # Estudiante/Asistente
+        creatividad = st.slider("Creatividad", 1, 5, 3)
+        claridad = st.slider("Claridad de la presentación", 1, 5, 3)
+        impacto = st.slider("Impacto percibido", 1, 5, 3)
+        puntaje_total = creatividad + claridad + impacto
+
     if st.button("Enviar voto"):
-        if equipo_id not in df_inscripciones["ID Equipo"].values:
-            st.error("❌ El código de equipo no es válido. Verifica el QR o el número.")
-        else:
-            # registrar voto en Hoja 'Votaciones'
-            sh_votos = gc.open_by_key(st.secrets["spreadsheet"]["id"]).worksheet("Votaciones")
-            sh_votos.append_row([
-                str(pd.Timestamp.now()), rol, correo, equipo_id, equipo_nombre,
-                criterio1, criterio2, criterio3, puntaje_total, votante_id
+        if not correo or not equipo_id:
+            st.error("❌ Debes ingresar tu correo y el código de equipo")
+            return
+
+        # Conexión con Google Sheets
+        try:
+            df_insc = conectar_google_sheets(st.secrets)
+            df_insc = preparar_dataframe(df_insc)
+
+            # validar que el equipo exista
+            if equipo_id not in df_insc["ID Equipo"].values:
+                st.error("❌ El código de equipo no es válido")
+                return
+
+            # abrir hoja de votaciones
+            credentials = service_account.Credentials.from_service_account_info(
+                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            )
+            gc = gspread.authorize(credentials)
+            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+            ws_votos = sh.worksheet("Votaciones")
+
+            # convertir hoja de votaciones en dataframe para validar duplicados
+            votos = pd.DataFrame(ws_votos.get_all_records())
+            if not votos.empty:
+                existe = votos[
+                    (votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)
+                ]
+                if not existe.empty:
+                    st.error("❌ Ya registraste un voto para este equipo")
+                    return
+
+            # si pasa validaciones → registrar voto
+            ws_votos.append_row([
+                str(pd.Timestamp.now()), rol, correo, equipo_id, puntaje_total
             ])
             st.success("✅ ¡Tu voto ha sido registrado!")
+
+        except Exception as e:
+            st.error(f"⚠️ Error al registrar el voto: {e}")
 
 
 def modulo_resultados():
