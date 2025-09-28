@@ -114,12 +114,33 @@ def main():
         layout="wide"
     )
 
-    menu = st.sidebar.radio("Selecciona un módulo", ["📝 Inscripción", "📊 Dashboard"])
+    # --- TÍTULO GLOBAL ---
+    st.title("🏆 Concurso Analítica Financiera ITM")
 
-    if menu == "📝 Inscripción":
+    # --- MENÚ LATERAL ---
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = 'Inscripción'
+
+    with st.sidebar:
+        st.header("Menú")
+        if st.button("📝 Inscripción"):
+            st.session_state.active_tab = 'Inscripción'
+        if st.button("📊 Dashboard"):
+            st.session_state.active_tab = 'Dashboard'
+        if st.button("🗳 Votación"):
+            st.session_state.active_tab = 'Votación'
+        if st.button("📈 Resultados"):
+            st.session_state.active_tab = 'Resultados'
+
+    # --- MOSTRAR MODULO ACTIVO ---
+    if st.session_state.active_tab == 'Inscripción':
         modulo_inscripcion()
-    elif menu == "📊 Dashboard":
+    elif st.session_state.active_tab == 'Dashboard':
         modulo_dashboard()
+    elif st.session_state.active_tab == 'Votación':
+        modulo_votacion()
+    elif st.session_state.active_tab == 'Resultados':
+        modulo_resultados()
 
 if __name__ == "__main__":
     main()
