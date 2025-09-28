@@ -119,10 +119,14 @@ def modulo_home():
         if st.button("Continuar"):
             st.session_state["rol_seleccionado"] = True
 
-# BOTÓN CONTINUAR
-if st.button("🏠 Home"):
-    st.session_state.active_tab = 'Home'
-    st.session_state.rol_seleccionado = False
+# --- MODULOS DE VOTACION Y RESULTADOS ---
+def modulo_votacion():
+    st.header("Módulo de Votación")
+    st.info("Aquí irá el sistema de votación (por implementar).")
+
+def modulo_resultados():
+    st.header("Resultados")
+    st.info("Aquí se mostrarán los resultados (por implementar).")
 
 # --- MAIN ---
 def main():
@@ -153,7 +157,6 @@ def main():
     # --- HOME (Selección de rol) ---
     if st.session_state.active_tab == 'Home':
         modulo_home()
-        # Solo permite continuar si ya se seleccionó
         if not st.session_state.rol_seleccionado or st.session_state.rol is None:
             st.warning("Por favor selecciona tu rol y presiona 'Continuar' para acceder al menú.")
             return
