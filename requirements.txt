@@ -5,3 +5,5 @@ google-auth>=2.20.0
 qrcode[pil]>=7.4.2
 Pillow>=9.5.0
 altair
+streamlit-option-menu
+
