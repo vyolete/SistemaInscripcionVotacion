@@ -17,42 +17,47 @@ st.markdown("""
         background-color: #FFFFFF;
     }
 
-    /* Sidebar azul institucional */
+    /* Sidebar azul */
     section[data-testid="stSidebar"] {
         background-color: #1B396A !important;
     }
-
-    /* Texto sidebar */
     section[data-testid="stSidebar"] * {
         color: white !important;
     }
 
-    /* Botones principales */
+    /* Menú lateral */
+    .nav-link {
+        font-size: 15px !important;
+        margin: 4px 0;
+        border-radius: 6px;
+    }
+    .nav-link:hover {
+        background-color: #27406d !important;
+        color: #FFFFFF !important;
+    }
+    .nav-link-selected {
+        background-color: #27ACE2 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Botón continuar */
     .stButton>button {
         background-color: #1B396A !important;
         color: white !important;
-        border-radius: 8px;
+        border-radius: 6px;
         font-weight: bold;
-        height: 3em;
-        margin-top: 1em;
+        padding: 0.6em 1.5em;
+        font-size: 14px;
     }
 
-    /* Métricas */
-    .stMetric {
-        background: #EEF5FB;
-        border-radius: 12px;
-        padding: 1em;
-        margin-bottom: 1em;
-        color: #1B396A;
-    }
-
-    /* Texto de radio e inputs */
+    /* Radio y labels */
     div[role='radiogroup'] label span, label, .stTextInput label {
         color: #1B396A !important;
         font-weight: 500 !important;
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # ======================================================
