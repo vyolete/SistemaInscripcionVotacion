@@ -12,6 +12,22 @@ import altair as alt  # Nuevo: para gráficos bonitos
 
 st.markdown("""
     <style>
+    /* Fondo general blanco */
+    .stApp {
+        background-color: #FFFFFF;
+    }
+
+    /* Sidebar azul institucional */
+    section[data-testid="stSidebar"] {
+        background-color: #1B396A !important;
+    }
+
+    /* Texto en sidebar */
+    .css-1d391kg, .css-q8sbsg, .css-1lcbmhc {
+        color: white !important;
+    }
+
+    /* Botones personalizados */
     .stButton>button {
         background-color: #1B396A !important;
         color: white !important;
@@ -20,6 +36,8 @@ st.markdown("""
         height: 3em;
         margin-bottom: 0.5em;
     }
+
+    /* Métricas */
     .stMetric {
         background: #EEF5FB;
         border-radius: 12px;
@@ -27,11 +45,9 @@ st.markdown("""
         margin-bottom: 1em;
         color: #1B396A;
     }
-    .css-1v0mbdj {  /* sidebar */
-        background: #F3F5F7 !important;
-    }
     </style>
 """, unsafe_allow_html=True)
+
 
 # ======================================================
 # 🔹 UTILIDADES DE DATOS
@@ -160,28 +176,19 @@ def modulo_dashboard():
 # ======================================================
 # 🔹 MÓDULO HOME
 # ======================================================
-
-def modulo_home():
-    col1, col2 = st.columns([1,2])
-
-    with col1:
-        st.markdown("<h2 style='color:#1B396A'>¡Bienvenido!</h2>", unsafe_allow_html=True)
-        st.write("Selecciona tu rol para comenzar:")
-        rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio")
-        st.session_state["rol"] = rol
-
-        if not st.session_state.get("rol_seleccionado", False):
-            if st.button("Continuar"):
-                st.session_state["rol_seleccionado"] = True
-                st.rerun()
-
-    with col2:
-        st.image(
-            "https://media4.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
-            caption="¡Bienvenido!",
-            use_container_width=True
         )
+def modulo_home():
+    st.markdown("<h2 style='color:#1B396A; text-align:center;'>¡Bienvenido!</h2>", unsafe_allow_html=True)
+    st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=220)
 
+    st.markdown("### Selecciona tu rol para comenzar:")
+    rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio")
+    st.session_state["rol"] = rol
+
+    if not st.session_state.get("rol_seleccionado", False):
+        if st.button("Continuar"):
+            st.session_state["rol_seleccionado"] = True
+            st.rerun()
 # ======================================================
 # 🔹 MÓDULO VOTACIÓN
 # ======================================================
@@ -334,8 +341,8 @@ def main():
 
     # --- Menú lateral ---
     with st.sidebar:
-        st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=120)
-        st.markdown("### Menú principal")
+        st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=140)
+        st.markdown("<h3 style='color:white;'>Menú principal</h3>", unsafe_allow_html=True)
 
         if st.session_state.rol_seleccionado:
             if st.session_state.rol == "Docente":
