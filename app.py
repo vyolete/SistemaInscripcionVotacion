@@ -191,15 +191,14 @@ def cargar_docentes(secrets):
 # ======================================================
 
 def modulo_home():
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image(
+            "https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png",
+            width=180
+            unsafe_allow_html=True
+        )
     # Logo
-    st.markdown(
-    """
-    <div style='text-align:center; position:relative; z-index:10; background-color: transparent;'>
-      <img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='160'>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 
     # Títulos
