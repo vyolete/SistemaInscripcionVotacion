@@ -289,6 +289,8 @@ def modulo_resultados():
 # 🔹 MAIN APP
 # ======================================================
 
+from streamlit_option_menu import option_menu
+
 def main():
     st.set_page_config(
         page_title="Concurso Analítica Financiera",
@@ -296,15 +298,15 @@ def main():
         layout="wide"
     )
 
+    # --- Cabecera decorativa ---
     st.markdown("""
     <div style="
-      height: 12px;
-      margin-bottom: 20px;
+      height: 10px;
+      margin-bottom: 15px;
       background: linear-gradient(270deg, #1B396A, #27ACE2, #1B396A, #27ACE2);
       background-size: 600% 600%;
       animation: gradientAnim 6s ease infinite;
-      border-radius: 8px;
-    ">
+      border-radius: 6px;">
     </div>
     <style>
     @keyframes gradientAnim {
@@ -316,13 +318,6 @@ def main():
     """, unsafe_allow_html=True)
 
     st.markdown(
-        f'<div style="display:flex;justify-content:center;margin-bottom:8px">'
-        f'<img src="https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png"'
-        f'width="160" style="border-radius:10px;border:1px solid #ccc" /></div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
         "<h1 style='text-align: center; color: #1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
         unsafe_allow_html=True
     )
@@ -331,66 +326,64 @@ def main():
         unsafe_allow_html=True
     )
 
-    if 'active_tab' not in st.session_state: st.session_state.active_tab = 'Home'
-    if 'rol' not in st.session_state: st.session_state.rol = None
-    if 'rol_seleccionado' not in st.session_state: st.session_state.rol_seleccionado = False
+    # --- Inicialización de estados ---
+    if "rol" not in st.session_state: 
+        st.session_state.rol = None
+    if "rol_seleccionado" not in st.session_state: 
+        st.session_state.rol_seleccionado = False
 
-from streamlit_option_menu import option_menu
+    # --- Menú lateral ---
+    with st.sidebar:
+        st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=120)
+        st.markdown("### Menú principal")
 
-# SIDEBAR (mejorado con option-menu)
-with st.sidebar:
-    st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=120)
-    st.markdown("### Menú principal")
+        if st.session_state.rol_seleccionado:
+            if st.session_state.rol == "Docente":
+                opcion = option_menu(
+                    None,
+                    ["Home", "Inscripción", "Dashboard", "Votación", "Resultados"],
+                    icons=["house", "file-earmark-text", "bar-chart", "check2-square", "trophy"],
+                    default_index=0,
+                    styles={
+                        "container": {"background-color": "#F3F5F7"},
+                        "icon": {"color": "#1B396A", "font-size": "18px"},
+                        "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
+                        "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
+                    },
+                    orientation="vertical"
+                )
+            else:  # Estudiante
+                opcion = option_menu(
+                    None,
+                    ["Home", "Inscripción", "Votación", "Resultados"],
+                    icons=["house", "file-earmark-text", "check2-square", "trophy"],
+                    default_index=0,
+                    styles={
+                        "container": {"background-color": "#F3F5F7"},
+                        "icon": {"color": "#1B396A", "font-size": "18px"},
+                        "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
+                        "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
+                    },
+                    orientation="vertical"
+                )
+        else:
+            opcion = "Home"
 
-    if st.session_state.rol_seleccionado:
-        if st.session_state.rol == "Docente":
-            opcion = option_menu(
-                None,
-                ["Home", "Inscripción", "Dashboard", "Votación", "Resultados"],
-                icons=["house", "file-earmark-text", "bar-chart", "check2-square", "trophy"],
-                menu_icon="cast",
-                default_index=0,
-                styles={
-                    "container": {"background-color": "#F3F5F7"},
-                    "icon": {"color": "#1B396A", "font-size": "18px"},
-                    "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
-                    "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
-                },
-                orientation="vertical"
-            )
-        elif st.session_state.rol == "Estudiante":
-            opcion = option_menu(
-                None,
-                ["Home", "Inscripción", "Votación", "Resultados"],
-                icons=["house", "file-earmark-text", "check2-square", "trophy"],
-                menu_icon="cast",
-                default_index=0,
-                styles={
-                    "container": {"background-color": "#F3F5F7"},
-                    "icon": {"color": "#1B396A", "font-size": "18px"},
-                    "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
-                    "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
-                },
-                orientation="vertical"
-            )
-    else:
-        opcion = "Home"
-
-# Router de módulos
-if opcion == "Home":
-    modulo_home()
-elif opcion == "Inscripción":
-    modulo_inscripcion()
-elif opcion == "Dashboard":
-    modulo_dashboard()
-elif opcion == "Votación":
-    modulo_votacion()
-elif opcion == "Resultados":
-    modulo_resultados()
-
+    # --- Router de módulos ---
+    if opcion == "Home":
+        modulo_home()
+    elif opcion == "Inscripción":
+        modulo_inscripcion()
+    elif opcion == "Dashboard":
+        modulo_dashboard()
+    elif opcion == "Votación":
+        modulo_votacion()
+    elif opcion == "Resultados":
+        modulo_resultados()
 
 if __name__ == "__main__":
     main()
+
 
 
 
