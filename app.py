@@ -4,6 +4,34 @@ import pandas as pd
 import gspread
 from google.oauth2 import service_account
 from datetime import datetime
+import altair as alt  # Nuevo: para gráficos bonitos
+
+# ======================================================
+# 🔹 ESTILOS PERSONALIZADOS
+# ======================================================
+
+st.markdown("""
+    <style>
+    .stButton>button {
+        background-color: #1B396A !important;
+        color: white !important;
+        border-radius: 8px;
+        font-weight: bold;
+        height: 3em;
+        margin-bottom: 0.5em;
+    }
+    .stMetric {
+        background: #EEF5FB;
+        border-radius: 12px;
+        padding: 1em;
+        margin-bottom: 1em;
+        color: #1B396A;
+    }
+    .css-1v0mbdj {  /* sidebar */
+        background: #F3F5F7 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # ======================================================
 # 🔹 UTILIDADES DE DATOS
@@ -45,7 +73,7 @@ def cargar_docentes(secrets):
     )
     gc = gspread.authorize(credentials)
     sh = gc.open_by_key(secrets["spreadsheet"]["id"])
-    ws_docentes = sh.worksheet("Docentes")   # Hoja "Docentes"
+    ws_docentes = sh.worksheet("Docentes")
     data = ws_docentes.get_all_records()
     return pd.DataFrame(data)
 
@@ -54,7 +82,7 @@ def cargar_docentes(secrets):
 # ======================================================
 
 def modulo_inscripcion():
-    st.header("Formulario de Inscripción")
+    st.header("📝 Formulario de Inscripción")
     st.markdown("Completa el formulario a través del siguiente módulo:")
     st.markdown(
         """
@@ -70,25 +98,36 @@ def modulo_inscripcion():
 
 def resumen_docente(df_filtrado):
     resumen = df_filtrado.groupby("Docente")['Cantidad de Estudiantes'].sum().reset_index()
-    st.subheader("Resumen por docente")
-    st.dataframe(resumen)
     return resumen
 
 def detalle_inscripciones(df_filtrado):
-    st.subheader("Detalle de inscripciones")
+    st.markdown("#### Detalle de inscripciones")
     st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
 
 def metricas_principales(df_filtrado):
-    st.metric("Total Inscripciones", len(df_filtrado))
-    st.metric("Total Equipos", df_filtrado['ID Equipo'].nunique())
-    st.metric("Total Estudiantes", df_filtrado['Cantidad de Estudiantes'].sum())
+    total_inscripciones = len(df_filtrado)
+    total_equipos = df_filtrado['ID Equipo'].nunique()
+    total_estudiantes = df_filtrado['Cantidad de Estudiantes'].sum()
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("📝 Inscripciones", total_inscripciones)
+    with col2:
+        st.metric("👥 Equipos", total_equipos)
+    with col3:
+        st.metric("🎓 Estudiantes", total_estudiantes)
 
 def grafico_barra_docente(resumen):
-    st.subheader("📈 Inscripciones por Docente")
-    st.bar_chart(resumen.set_index('Docente'))
+    st.markdown("#### 📈 Inscripciones por Docente")
+    chart = alt.Chart(resumen).mark_bar(size=35, cornerRadiusTopLeft=8, cornerRadiusTopRight=8).encode(
+        x=alt.X('Docente:N', sort='-y', title="Docente"),
+        y=alt.Y('Cantidad de Estudiantes:Q', title="Cantidad de Estudiantes"),
+        color=alt.value('#1B396A'),
+        tooltip=['Docente', 'Cantidad de Estudiantes']
+    ).properties(height=350)
+    st.altair_chart(chart, use_container_width=True)
 
 def modulo_dashboard():
-    st.header("Dashboard de Inscripciones")
+    st.header("📊 Dashboard de Inscripciones")
     try:
         df = conectar_google_sheets(st.secrets)
     except Exception as e:
@@ -101,14 +140,17 @@ def modulo_dashboard():
 
     df = preparar_dataframe(df)
     docentes = df['Docente'].unique()
-    docente_sel = st.sidebar.selectbox("Filtrar por docente", ["Todos"] + list(docentes))
+    docente_sel = st.sidebar.selectbox("Filtrar por docente", ["Todos"] + list(docentes), key="docente_select")
     df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
     df_filtrado['Cantidad de Estudiantes'] = df_filtrado['Participantes'].apply(contar_participantes)
 
-    resumen = resumen_docente(df_filtrado)
-    detalle_inscripciones(df_filtrado)
-    metricas_principales(df_filtrado)
-    grafico_barra_docente(resumen)
+    with st.container():
+        metricas_principales(df_filtrado)
+        st.markdown("---")
+        resumen = resumen_docente(df_filtrado)
+        grafico_barra_docente(resumen)
+        with st.expander("Ver detalle de inscripciones"):
+            detalle_inscripciones(df_filtrado)
 
     st.info(
         "Cada inscripción tiene un código único que se asociará al sistema de votación. "
@@ -141,17 +183,19 @@ def modulo_home():
         )
 
 # ======================================================
-# 🔹 MÓDULO VOTACIÓN
+# 🔹 MÓDULO VOTACIÓN (versión mejorada)
 # ======================================================
 
 def modulo_votacion():
-    st.subheader("🗳 Votación de Equipos")
+    st.header("🗳 Votación de Equipos")
 
-    # --- Leer parámetro de la URL ---
+    # --- Leer parámetros del QR ---
     params = st.query_params
     equipo_param = params.get("equipo", "")
+    if isinstance(equipo_param, list):  # seguridad por si viene como lista
+        equipo_param = equipo_param[0] if equipo_param else ""
 
-    # --- Conectar inscripciones para validar equipos ---
+    # --- Cargar equipos válidos ---
     try:
         df_insc = conectar_google_sheets(st.secrets)
         df_insc = preparar_dataframe(df_insc)
@@ -160,41 +204,42 @@ def modulo_votacion():
         st.error(f"❌ No se pudieron cargar los equipos: {e}")
         return
 
-    # --- Determinar si es entrada QR o manual ---
+    # --- Selección de equipo ---
     if equipo_param:
         if equipo_param in equipos_validos:
-            equipo_id = equipo_param
-            st.success(f"✅ Estás votando por el equipo **{equipo_id}** (detectado desde QR)")
+            equipo_id = st.text_input("Código del equipo detectado:", value=equipo_param, disabled=True)
+            st.success(f"✅ Estás votando por el equipo **{equipo_param}** (detectado desde QR)")
         else:
             st.error(f"⚠️ El código de equipo «{equipo_param}» no es válido.")
             equipo_id = st.text_input("Ingresa manualmente el código del equipo a evaluar:")
     else:
         equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
 
-    # --- Rol y correo ---
+    # --- Selección de rol y correo ---
     rol = st.radio("Selecciona tu rol:", ["Docente", "Estudiante/Asistente"])
     correo = st.text_input("Ingresa tu correo institucional para validar el voto:")
 
-    # --- Criterios según rol ---
+    # --- Criterios de evaluación ---
+    criterios = {}
     if rol == "Docente":
-        rigor = st.slider("Rigor técnico", 1, 5, 3)
-        viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
-        innovacion = st.slider("Innovación", 1, 5, 3)
-        puntaje_total = rigor + viabilidad + innovacion
+        criterios["Rigor técnico"] = st.slider("Rigor técnico", 1, 5, 3)
+        criterios["Viabilidad financiera"] = st.slider("Viabilidad financiera", 1, 5, 3)
+        criterios["Innovación"] = st.slider("Innovación", 1, 5, 3)
     else:
-        creatividad = st.slider("Creatividad", 1, 5, 3)
-        claridad = st.slider("Claridad de la presentación", 1, 5, 3)
-        impacto = st.slider("Impacto percibido", 1, 5, 3)
-        puntaje_total = creatividad + claridad + impacto
+        criterios["Creatividad"] = st.slider("Creatividad", 1, 5, 3)
+        criterios["Claridad de la presentación"] = st.slider("Claridad de la presentación", 1, 5, 3)
+        criterios["Impacto percibido"] = st.slider("Impacto percibido", 1, 5, 3)
 
-    # --- Botón Enviar voto ---
+    puntaje_total = sum(criterios.values())
+
+    # --- Botón de envío ---
     if st.button("Enviar voto"):
         if not correo or not equipo_id:
             st.error("❌ Debes ingresar tu correo y el código de equipo")
             return
 
         try:
-            # Validar que el equipo existe
+            # Validar equipo
             if equipo_id not in equipos_validos:
                 st.error("❌ El código de equipo no es válido")
                 return
@@ -206,7 +251,7 @@ def modulo_votacion():
                     st.error("❌ Tu correo no está autorizado como jurado docente.")
                     return
 
-            # Conectar hoja de votaciones
+            # Abrir hoja de votaciones
             credentials = service_account.Credentials.from_service_account_info(
                 st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
             )
@@ -214,7 +259,7 @@ def modulo_votacion():
             sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
             ws_votos = sh.worksheet("Votaciones")
 
-            # Validar duplicados (correo + equipo)
+            # Validar duplicados
             votos = pd.DataFrame(ws_votos.get_all_records())
             if not votos.empty:
                 existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
@@ -222,13 +267,17 @@ def modulo_votacion():
                     st.error("❌ Ya registraste un voto para este equipo")
                     return
 
-            # Guardar voto
+            # Guardar registro
             registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
             ws_votos.append_row(registro)
+
+            # Mensaje de éxito
             st.success("✅ ¡Tu voto ha sido registrado!")
+            st.info(f"Voto registrado para el equipo **{equipo_id}** con un puntaje total de **{puntaje_total}**.")
 
         except Exception as e:
             st.error(f"⚠️ Error al registrar el voto: {e}")
+
 
 # ======================================================
 # 🔹 MÓDULO RESULTADOS
@@ -265,7 +314,6 @@ def main():
         layout="wide"
     )
 
-    # 🔹 Banner superior animado
     st.markdown("""
     <div style="
       height: 12px;
@@ -285,7 +333,6 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # 🔹 Logo ITM
     st.markdown(
         f'<div style="display:flex;justify-content:center;margin-bottom:8px">'
         f'<img src="https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png"'
@@ -293,31 +340,23 @@ def main():
         unsafe_allow_html=True
     )
 
-    # 🔹 Títulos
     st.markdown(
-        "<h1 style='text-align: center; color: #dadee6;'>🏆 Concurso Analítica Financiera ITM</h1>",
+        "<h1 style='text-align: center; color: #1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
         unsafe_allow_html=True
     )
     st.markdown(
-        "<h4 style='text-align: center; color: #dadee6;'>¡Participa, aprende y gana!</h4>",
+        "<h4 style='text-align: center; color: #1B396A;'>¡Participa, aprende y gana!</h4>",
         unsafe_allow_html=True
     )
 
-    # Inicialización de estado
     if 'active_tab' not in st.session_state: st.session_state.active_tab = 'Home'
     if 'rol' not in st.session_state: st.session_state.rol = None
     if 'rol_seleccionado' not in st.session_state: st.session_state.rol_seleccionado = False
 
-    # HOME
-    if st.session_state.active_tab == 'Home':
-        modulo_home()
-        if not st.session_state.rol_seleccionado or st.session_state.rol is None:
-            st.warning("Por favor selecciona tu rol y presiona 'Continuar' para acceder al menú.")
-            return
-
-    # SIDEBAR
+    # SIDEBAR (mejorada)
     with st.sidebar:
-        st.header("Menú")
+        st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=100)
+        st.header("Menú principal")
         if st.button("🏠 Home"):
             st.session_state.active_tab = 'Home'
             st.session_state.rol_seleccionado = False
@@ -332,6 +371,13 @@ def main():
                 if st.button("📝 Inscripción"): st.session_state.active_tab = 'Inscripción'
                 if st.button("🗳 Votación"): st.session_state.active_tab = 'Votación'
                 if st.button("📈 Resultados"): st.session_state.active_tab = 'Resultados'
+
+    # HOME
+    if st.session_state.active_tab == 'Home':
+        modulo_home()
+        if not st.session_state.rol_seleccionado or st.session_state.rol is None:
+            st.warning("Por favor selecciona tu rol y presiona 'Continuar' para acceder al menú.")
+            return
 
     # Router de módulos
     if st.session_state.active_tab == 'Inscripción':
