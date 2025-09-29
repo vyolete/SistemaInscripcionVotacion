@@ -10,9 +10,6 @@ from streamlit_option_menu import option_menu
 # ======================================================
 # 🔹 ESTILOS PERSONALIZADOS
 # ======================================================
-# ======================================================
-# 🔹 ESTILOS PERSONALIZADOS
-# ======================================================
 st.markdown("""
     <style>
     /* Fondo principal */
@@ -28,8 +25,14 @@ st.markdown("""
         color: white !important;
     }
 
-    /* Forzar color de títulos y texto principal */
-    h1, h2, h3, h4, h5, h6, label, p, span {
+    /* Títulos y texto principales (solo en el body, no en sidebar ni radios) */
+    div.block-container h1, 
+    div.block-container h2, 
+    div.block-container h3, 
+    div.block-container h4, 
+    div.block-container h5, 
+    div.block-container h6, 
+    div.block-container p {
         color: #1B396A !important;
     }
 
@@ -48,24 +51,22 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* Botón continuar pequeño */
+    /* Botón continuar */
     .stButton>button {
         background-color: #1B396A !important;
         color: white !important;
         border-radius: 6px;
         font-weight: bold;
-        padding: 0.4em 1em;
-        font-size: 13px;
+        padding: 0.5em 1.5em;
+        font-size: 14px;
     }
 
-    /* Texto de radio buttons */
+    /* Radio: roles visibles */
     div[role='radiogroup'] label {
         color: #1B396A !important;
         font-weight: 600 !important;
         font-size: 15px !important;
     }
-
-    /* Color del círculo seleccionado */
     div[role='radiogroup'] label div:first-child {
         border: 2px solid #1B396A !important;
     }
@@ -78,7 +79,7 @@ st.markdown("""
         font-weight: 700 !important;
     }
 
-    /* Dataframes y tablas */
+    /* Tablas */
     .stDataFrame, .stTable {
         color: #1B396A !important;
     }
