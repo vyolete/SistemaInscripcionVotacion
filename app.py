@@ -40,18 +40,18 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* Botón continuar */
+    /* Botón continuar pequeño */
     .stButton>button {
         background-color: #1B396A !important;
         color: white !important;
         border-radius: 6px;
         font-weight: bold;
-        padding: 0.6em 1.5em;
-        font-size: 14px;
+        padding: 0.4em 1em;
+        font-size: 13px;
     }
 
-    /* Radio y labels */
-    div[role='radiogroup'] label span, label, .stTextInput label {
+    /* Textos generales (inputs, radios, sliders) */
+    .stRadio label, .stTextInput label, .stSlider label, div[role='radiogroup'] label span {
         color: #1B396A !important;
         font-weight: 500 !important;
     }
