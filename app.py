@@ -335,24 +335,47 @@ def main():
     if 'rol' not in st.session_state: st.session_state.rol = None
     if 'rol_seleccionado' not in st.session_state: st.session_state.rol_seleccionado = False
 
-    # SIDEBAR (mejorada)
-    with st.sidebar:
-        st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=100)
-        st.header("Menú principal")
-        if st.button("🏠 Home"):
-            st.session_state.active_tab = 'Home'
-            st.session_state.rol_seleccionado = False
+from streamlit_option_menu import option_menu
 
-        if st.session_state.rol_seleccionado:
-            if st.session_state.rol == "Docente":
-                if st.button("📝 Inscripción"): st.session_state.active_tab = 'Inscripción'
-                if st.button("📊 Dashboard"): st.session_state.active_tab = 'Dashboard'
-                if st.button("🗳 Votación"): st.session_state.active_tab = 'Votación'
-                if st.button("📈 Resultados"): st.session_state.active_tab = 'Resultados'
-            elif st.session_state.rol == "Estudiante":
-                if st.button("📝 Inscripción"): st.session_state.active_tab = 'Inscripción'
-                if st.button("🗳 Votación"): st.session_state.active_tab = 'Votación'
-                if st.button("📈 Resultados"): st.session_state.active_tab = 'Resultados'
+# SIDEBAR (mejorado con option-menu)
+with st.sidebar:
+    st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=120)
+    st.markdown("### Menú principal")
+
+    if st.session_state.rol_seleccionado:
+        if st.session_state.rol == "Docente":
+            opcion = option_menu(
+                None,
+                ["Home", "Inscripción", "Dashboard", "Votación", "Resultados"],
+                icons=["house", "file-earmark-text", "bar-chart", "check2-square", "trophy"],
+                menu_icon="cast",
+                default_index=0,
+                styles={
+                    "container": {"background-color": "#F3F5F7"},
+                    "icon": {"color": "#1B396A", "font-size": "18px"},
+                    "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
+                    "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
+                },
+                orientation="vertical"
+            )
+        elif st.session_state.rol == "Estudiante":
+            opcion = option_menu(
+                None,
+                ["Home", "Inscripción", "Votación", "Resultados"],
+                icons=["house", "file-earmark-text", "check2-square", "trophy"],
+                menu_icon="cast",
+                default_index=0,
+                styles={
+                    "container": {"background-color": "#F3F5F7"},
+                    "icon": {"color": "#1B396A", "font-size": "18px"},
+                    "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
+                    "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
+                },
+                orientation="vertical"
+            )
+    else:
+        opcion = "Home"
+
 
     # HOME
     if st.session_state.active_tab == 'Home':
@@ -362,16 +385,17 @@ def main():
             return
 
     # Router de módulos
-    if st.session_state.active_tab == 'Inscripción':
+    if opcion == "Home":
+        modulo_home()
+    elif opcion == "Inscripción":
         modulo_inscripcion()
-    elif st.session_state.active_tab == 'Dashboard':
+    elif opcion == "Dashboard":
         modulo_dashboard()
-    elif st.session_state.active_tab == 'Votación':
+    elif opcion == "Votación":
         modulo_votacion()
-    elif st.session_state.active_tab == 'Resultados':
+    elif opcion == "Resultados":
         modulo_resultados()
-    elif st.session_state.active_tab == 'Home':
-        st.info("Usa el menú lateral para navegar entre los módulos.")
+
 
 if __name__ == "__main__":
     main()
