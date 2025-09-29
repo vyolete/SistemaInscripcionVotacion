@@ -376,17 +376,17 @@ with st.sidebar:
     else:
         opcion = "Home"
 
-        # Router de módulos
-        if opcion == "Home":
-            modulo_home()
-        elif opcion == "Inscripción":
-            modulo_inscripcion()
-        elif opcion == "Dashboard":
-            modulo_dashboard()
-        elif opcion == "Votación":
-            modulo_votacion()
-        elif opcion == "Resultados":
-            modulo_resultados()
+# Router de módulos
+if opcion == "Home":
+    modulo_home()
+elif opcion == "Inscripción":
+    modulo_inscripcion()
+elif opcion == "Dashboard":
+    modulo_dashboard()
+elif opcion == "Votación":
+    modulo_votacion()
+elif opcion == "Resultados":
+    modulo_resultados()
 
 
 if __name__ == "__main__":
