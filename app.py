@@ -24,31 +24,31 @@ st.markdown("""
     section[data-testid="stSidebar"] * {
         color: white !important;
     }
-        /* ===== EXPANDER PERSONALIZADO ===== */
-    div.streamlit-expanderHeader {
+    /* ===== EXPANDER HEADER ===== */
+    div[data-testid="stExpander"] > details > summary {
         font-weight: 700 !important;
         font-size: 15px !important;
         color: #1B396A !important;   /* Azul oscuro institucional */
         background-color: #F3F7FB !important;
         border: 1px solid #d9e1ec !important;
         border-radius: 6px !important;
-        padding: 8px 14px !important;
+        padding: 10px 14px !important;
+        cursor: pointer;
     }
 
-    /* Hover del header */
-    div.streamlit-expanderHeader:hover {
+    /* Hover */
+    div[data-testid="stExpander"] > details > summary:hover {
         background-color: #E6F0FA !important;
         color: #1B396A !important;
     }
 
-    /* Fondo interior del expander */
-    div.streamlit-expanderContent {
+    /* ===== CONTENIDO INTERNO ===== */
+    div[data-testid="stExpander"] div[data-testid="stExpanderContent"] {
         background-color: #FFFFFF !important;
         border-left: 3px solid #1B396A !important;
-        padding: 10px 15px !important;
+        padding: 12px 15px !important;
         border-radius: 0 0 6px 6px !important;
     }
-
     /* Títulos principales */
     div.block-container h1, 
     div.block-container h2, 
