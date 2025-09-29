@@ -1,39 +1,97 @@
-# 🏆 Concurso Analítica Financiera ITM
+# Sistema de Inscripción y Votación para Concurso Académico ITM
 
-Sistema web para la inscripción, votación y visualización de resultados del Concurso de Analítica Financiera del ITM. Incluye automatizaciones y personalización para una experiencia fluida, segura y personalizada, integrando Google Sheets, generación de códigos automáticos y confirmaciones inteligentes.
-
----
-
-## 🚀 Características
-
-- **Inscripción de equipos**  
-  Formulario integrado vía Google Forms. Al inscribirse, se automatiza:
-  - Asignación de un código único de participación a cada equipo.
-  - Generación automática de un enlace personalizado para la votación de cada equipo.
-  - Creación de un QR único para facilitar la votación mediante escaneo.
-  - Envío automático de un correo de confirmación personalizado tanto al estudiante líder como al docente, incluyendo el QR y el enlace directo.
-  - Personalización del correo con datos específicos del equipo, participantes y docente.
-  - Validación y normalización de nombres para evitar errores de acentos y mayúsculas/minúsculas.
-
-- **Dashboard**  
-  Visualización en tiempo real de inscripciones, métricas principales y resumen por docente, todo sincronizado con Google Sheets.
-
-- **Votación segura y adaptativa**  
-  - Votación diferenciada para docentes y asistentes/estudiantes.
-  - Validación de votantes por correo institucional.
-  - Verificación automática para evitar votos duplicados.
-  - Filtrado y visualización de votos y resultados en tiempo real.
-
-- **Personalización y experiencia ITM**  
-  - Interfaz personalizada con los colores, logos y mensajes del ITM.
-  - Mensajes motivacionales y avisos contextuales.
-  - Menú y flujo de navegación adaptado según el rol (docente o estudiante/asistente).
+Este sistema facilita la **inscripción de equipos**, la **gestión de votaciones** y la **visualización de resultados** en concursos académicos, con un enfoque en eventos universitarios como el Concurso de Analítica Financiera ITM. La solución integra una aplicación web basada en Streamlit y automatizaciones mediante Google Sheets y Google Apps Script.
 
 ---
 
-## ⚙️ Automatizaciones y Scripts
+## Tabla de Contenidos
 
-### Google Apps Script para automatización (fragmento esencial):
+- [Características Principales](#características-principales)
+- [Arquitectura General](#arquitectura-general)
+- [Instalación y Configuración](#instalación-y-configuración)
+- [Automatizaciones (Google Apps Script)](#automatizaciones-google-apps-script)
+- [Personalización y Experiencia de Usuario](#personalización-y-experiencia-de-usuario)
+- [Uso](#uso)
+- [Licencia](#licencia)
+- [Créditos](#créditos)
+
+---
+
+## Características Principales
+
+- **Inscripción de equipos** a través de un formulario web (Google Forms) conectado automáticamente a Google Sheets.
+- **Asignación automática de códigos únicos** a cada equipo inscrito.
+- **Notificaciones automáticas** por correo electrónico a participantes y docentes, incluyendo detalles de inscripción y un código QR personalizado para la votación.
+- **Votación diferenciada** para docentes y asistentes/estudiantes, con validación de identidad y control de duplicidad.
+- **Dashboard en tiempo real** con métricas de inscripción y votación, filtrado por docente o equipo.
+- **Integración completa con Google Sheets** para la gestión de datos y automatización de procesos administrativos.
+
+---
+
+## Arquitectura General
+
+```
+Usuario
+   │
+   ▼
+[Streamlit App]  ←→  [Google Sheets]  ←→  [Google Apps Script]
+   │                  │                     ▲
+   └──> Formularios   └──> Datos             └──> Correos/QRs/Automatización
+```
+
+- **Frontend:** Streamlit (Python)
+- **Backend:** Google Sheets + Google Apps Script (Javascript)
+- **Notificaciones:** Envío de correos desde Apps Script
+
+---
+
+## Instalación y Configuración
+
+### Requisitos
+
+- Python 3.8 o superior
+- Cuenta de Google Cloud con credenciales de servicio para acceso a Google Sheets
+- Google Sheets configurado con hojas:
+  - Inscripciones (Sheet1)
+  - Docentes
+  - Votaciones
+
+### Instalación de dependencias
+
+```bash
+pip install streamlit gspread pandas google-auth
+```
+
+### Configuración de credenciales en Streamlit
+
+Crea el archivo `.streamlit/secrets.toml` con tus credenciales de Google y el ID del Spreadsheet:
+
+```toml
+[gcp]
+type = "service_account"
+project_id = "..."
+private_key_id = "..."
+private_key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+client_email = "..."
+client_id = "..."
+...
+
+[spreadsheet]
+id = "TU_SPREADSHEET_ID"
+```
+
+---
+
+## Automatizaciones (Google Apps Script)
+
+Se utiliza un script en Google Apps Script vinculado a la hoja de inscripciones para:
+
+- **Normalizar datos** (evitar errores por tildes y mayúsculas).
+- **Asignar automáticamente un código único** a cada equipo.
+- **Generar enlaces de votación y códigos QR** personalizados.
+- **Enviar confirmaciones automáticas** por correo electrónico con todos los detalles y recursos necesarios para la participación y votación.
+
+**Fragmento del script principal:**
 
 ```javascript
 function normalize(str) {
@@ -47,99 +105,44 @@ function normalize(str) {
 }
 
 function enviarConfirmacion(e) {
-  // ... (ver código completo en el repositorio)
-  // 1. Obtiene los datos de la fila de inscripción.
-  // 2. Normaliza los nombres para emparejar correctamente docentes.
-  // 3. Busca el correo del docente asignado.
-  // 4. Genera un código único automático para el equipo (ej: ITM2025-001).
-  // 5. Crea un enlace a la votación y un QR personalizado.
-  // 6. Arma un correo HTML personalizado con toda la información y el QR.
-  // 7. Envía el correo al estudiante líder y al docente.
+  // Lógica para leer la inscripción, asignar código, generar QR y enviar correo
+  // ...
 }
 ```
-
-- **Automatización:**  
-  Cada vez que se recibe una inscripción, el script asigna y almacena el código, genera el QR y envía los correos automáticamente, sin intervención manual.
-- **Personalización:**  
-  El correo incluye los nombres y datos del equipo, docente, código y QR únicos.
+> El script completo está disponible en el repositorio.
 
 ---
 
-## 🏗️ Estructura del Proyecto
+## Personalización y Experiencia de Usuario
 
-- `app.py`: App principal desarrollada en Streamlit.
-- Google Sheets:  
-  - Hoja de inscripciones (usada por el dashboard y votación).
-  - Hoja de docentes (validación de jurados).
-  - Hoja de votaciones (registro de votos).
-- Apps Script: Automatización de confirmaciones y generación de códigos.
+- **Interfaz visual personalizada** con identidad institucional (colores, logos, mensajes).
+- **Mensajes adaptados** al rol del usuario (docente o estudiante/asistente).
+- **Notificaciones automáticas** con detalles y QR personalizado.
+- **Flujo de navegación claro**, con menú lateral y validaciones de acceso.
 
 ---
 
-## 📦 Instalación y Configuración
+## Uso
 
-### 1. Requisitos
-
-- Python 3.8+
-- [Streamlit](https://streamlit.io/)
-- [gspread](https://github.com/burnash/gspread)
-- [pandas](https://pandas.pydata.org/)
-- [google-auth](https://google-auth.readthedocs.io/)
-- Google Cloud Service Account con acceso a Sheets.
-- Google Apps Script para automatización en la hoja de cálculo.
-
-Instala las dependencias:
-```bash
-pip install streamlit gspread pandas google-auth
-```
-
-### 2. Configura los secretos
-
-Coloca los datos de tu cuenta de servicio en `.streamlit/secrets.toml`:
-
-```toml
-[gcp]
-type = "service_account"
-project_id = "..."
-private_key_id = "..."
-private_key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-client_email = "..."
-client_id = "..."
-...
-[spreadsheet]
-id = "TU_SPREADSHEET_ID"
-```
+1. Ejecuta la aplicación:
+   ```bash
+   streamlit run app.py
+   ```
+2. Accede a la URL local proporcionada.
+3. Navega según tu rol (docente o estudiante), realiza inscripciones y participa en la votación.
 
 ---
 
-## ▶️ Ejecución
-
-```bash
-streamlit run app.py
-```
-
-Abre la URL local que se muestra en la terminal.
-
----
-
-## 📝 Notas Importantes
-
-- **Automatización:** El sistema de inscripción, generación de códigos, enlaces y QRs, así como el envío de correos, es 100% automático vía Google Apps Script.
-- **Personalización completa:** Desde la interfaz visual hasta los mensajes y correos, todo está adaptado al branding y cultura ITM.
-- **Código de ejemplo y Apps Script:** Consulta el repositorio para ver el script completo de automatización.
-
----
-
-## 👨‍💻 Autor
-
-- [vyolete](https://github.com/vyolete)
-
----
-
-## 📄 Licencia
+## Licencia
 
 MIT License
 
 ---
 
-¡Participa, aprende y vive la experiencia del Concurso Analítica Financiera ITM! 🚀
+## Créditos
+
+Desarrollado por [vyolete](https://github.com/vyolete) para la Institución Universitaria ITM.  
+Inspirado en la mejora de procesos académicos y eventos universitarios.
+
+---
+
