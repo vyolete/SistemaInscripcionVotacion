@@ -201,15 +201,14 @@ def modulo_dashboard():
 # ======================================================
 
 def modulo_home():
-    # Logo grande centrado
+    # --- Logo y título ---
     st.markdown(
         "<div style='text-align:center;'>"
-        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='200'>"
+        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='180'>"
         "</div>",
         unsafe_allow_html=True
     )
 
-    # Título
     st.markdown(
         "<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
         unsafe_allow_html=True
@@ -218,17 +217,38 @@ def modulo_home():
         "<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>",
         unsafe_allow_html=True
     )
-    st.markdown("---")
 
-    # Rol y botón
-    st.subheader("Selecciona tu rol para comenzar:")
-    rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- Tarjeta central con selector de rol ---
+    st.markdown(
+        """
+        <div style="
+            background-color:#F9FBFD;
+            border: 1px solid #d9e1ec;
+            border-radius:12px;
+            padding: 25px;
+            max-width: 500px;
+            margin: auto;
+            text-align:center;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+        ">
+            <h3 style="color:#1B396A; margin-bottom:15px;">Selecciona tu rol para comenzar:</h3>
+        """,
+        unsafe_allow_html=True
+    )
+
+    rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
     st.session_state["rol"] = rol
 
     if not st.session_state.get("rol_seleccionado", False):
-        if st.button("Continuar ▶️"):
+        if st.button("Continuar ▶️", use_container_width=True):
             st.session_state["rol_seleccionado"] = True
             st.rerun()
+
+    # Cierra el div de la tarjeta
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ======================================================
 # 🔹 MÓDULO VOTACIÓN
