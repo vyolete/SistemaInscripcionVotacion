@@ -295,11 +295,11 @@ def main():
 
     # 🔹 Títulos
     st.markdown(
-        "<h1 style='text-align: center; color: #1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
+        "<h1 style='text-align: center; color: #dadee6;'>🏆 Concurso Analítica Financiera ITM</h1>",
         unsafe_allow_html=True
     )
     st.markdown(
-        "<h4 style='text-align: center; color: #27ACE2;'>¡Participa, aprende y gana!</h4>",
+        "<h4 style='text-align: center; color: #dadee6;'>¡Participa, aprende y gana!</h4>",
         unsafe_allow_html=True
     )
 
