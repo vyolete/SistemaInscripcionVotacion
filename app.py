@@ -122,27 +122,11 @@ def modulo_home():
     st.markdown("<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Tarjeta central
-    st.markdown(
-        """
-        <div style="
-            background-color:#F9FBFD;
-            border: 1px solid #d9e1ec;
-            border-radius:10px;
-            padding: 25px;
-            max-width: 450px;
-            margin: auto;
-            text-align:center;
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
-        ">
-        """,
-        unsafe_allow_html=True
-    )
 
     st.markdown("<h4 style='color:#1B396A; margin-bottom:15px;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
 
     # Radio roles
-    rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
+    rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True, background-color:#F9FBFD)
     st.session_state["rol"] = rol
 
     # Botón siempre visible (centrado y pequeño)
@@ -152,8 +136,6 @@ def modulo_home():
             st.session_state["rol_seleccionado"] = True
             st.rerun()
 
-    # Cierra tarjeta
-    st.markdown("</div>", unsafe_allow_html=True)
 
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
