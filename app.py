@@ -24,6 +24,30 @@ st.markdown("""
     section[data-testid="stSidebar"] * {
         color: white !important;
     }
+        /* ===== EXPANDER PERSONALIZADO ===== */
+    div.streamlit-expanderHeader {
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        color: #1B396A !important;   /* Azul oscuro institucional */
+        background-color: #F3F7FB !important;
+        border: 1px solid #d9e1ec !important;
+        border-radius: 6px !important;
+        padding: 8px 14px !important;
+    }
+
+    /* Hover del header */
+    div.streamlit-expanderHeader:hover {
+        background-color: #E6F0FA !important;
+        color: #1B396A !important;
+    }
+
+    /* Fondo interior del expander */
+    div.streamlit-expanderContent {
+        background-color: #FFFFFF !important;
+        border-left: 3px solid #1B396A !important;
+        padding: 10px 15px !important;
+        border-radius: 0 0 6px 6px !important;
+    }
 
     /* Títulos principales */
     div.block-container h1, 
