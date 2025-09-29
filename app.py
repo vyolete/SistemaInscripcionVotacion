@@ -127,13 +127,13 @@ def modulo_home():
     # CSS para cambiar color de texto del radio
     st.markdown("""
         <style>
-        div[role='radiogroup'] label {
-            color: #1B396A !important;  /* Azul oscuro */
-            font-weight: bold !important;
-            font-size: 15px !important;
+        div[role='radiogroup'] label div:first-child {
+            background-color: #1B396A !important;  /* Azul institucional */
+            border-color: #1B396A !important;
         }
         </style>
     """, unsafe_allow_html=True)
+
     
     # Radio normal (sin background-color)
     rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
