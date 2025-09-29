@@ -384,17 +384,17 @@ with st.sidebar:
             st.warning("Por favor selecciona tu rol y presiona 'Continuar' para acceder al menú.")
             return
 
-    # Router de módulos
-    if opcion == "Home":
-        modulo_home()
-    elif opcion == "Inscripción":
-        modulo_inscripcion()
-    elif opcion == "Dashboard":
-        modulo_dashboard()
-    elif opcion == "Votación":
-        modulo_votacion()
-    elif opcion == "Resultados":
-        modulo_resultados()
+        # Router de módulos
+        if opcion == "Home":
+            modulo_home()
+        elif opcion == "Inscripción":
+            modulo_inscripcion()
+        elif opcion == "Dashboard":
+            modulo_dashboard()
+        elif opcion == "Votación":
+            modulo_votacion()
+        elif opcion == "Resultados":
+            modulo_resultados()
 
 
 if __name__ == "__main__":
