@@ -195,9 +195,9 @@ def modulo_home():
     with col2:
         st.image(
             "https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png",
-            width=180,
-            unsafe_allow_html=True
+            width=180
         )
+
     # Logo
 
 
