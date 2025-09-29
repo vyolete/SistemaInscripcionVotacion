@@ -288,7 +288,7 @@ def main():
     # 🔹 Logo ITM
     st.markdown(
         f'<div style="display:flex;justify-content:center;margin-bottom:8px">'
-        f'<img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Logo-ITM-01.png"'
+        f'<img src="https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png"'
         f'width="160" style="border-radius:10px;border:1px solid #ccc" /></div>',
         unsafe_allow_html=True
     )
