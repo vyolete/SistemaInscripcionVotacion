@@ -10,6 +10,9 @@ from streamlit_option_menu import option_menu
 # ======================================================
 # 🔹 ESTILOS PERSONALIZADOS
 # ======================================================
+# ======================================================
+# 🔹 ESTILOS PERSONALIZADOS
+# ======================================================
 st.markdown("""
     <style>
     /* Fondo principal */
@@ -23,6 +26,11 @@ st.markdown("""
     }
     section[data-testid="stSidebar"] * {
         color: white !important;
+    }
+
+    /* Forzar color de títulos y texto principal */
+    h1, h2, h3, h4, h5, h6, label, p, span {
+        color: #1B396A !important;
     }
 
     /* Menú lateral */
@@ -49,80 +57,33 @@ st.markdown("""
         padding: 0.4em 1em;
         font-size: 13px;
     }
-        /* Texto general de las opciones */
+
+    /* Texto de radio buttons */
     div[role='radiogroup'] label {
-        color: #1B396A !important;  /* Azul institucional */
+        color: #1B396A !important;
         font-weight: 600 !important;
         font-size: 15px !important;
     }
 
     /* Color del círculo seleccionado */
     div[role='radiogroup'] label div:first-child {
-        border: 2px solid #1B396A !important;   /* Borde azul */
-    }
-    div[role='radiogroup'] input:checked + div:first-child {
-        background-color: #1B396A !important;   /* Fondo azul cuando está seleccionado */
-        border-color: #1B396A !important;
-    }
-
-    /* Texto normal */
-    div[role='radiogroup'] label span {
-        color: #1B396A !important;
-    }
-    /* Texto de la opción seleccionada */
-    div[role='radiogroup'] input:checked ~ span {
-        color: #27ACE2 !important;
-        font-weight: 700 !important;
-    }
-        /* Radio buttons */
-    div[role='radiogroup'] label {
-        color: #1B396A !important;   /* texto normal */
-        font-weight: 500 !important;
-        font-size: 15px !important;
-    }
-
-    /* Círculo y texto cuando está seleccionado */
-    div[role='radiogroup'] label[aria-checked="true"] {
-        color: #27ACE2 !important;   /* texto azul claro */
-        font-weight: 700 !important;
-    }
-        /* Texto normal */
-    div[role='radiogroup'] label span {
-        color: #1B396A !important;
-        font-weight: 500 !important;
-    }
-
-    /* Círculo borde */
-    div[role='radiogroup'] input[type="radio"] + div {
         border: 2px solid #1B396A !important;
     }
-    
-    /* Círculo seleccionado */
-    div[role='radiogroup'] input[type="radio"]:checked + div {
+    div[role='radiogroup'] input:checked + div:first-child {
         background-color: #1B396A !important;
         border-color: #1B396A !important;
     }
-    
-    /* Texto seleccionado */
-    div[role='radiogroup'] input[type="radio"]:checked ~ span {
+    div[role='radiogroup'] input:checked + div + span {
         color: #27ACE2 !important;
         font-weight: 700 !important;
     }
 
-    
-    div[role='radiogroup'] label[aria-checked="true"] svg {
-        fill: #1B396A !important;    /* círculo azul */
-    }
-
-    /* Textos generales (inputs, radios, sliders) */
-    .stRadio label, .stTextInput label, .stSlider label, div[role='radiogroup'] label span {
+    /* Dataframes y tablas */
+    .stDataFrame, .stTable {
         color: #1B396A !important;
-        font-weight: 500 !important;
     }
     </style>
 """, unsafe_allow_html=True)
-
-
 
 # ======================================================
 # 🔹 UTILIDADES
