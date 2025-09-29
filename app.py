@@ -325,7 +325,7 @@ def modulo_dashboard():
     st.altair_chart(chart, use_container_width=True)
 
     # --- Detalle opcional ---
-    with st.expander("📋 Ver detalle de inscripciones"):
+    with st.expander("📋 Ver detalle de inscripciones", expanded=False):
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
 
 
