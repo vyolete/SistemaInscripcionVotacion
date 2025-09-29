@@ -46,15 +46,45 @@ st.markdown("""
         margin-top: 10px;
     }
 
-    /* ===== RADIO BUTTONS (roles) ===== */
+    /* ===== TARJETA DE ROLES ===== */
+    .rol-card {
+        background-color: #F9FBFD;
+        border: 1px solid #d9e1ec;
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 500px;
+        margin: auto;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .rol-card h3 {
+        color: #1B396A !important;
+        margin-bottom: 18px;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    /* ===== RADIO BUTTONS ===== */
+    div[role='radiogroup'] {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
     div[role='radiogroup'] label {
         display: flex;
         align-items: center;
         gap: 6px;
         font-size: 15px !important;
         font-weight: 600 !important;
-        color: #1B396A !important;  /* azul oscuro */
+        color: #1B396A !important;
         cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
     }
 
     /* círculo borde */
@@ -63,16 +93,30 @@ st.markdown("""
         border-radius: 50%;
     }
 
-    /* círculo seleccionado */
+    /* opción seleccionada */
     div[role='radiogroup'] input:checked + div:first-child {
         background-color: #1B396A !important;
         border-color: #1B396A !important;
     }
-
-    /* texto seleccionado */
     div[role='radiogroup'] input:checked + div:first-child + span {
-        color: #27ACE2 !important;  /* azul claro */
+        color: #27ACE2 !important;
         font-weight: 700 !important;
+    }
+
+    /* efecto hover */
+    div[role='radiogroup'] label:hover {
+        background-color: #e6f0fa;
+    }
+
+    /* Botón continuar más compacto */
+    .stButton>button {
+        background-color: #1B396A !important;
+        color: white !important;
+        border-radius: 6px;
+        font-weight: bold;
+        padding: 0.5em 1.2em;
+        font-size: 14px;
+        margin-top: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
