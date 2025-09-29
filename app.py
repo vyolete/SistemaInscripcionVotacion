@@ -176,7 +176,7 @@ def modulo_dashboard():
 # ======================================================
 # 🔹 MÓDULO HOME
 # ======================================================
-        )
+
 def modulo_home():
     st.markdown("<h2 style='color:#1B396A; text-align:center;'>¡Bienvenido!</h2>", unsafe_allow_html=True)
     st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=220)
