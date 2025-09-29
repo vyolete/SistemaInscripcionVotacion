@@ -106,15 +106,15 @@ def cargar_docentes(secrets):
 # ======================================================
 
 def modulo_home():
-    # Logo grande arriba
+    # Logo
     st.markdown(
         "<div style='text-align:center;'>"
-        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='200'>"
+        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='160'>"
         "</div>",
         unsafe_allow_html=True
     )
 
-    # Título
+    # Títulos
     st.markdown("<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -125,9 +125,9 @@ def modulo_home():
         <div style="
             background-color:#F9FBFD;
             border: 1px solid #d9e1ec;
-            border-radius:12px;
+            border-radius:10px;
             padding: 25px;
-            max-width: 500px;
+            max-width: 450px;
             margin: auto;
             text-align:center;
             box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
@@ -136,17 +136,21 @@ def modulo_home():
         unsafe_allow_html=True
     )
 
-    st.markdown("<h3 style='color:#1B396A;'>Selecciona tu rol para comenzar:</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#1B396A; margin-bottom:15px;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
+
+    # Radio roles
     rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
     st.session_state["rol"] = rol
 
-    if not st.session_state.get("rol_seleccionado", False):
-        if st.button("Continuar ▶️", use_container_width=True):
+    # Botón siempre visible (centrado y pequeño)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        if st.button("Continuar ▶️"):
             st.session_state["rol_seleccionado"] = True
             st.rerun()
 
+    # Cierra tarjeta
     st.markdown("</div>", unsafe_allow_html=True)
-
 
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
