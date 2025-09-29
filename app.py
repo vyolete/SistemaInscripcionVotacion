@@ -4,12 +4,13 @@ import pandas as pd
 import gspread
 from google.oauth2 import service_account
 from datetime import datetime
-import altair as alt  # Nuevo: para gráficos bonitos
+import altair as alt  
+from streamlit_option_menu import option_menu
+
 
 # ======================================================
 # 🔹 ESTILOS PERSONALIZADOS
 # ======================================================
-
 st.markdown("""
     <style>
     /* Fondo principal blanco */
@@ -56,6 +57,19 @@ st.markdown("""
     /* Métricas */
     .stMetric {
         background: #EEF5FB;
+        border-radius: 12px;
+        padding: 1em;
+        margin-bottom: 1em;
+        color: #1B396A;
+    }
+
+    /* Texto de radio buttons e inputs */
+    div[role='radiogroup'] label span, label, .stTextInput label {
+        color: #1B396A !important;
+        font-weight: 500 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 
 # ======================================================
@@ -324,13 +338,34 @@ def modulo_resultados():
 # ======================================================
 
 from streamlit_option_menu import option_menu
-
+# ======================================================
+# 🔹 MAIN APP
+# ======================================================
 def main():
     st.set_page_config(
         page_title="Concurso Analítica Financiera",
         page_icon="📊",
         layout="wide"
     )
+
+    # --- Cabecera decorativa ---
+    st.markdown("""
+    <div style="
+      height: 10px;
+      margin-bottom: 15px;
+      background: linear-gradient(270deg, #1B396A, #27ACE2, #1B396A, #27ACE2);
+      background-size: 600% 600%;
+      animation: gradientAnim 6s ease infinite;
+      border-radius: 6px;">
+    </div>
+    <style>
+    @keyframes gradientAnim {
+      0% {background-position:0% 50%}
+      50% {background-position:100% 50%}
+      100% {background-position:0% 50%}
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     # --- Inicialización de estados ---
     if "rol" not in st.session_state: 
@@ -350,12 +385,6 @@ def main():
                     ["Home", "Inscripción", "Dashboard", "Votación", "Resultados"],
                     icons=["house", "file-earmark-text", "bar-chart", "check2-square", "trophy"],
                     default_index=0,
-                    styles={
-                        "container": {"background-color": "#F3F5F7"},
-                        "icon": {"color": "#1B396A", "font-size": "18px"},
-                        "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
-                        "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
-                    },
                     orientation="vertical"
                 )
             else:  # Estudiante
@@ -364,12 +393,6 @@ def main():
                     ["Home", "Inscripción", "Votación", "Resultados"],
                     icons=["house", "file-earmark-text", "check2-square", "trophy"],
                     default_index=0,
-                    styles={
-                        "container": {"background-color": "#F3F5F7"},
-                        "icon": {"color": "#1B396A", "font-size": "18px"},
-                        "nav-link": {"font-size": "14px", "text-align": "left", "--hover-color": "#eee"},
-                        "nav-link-selected": {"background-color": "#1B396A", "color": "white"},
-                    },
                     orientation="vertical"
                 )
         else:
@@ -387,9 +410,9 @@ def main():
     elif opcion == "Resultados":
         modulo_resultados()
 
+
 if __name__ == "__main__":
     main()
-
 
 
 
