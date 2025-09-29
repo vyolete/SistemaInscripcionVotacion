@@ -246,29 +246,44 @@ def modulo_dashboard():
     df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
     df_filtrado['Cantidad de Estudiantes'] = df_filtrado['Participantes'].apply(contar_participantes)
 
-    # --- Métricas en tarjetas ---
+    # --- Cards de métricas ---
     col1, col2, col3 = st.columns(3)
+
     with col1:
-        st.markdown("""
-        <div style="background:#EEF5FB; padding:15px; border-radius:10px; text-align:center;">
-            <h3 style="color:#1B396A;">📝 Inscripciones</h3>
-            <h2 style="color:#1B396A;">{}</h2>
+        st.markdown(f"""
+        <div style="display:flex; align-items:center; background:#EEF5FB; 
+                    padding:15px; border-radius:12px; box-shadow:0px 2px 6px rgba(0,0,0,0.1);">
+            <div style="font-size:40px; margin-right:15px;">📝</div>
+            <div>
+                <div style="font-size:28px; font-weight:bold; color:#1B396A;">{len(df_filtrado)}</div>
+                <div style="font-size:14px; color:#1B396A;">Inscripciones</div>
+            </div>
         </div>
-        """.format(len(df_filtrado)), unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
     with col2:
-        st.markdown("""
-        <div style="background:#EEF5FB; padding:15px; border-radius:10px; text-align:center;">
-            <h3 style="color:#1B396A;">👥 Equipos</h3>
-            <h2 style="color:#1B396A;">{}</h2>
+        st.markdown(f"""
+        <div style="display:flex; align-items:center; background:#EEF5FB; 
+                    padding:15px; border-radius:12px; box-shadow:0px 2px 6px rgba(0,0,0,0.1);">
+            <div style="font-size:40px; margin-right:15px;">👥</div>
+            <div>
+                <div style="font-size:28px; font-weight:bold; color:#1B396A;">{df_filtrado['ID Equipo'].nunique()}</div>
+                <div style="font-size:14px; color:#1B396A;">Equipos</div>
+            </div>
         </div>
-        """.format(df_filtrado['ID Equipo'].nunique()), unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
     with col3:
-        st.markdown("""
-        <div style="background:#EEF5FB; padding:15px; border-radius:10px; text-align:center;">
-            <h3 style="color:#1B396A;">🎓 Estudiantes</h3>
-            <h2 style="color:#1B396A;">{}</h2>
+        st.markdown(f"""
+        <div style="display:flex; align-items:center; background:#EEF5FB; 
+                    padding:15px; border-radius:12px; box-shadow:0px 2px 6px rgba(0,0,0,0.1);">
+            <div style="font-size:40px; margin-right:15px;">🎓</div>
+            <div>
+                <div style="font-size:28px; font-weight:bold; color:#1B396A;">{df_filtrado['Cantidad de Estudiantes'].sum()}</div>
+                <div style="font-size:14px; color:#1B396A;">Estudiantes</div>
+            </div>
         </div>
-        """.format(df_filtrado['Cantidad de Estudiantes'].sum()), unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -291,7 +306,6 @@ def modulo_dashboard():
     # --- Detalle opcional ---
     with st.expander("📋 Ver detalle de inscripciones"):
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
-
 
 
 def modulo_votacion():
