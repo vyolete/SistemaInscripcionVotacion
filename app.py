@@ -376,14 +376,6 @@ with st.sidebar:
     else:
         opcion = "Home"
 
-
-    # HOME
-    if st.session_state.active_tab == 'Home':
-        modulo_home()
-        if not st.session_state.rol_seleccionado or st.session_state.rol is None:
-            st.warning("Por favor selecciona tu rol y presiona 'Continuar' para acceder al menú.")
-            return
-
         # Router de módulos
         if opcion == "Home":
             modulo_home()
