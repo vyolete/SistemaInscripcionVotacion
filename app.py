@@ -25,30 +25,14 @@ st.markdown("""
         color: white !important;
     }
 
-    /* Títulos y texto principales (solo en el body, no en sidebar ni radios) */
+    /* Títulos principales */
     div.block-container h1, 
     div.block-container h2, 
     div.block-container h3, 
     div.block-container h4, 
     div.block-container h5, 
-    div.block-container h6, 
-    div.block-container p {
+    div.block-container h6 {
         color: #1B396A !important;
-    }
-
-    /* Menú lateral */
-    .nav-link {
-        font-size: 15px !important;
-        margin: 4px 0;
-        border-radius: 6px;
-    }
-    .nav-link:hover {
-        background-color: #27406d !important;
-        color: #FFFFFF !important;
-    }
-    .nav-link-selected {
-        background-color: #27ACE2 !important;
-        color: #FFFFFF !important;
     }
 
     /* Botón continuar */
@@ -57,31 +41,38 @@ st.markdown("""
         color: white !important;
         border-radius: 6px;
         font-weight: bold;
-        padding: 0.5em 1.5em;
+        padding: 0.4em 1.2em;
         font-size: 14px;
+        margin-top: 10px;
     }
 
-    /* Radio: roles visibles */
+    /* ===== RADIO BUTTONS (roles) ===== */
     div[role='radiogroup'] label {
-        color: #1B396A !important;
-        font-weight: 600 !important;
+        display: flex;
+        align-items: center;
+        gap: 6px;
         font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #1B396A !important;  /* azul oscuro */
+        cursor: pointer;
     }
+
+    /* círculo borde */
     div[role='radiogroup'] label div:first-child {
         border: 2px solid #1B396A !important;
+        border-radius: 50%;
     }
+
+    /* círculo seleccionado */
     div[role='radiogroup'] input:checked + div:first-child {
         background-color: #1B396A !important;
         border-color: #1B396A !important;
     }
-    div[role='radiogroup'] input:checked + div + span {
-        color: #27ACE2 !important;
-        font-weight: 700 !important;
-    }
 
-    /* Tablas */
-    .stDataFrame, .stTable {
-        color: #1B396A !important;
+    /* texto seleccionado */
+    div[role='radiogroup'] input:checked + div:first-child + span {
+        color: #27ACE2 !important;  /* azul claro */
+        font-weight: 700 !important;
     }
     </style>
 """, unsafe_allow_html=True)
