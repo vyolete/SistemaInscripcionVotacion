@@ -12,7 +12,7 @@ import altair as alt  # Nuevo: para gráficos bonitos
 
 st.markdown("""
     <style>
-    /* Fondo general blanco */
+    /* Fondo principal blanco */
     .stApp {
         background-color: #FFFFFF;
     }
@@ -22,19 +22,21 @@ st.markdown("""
         background-color: #1B396A !important;
     }
 
-    /* Texto en sidebar */
-    .css-1d391kg, .css-q8sbsg, .css-1lcbmhc {
+    /* Texto sidebar */
+    section[data-testid="stSidebar"] h3, 
+    section[data-testid="stSidebar"] span, 
+    section[data-testid="stSidebar"] div {
         color: white !important;
     }
 
-    /* Botones personalizados */
+    /* Botones */
     .stButton>button {
         background-color: #1B396A !important;
         color: white !important;
         border-radius: 8px;
         font-weight: bold;
         height: 3em;
-        margin-bottom: 0.5em;
+        margin-top: 1em;
     }
 
     /* Métricas */
@@ -178,17 +180,35 @@ def modulo_dashboard():
 # ======================================================
 
 def modulo_home():
-    st.markdown("<h2 style='color:#1B396A; text-align:center;'>¡Bienvenido!</h2>", unsafe_allow_html=True)
-    st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=220)
+    # Logo grande centrado
+    st.markdown(
+        "<div style='text-align:center;'>"
+        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='200'>"
+        "</div>",
+        unsafe_allow_html=True
+    )
 
-    st.markdown("### Selecciona tu rol para comenzar:")
+    # Título
+    st.markdown(
+        "<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        "<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>",
+        unsafe_allow_html=True
+    )
+    st.markdown("---")
+
+    # Rol y botón
+    st.subheader("Selecciona tu rol para comenzar:")
     rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio")
     st.session_state["rol"] = rol
 
     if not st.session_state.get("rol_seleccionado", False):
-        if st.button("Continuar"):
+        if st.button("Continuar ▶️"):
             st.session_state["rol_seleccionado"] = True
             st.rerun()
+
 # ======================================================
 # 🔹 MÓDULO VOTACIÓN
 # ======================================================
