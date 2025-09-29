@@ -157,9 +157,10 @@ def modulo_home():
 
     
     # Radio normal (sin background-color)
-    rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
+    rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
     st.session_state["rol"] = rol
-    
+
+
 
     # Botón siempre visible (centrado y pequeño)
     col1, col2, col3 = st.columns([1,2,1])
