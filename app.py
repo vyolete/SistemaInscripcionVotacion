@@ -227,6 +227,8 @@ def modulo_inscripcion():
 
 def modulo_dashboard():
     st.header("📊 Dashboard de Inscripciones")
+
+    # --- Cargar datos ---
     try:
         df = conectar_google_sheets(st.secrets)
     except Exception as e:
@@ -234,28 +236,62 @@ def modulo_dashboard():
         st.stop()
 
     if df.empty:
-        st.warning("No hay inscripciones registradas todavía.")
+        st.warning("⚠️ No hay inscripciones registradas todavía.")
         return
 
+    # --- Preparar dataframe ---
     df = preparar_dataframe(df)
     docentes = df['Docente'].unique()
-    docente_sel = st.sidebar.selectbox("Filtrar por docente", ["Todos"] + list(docentes), key="docente_select")
+    docente_sel = st.sidebar.selectbox("📌 Filtrar por docente", ["Todos"] + list(docentes), key="docente_select")
     df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
     df_filtrado['Cantidad de Estudiantes'] = df_filtrado['Participantes'].apply(contar_participantes)
 
+    # --- Métricas en tarjetas ---
     col1, col2, col3 = st.columns(3)
-    with col1: st.metric("📝 Inscripciones", len(df_filtrado))
-    with col2: st.metric("👥 Equipos", df_filtrado['ID Equipo'].nunique())
-    with col3: st.metric("🎓 Estudiantes", df_filtrado['Cantidad de Estudiantes'].sum())
+    with col1:
+        st.markdown("""
+        <div style="background:#EEF5FB; padding:15px; border-radius:10px; text-align:center;">
+            <h3 style="color:#1B396A;">📝 Inscripciones</h3>
+            <h2 style="color:#1B396A;">{}</h2>
+        </div>
+        """.format(len(df_filtrado)), unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div style="background:#EEF5FB; padding:15px; border-radius:10px; text-align:center;">
+            <h3 style="color:#1B396A;">👥 Equipos</h3>
+            <h2 style="color:#1B396A;">{}</h2>
+        </div>
+        """.format(df_filtrado['ID Equipo'].nunique()), unsafe_allow_html=True)
+    with col3:
+        st.markdown("""
+        <div style="background:#EEF5FB; padding:15px; border-radius:10px; text-align:center;">
+            <h3 style="color:#1B396A;">🎓 Estudiantes</h3>
+            <h2 style="color:#1B396A;">{}</h2>
+        </div>
+        """.format(df_filtrado['Cantidad de Estudiantes'].sum()), unsafe_allow_html=True)
 
+    st.markdown("---")
+
+    # --- Gráfico ---
     resumen = df_filtrado.groupby("Docente")['Cantidad de Estudiantes'].sum().reset_index()
-    chart = alt.Chart(resumen).mark_bar(size=35, cornerRadiusTopLeft=8, cornerRadiusTopRight=8).encode(
-        x=alt.X('Docente:N', sort='-y'),
-        y=alt.Y('Cantidad de Estudiantes:Q'),
-        color=alt.value('#1B396A'),
-        tooltip=['Docente', 'Cantidad de Estudiantes']
-    ).properties(height=350)
+    st.subheader("📊 Inscripciones por Docente")
+    chart = (
+        alt.Chart(resumen)
+        .mark_bar(size=35, cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
+        .encode(
+            x=alt.X('Docente:N', sort='-y', title="Docente"),
+            y=alt.Y('Cantidad de Estudiantes:Q', title="Estudiantes"),
+            color=alt.value('#1B396A'),
+            tooltip=['Docente', 'Cantidad de Estudiantes']
+        )
+        .properties(height=350)
+    )
     st.altair_chart(chart, use_container_width=True)
+
+    # --- Detalle opcional ---
+    with st.expander("📋 Ver detalle de inscripciones"):
+        st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
+
 
 
 def modulo_votacion():
