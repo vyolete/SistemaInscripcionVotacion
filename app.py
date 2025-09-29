@@ -325,34 +325,6 @@ def main():
         layout="wide"
     )
 
-    # --- Cabecera decorativa ---
-    st.markdown("""
-    <div style="
-      height: 10px;
-      margin-bottom: 15px;
-      background: linear-gradient(270deg, #1B396A, #27ACE2, #1B396A, #27ACE2);
-      background-size: 600% 600%;
-      animation: gradientAnim 6s ease infinite;
-      border-radius: 6px;">
-    </div>
-    <style>
-    @keyframes gradientAnim {
-      0% {background-position:0% 50%}
-      50% {background-position:100% 50%}
-      100% {background-position:0% 50%}
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown(
-        "<h1 style='text-align: center; color: #1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        "<h4 style='text-align: center; color: #1B396A;'>¡Participa, aprende y gana!</h4>",
-        unsafe_allow_html=True
-    )
-
     # --- Inicialización de estados ---
     if "rol" not in st.session_state: 
         st.session_state.rol = None
