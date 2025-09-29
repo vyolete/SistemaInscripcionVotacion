@@ -4,7 +4,7 @@ import pandas as pd
 import gspread
 from google.oauth2 import service_account
 from datetime import datetime
-import altair as alt  # Nuevo: para gráficos bonitos
+import altair as alt  
 
 # ======================================================
 # 🔹 ESTILOS PERSONALIZADOS
@@ -12,26 +12,22 @@ import altair as alt  # Nuevo: para gráficos bonitos
 
 st.markdown("""
     <style>
-    .stButton>button {
+    /* Forzar todos los botones a mismo tamaño */
+    div.stButton > button {
+        width: 100% !important;
+        height: 3em !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
         background-color: #1B396A !important;
         color: white !important;
-        border-radius: 8px;
-        font-weight: bold;
-        height: 3em;
-        margin-bottom: 0.5em;
     }
-    .stMetric {
-        background: #EEF5FB;
-        border-radius: 12px;
-        padding: 1em;
-        margin-bottom: 1em;
-        color: #1B396A;
-    }
-    .css-1v0mbdj {  /* sidebar */
-        background: #F3F5F7 !important;
+    /* Asegurar consistencia en sidebar */
+    section[data-testid="stSidebar"] div.stButton > button {
+        margin-bottom: 8px !important;
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 # ======================================================
 # 🔹 UTILIDADES DE DATOS
