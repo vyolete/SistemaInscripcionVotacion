@@ -12,21 +12,19 @@ import altair as alt
 
 st.markdown("""
     <style>
-    /* Forzar todos los botones a mismo tamaño */
-    div.stButton > button {
-        width: 100% !important;
-        height: 3em !important;
+    /* Botones del sidebar */
+    [data-testid="stSidebar"] button {
+        width: 100% !important;   /* mismo ancho */
+        height: 50px !important;  /* mismo alto */
         border-radius: 8px !important;
         font-weight: bold !important;
         background-color: #1B396A !important;
         color: white !important;
-    }
-    /* Asegurar consistencia en sidebar */
-    section[data-testid="stSidebar"] div.stButton > button {
-        margin-bottom: 8px !important;
+        margin-bottom: 10px !important; /* espacio entre botones */
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # ======================================================
