@@ -49,6 +49,27 @@ st.markdown("""
         padding: 0.4em 1em;
         font-size: 13px;
     }
+        /* Texto general de las opciones */
+    div[role='radiogroup'] label {
+        color: #1B396A !important;  /* Azul institucional */
+        font-weight: 600 !important;
+        font-size: 15px !important;
+    }
+
+    /* Color del círculo seleccionado */
+    div[role='radiogroup'] label div:first-child {
+        border: 2px solid #1B396A !important;   /* Borde azul */
+    }
+    div[role='radiogroup'] input:checked + div:first-child {
+        background-color: #1B396A !important;   /* Fondo azul cuando está seleccionado */
+        border-color: #1B396A !important;
+    }
+
+    /* Texto de la opción seleccionada */
+    div[role='radiogroup'] input:checked + div + span {
+        color: #27ACE2 !important;  /* Azul claro para destacar */
+        font-weight: 700 !important;
+    }
 
     /* Textos generales (inputs, radios, sliders) */
     .stRadio label, .stTextInput label, .stSlider label, div[role='radiogroup'] label span {
