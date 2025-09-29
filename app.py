@@ -124,10 +124,21 @@ def modulo_home():
 
 
     st.markdown("<h4 style='color:#1B396A; margin-bottom:15px;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
-
-    # Radio roles
-    rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True, background-color:#F9FBFD)
+    # CSS para cambiar color de texto del radio
+    st.markdown("""
+        <style>
+        div[role='radiogroup'] label {
+            color: #1B396A !important;  /* Azul oscuro */
+            font-weight: bold !important;
+            font-size: 15px !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Radio normal (sin background-color)
+    rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
     st.session_state["rol"] = rol
+    
 
     # Botón siempre visible (centrado y pequeño)
     col1, col2, col3 = st.columns([1,2,1])
