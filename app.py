@@ -65,12 +65,15 @@ st.markdown("""
         border-color: #1B396A !important;
     }
 
+    /* Texto normal */
+    div[role='radiogroup'] label span {
+        color: #1B396A !important;
+    }
     /* Texto de la opción seleccionada */
-    div[role='radiogroup'] input:checked + div + span {
-        color: #27ACE2 !important;  /* Azul claro para destacar */
+    div[role='radiogroup'] input:checked ~ span {
+        color: #27ACE2 !important;
         font-weight: 700 !important;
     }
-
     /* Textos generales (inputs, radios, sliders) */
     .stRadio label, .stTextInput label, .stSlider label, div[role='radiogroup'] label span {
         color: #1B396A !important;
