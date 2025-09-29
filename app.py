@@ -148,8 +148,8 @@ def modulo_votacion():
     st.subheader("🗳 Votación de Equipos")
 
     # --- Leer parámetro de la URL ---
-    params = st.experimental_get_query_params()
-    equipo_param = params.get("equipo", [""])[0]  # obtiene el primer valor o ""
+    params = st.query_params
+    equipo_param = params.get("equipo", "")
 
     # --- Conectar inscripciones para validar equipos ---
     try:
@@ -160,14 +160,14 @@ def modulo_votacion():
         st.error(f"❌ No se pudieron cargar los equipos: {e}")
         return
 
-    # --- Si viene desde QR con código ---
+    # --- Determinar si es entrada QR o manual ---
     if equipo_param:
         if equipo_param in equipos_validos:
-            st.info(f"Has ingresado al equipo: **{equipo_param}**")
             equipo_id = equipo_param
+            st.success(f"✅ Estás votando por el equipo **{equipo_id}** (detectado desde QR)")
         else:
             st.error(f"⚠️ El código de equipo «{equipo_param}» no es válido.")
-            equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
+            equipo_id = st.text_input("Ingresa manualmente el código del equipo a evaluar:")
     else:
         equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
 
@@ -229,7 +229,6 @@ def modulo_votacion():
 
         except Exception as e:
             st.error(f"⚠️ Error al registrar el voto: {e}")
-
 
 # ======================================================
 # 🔹 MÓDULO RESULTADOS
