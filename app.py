@@ -17,16 +17,14 @@ st.markdown("""
         background-color: #FFFFFF;
     }
 
-    /* Sidebar azul institucional */
+    /* --- Sidebar --- */
     section[data-testid="stSidebar"] {
-        background-color: #1B396A !important;
+        background-color: #F3F5F7 !important;  /* Gris claro neutro */
     }
 
-    /* Texto sidebar */
-    section[data-testid="stSidebar"] h3, 
-    section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] div {
-        color: white !important;
+    /* Encabezado del sidebar */
+    section[data-testid="stSidebar"] h3 {
+        color: #1B396A !important;
     }
 
     /* Botones */
@@ -47,8 +45,15 @@ st.markdown("""
         margin-bottom: 1em;
         color: #1B396A;
     }
+
+    /* Texto radio buttons */
+    div[role='radiogroup'] label span {
+        color: #1B396A !important;
+        font-weight: 500 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # ======================================================
