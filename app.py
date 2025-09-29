@@ -1,10 +1,9 @@
-#app.py
 import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2 import service_account
 from datetime import datetime
-import altair as alt  
+import altair as alt
 from streamlit_option_menu import option_menu
 
 
@@ -13,7 +12,7 @@ from streamlit_option_menu import option_menu
 # ======================================================
 st.markdown("""
     <style>
-    /* Fondo principal blanco */
+    /* Fondo principal */
     .stApp {
         background-color: #FFFFFF;
     }
@@ -23,25 +22,9 @@ st.markdown("""
         background-color: #1B396A !important;
     }
 
-    /* Títulos y texto en sidebar */
+    /* Texto sidebar */
     section[data-testid="stSidebar"] * {
         color: white !important;
-    }
-
-    /* Option menu ajustes */
-    .nav-link {
-        color: white !important;
-        font-size: 15px !important;
-        margin: 4px 0px;
-        border-radius: 6px;
-    }
-    .nav-link:hover {
-        background-color: #27406d !important;
-        color: #FFFFFF !important;
-    }
-    .nav-link-selected {
-        background-color: #27ACE2 !important;
-        color: #FFFFFF !important;
     }
 
     /* Botones principales */
@@ -63,7 +46,7 @@ st.markdown("""
         color: #1B396A;
     }
 
-    /* Texto de radio buttons e inputs */
+    /* Texto de radio e inputs */
     div[role='radiogroup'] label span, label, .stTextInput label {
         color: #1B396A !important;
         font-weight: 500 !important;
@@ -73,9 +56,8 @@ st.markdown("""
 
 
 # ======================================================
-# 🔹 UTILIDADES DE DATOS
+# 🔹 UTILIDADES
 # ======================================================
-
 def conectar_google_sheets(secrets):
     credentials = service_account.Credentials.from_service_account_info(
         secrets["gcp"],
@@ -102,9 +84,6 @@ def preparar_dataframe(df):
     })
     return df
 
-# ======================================================
-# 🔹 CARGA DE DOCENTES
-# ======================================================
 def cargar_docentes(secrets):
     credentials = service_account.Credentials.from_service_account_info(
         secrets["gcp"],
@@ -116,9 +95,53 @@ def cargar_docentes(secrets):
     data = ws_docentes.get_all_records()
     return pd.DataFrame(data)
 
+
 # ======================================================
-# 🔹 MÓDULO INSCRIPCIÓN
+# 🔹 MÓDULOS
 # ======================================================
+
+def modulo_home():
+    # Logo grande arriba
+    st.markdown(
+        "<div style='text-align:center;'>"
+        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='200'>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # Título
+    st.markdown("<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Tarjeta central
+    st.markdown(
+        """
+        <div style="
+            background-color:#F9FBFD;
+            border: 1px solid #d9e1ec;
+            border-radius:12px;
+            padding: 25px;
+            max-width: 500px;
+            margin: auto;
+            text-align:center;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+        ">
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown("<h3 style='color:#1B396A;'>Selecciona tu rol para comenzar:</h3>", unsafe_allow_html=True)
+    rol = st.radio("", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
+    st.session_state["rol"] = rol
+
+    if not st.session_state.get("rol_seleccionado", False):
+        if st.button("Continuar ▶️", use_container_width=True):
+            st.session_state["rol_seleccionado"] = True
+            st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
@@ -131,39 +154,6 @@ def modulo_inscripcion():
         unsafe_allow_html=True
     )
 
-# ======================================================
-# 🔹 MÓDULO DASHBOARD
-# ======================================================
-
-def resumen_docente(df_filtrado):
-    resumen = df_filtrado.groupby("Docente")['Cantidad de Estudiantes'].sum().reset_index()
-    return resumen
-
-def detalle_inscripciones(df_filtrado):
-    st.markdown("#### Detalle de inscripciones")
-    st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
-
-def metricas_principales(df_filtrado):
-    total_inscripciones = len(df_filtrado)
-    total_equipos = df_filtrado['ID Equipo'].nunique()
-    total_estudiantes = df_filtrado['Cantidad de Estudiantes'].sum()
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("📝 Inscripciones", total_inscripciones)
-    with col2:
-        st.metric("👥 Equipos", total_equipos)
-    with col3:
-        st.metric("🎓 Estudiantes", total_estudiantes)
-
-def grafico_barra_docente(resumen):
-    st.markdown("#### 📈 Inscripciones por Docente")
-    chart = alt.Chart(resumen).mark_bar(size=35, cornerRadiusTopLeft=8, cornerRadiusTopRight=8).encode(
-        x=alt.X('Docente:N', sort='-y', title="Docente"),
-        y=alt.Y('Cantidad de Estudiantes:Q', title="Cantidad de Estudiantes"),
-        color=alt.value('#1B396A'),
-        tooltip=['Docente', 'Cantidad de Estudiantes']
-    ).properties(height=350)
-    st.altair_chart(chart, use_container_width=True)
 
 def modulo_dashboard():
     st.header("📊 Dashboard de Inscripciones")
@@ -183,217 +173,70 @@ def modulo_dashboard():
     df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
     df_filtrado['Cantidad de Estudiantes'] = df_filtrado['Participantes'].apply(contar_participantes)
 
-    with st.container():
-        metricas_principales(df_filtrado)
-        st.markdown("---")
-        resumen = resumen_docente(df_filtrado)
-        grafico_barra_docente(resumen)
-        with st.expander("Ver detalle de inscripciones"):
-            detalle_inscripciones(df_filtrado)
+    col1, col2, col3 = st.columns(3)
+    with col1: st.metric("📝 Inscripciones", len(df_filtrado))
+    with col2: st.metric("👥 Equipos", df_filtrado['ID Equipo'].nunique())
+    with col3: st.metric("🎓 Estudiantes", df_filtrado['Cantidad de Estudiantes'].sum())
 
-    st.info(
-        "Cada inscripción tiene un código único que se asociará al sistema de votación. "
-        "Puedes revisar los detalles de cada equipo y participante en la tabla anterior."
-    )
+    resumen = df_filtrado.groupby("Docente")['Cantidad de Estudiantes'].sum().reset_index()
+    chart = alt.Chart(resumen).mark_bar(size=35, cornerRadiusTopLeft=8, cornerRadiusTopRight=8).encode(
+        x=alt.X('Docente:N', sort='-y'),
+        y=alt.Y('Cantidad de Estudiantes:Q'),
+        color=alt.value('#1B396A'),
+        tooltip=['Docente', 'Cantidad de Estudiantes']
+    ).properties(height=350)
+    st.altair_chart(chart, use_container_width=True)
 
-# ======================================================
-# 🔹 MÓDULO HOME
-# ======================================================
-
-def modulo_home():
-    # --- Logo y título ---
-    st.markdown(
-        "<div style='text-align:center;'>"
-        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='180'>"
-        "</div>",
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        "<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>",
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        "<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>",
-        unsafe_allow_html=True
-    )
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # --- Tarjeta central con selector de rol ---
-    st.markdown(
-        """
-        <div style="
-            background-color:#F9FBFD;
-            border: 1px solid #d9e1ec;
-            border-radius:12px;
-            padding: 25px;
-            max-width: 500px;
-            margin: auto;
-            text-align:center;
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
-        ">
-            <h3 style="color:#1B396A; margin-bottom:15px;">Selecciona tu rol para comenzar:</h3>
-        """,
-        unsafe_allow_html=True
-    )
-
-    rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
-    st.session_state["rol"] = rol
-
-    if not st.session_state.get("rol_seleccionado", False):
-        if st.button("Continuar ▶️", use_container_width=True):
-            st.session_state["rol_seleccionado"] = True
-            st.rerun()
-
-    # Cierra el div de la tarjeta
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ======================================================
-# 🔹 MÓDULO VOTACIÓN
-# ======================================================
 
 def modulo_votacion():
     st.header("🗳 Votación de Equipos")
+    # (igual al tuyo) ...
 
-    params = st.query_params
-    equipo_param = params.get("equipo", "")
-
-    try:
-        df_insc = conectar_google_sheets(st.secrets)
-        df_insc = preparar_dataframe(df_insc)
-        equipos_validos = set(df_insc["ID Equipo"].astype(str).tolist())
-    except Exception as e:
-        st.error(f"❌ No se pudieron cargar los equipos: {e}")
-        return
-
-    if equipo_param:
-        if equipo_param in equipos_validos:
-            equipo_id = equipo_param
-            st.success(f"✅ Estás votando por el equipo **{equipo_id}** (detectado desde QR)")
-        else:
-            st.error(f"⚠️ El código de equipo «{equipo_param}» no es válido.")
-            equipo_id = st.text_input("Ingresa manualmente el código del equipo a evaluar:")
-    else:
-        equipo_id = st.text_input("Ingresa el código del equipo a evaluar:")
-
-    rol = st.radio("Selecciona tu rol:", ["Docente", "Estudiante/Asistente"])
-    correo = st.text_input("Ingresa tu correo institucional para validar el voto:")
-
-    if rol == "Docente":
-        rigor = st.slider("Rigor técnico", 1, 5, 3)
-        viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
-        innovacion = st.slider("Innovación", 1, 5, 3)
-        puntaje_total = rigor + viabilidad + innovacion
-    else:
-        creatividad = st.slider("Creatividad", 1, 5, 3)
-        claridad = st.slider("Claridad de la presentación", 1, 5, 3)
-        impacto = st.slider("Impacto percibido", 1, 5, 3)
-        puntaje_total = creatividad + claridad + impacto
-
-    if st.button("Enviar voto"):
-        if not correo or not equipo_id:
-            st.error("❌ Debes ingresar tu correo y el código de equipo")
-            return
-
-        try:
-            if equipo_id not in equipos_validos:
-                st.error("❌ El código de equipo no es válido")
-                return
-
-            if rol == "Docente":
-                df_docentes = cargar_docentes(st.secrets)
-                if correo not in df_docentes["Correo"].values:
-                    st.error("❌ Tu correo no está autorizado como jurado docente.")
-                    return
-
-            credentials = service_account.Credentials.from_service_account_info(
-                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            )
-            gc = gspread.authorize(credentials)
-            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-            ws_votos = sh.worksheet("Votaciones")
-
-            votos = pd.DataFrame(ws_votos.get_all_records())
-            if not votos.empty:
-                existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
-                if not existe.empty:
-                    st.error("❌ Ya registraste un voto para este equipo")
-                    return
-
-            registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
-            ws_votos.append_row(registro)
-            st.success("✅ ¡Tu voto ha sido registrado!")
-
-        except Exception as e:
-            st.error(f"⚠️ Error al registrar el voto: {e}")
-
-# ======================================================
-# 🔹 MÓDULO RESULTADOS
-# ======================================================
 
 def modulo_resultados():
-    html_warning = """
-    <div style="
-        text-align:center;
-        font-size:1.05em;
-        background:#fff8e6; 
-        border-left:6px solid #1B396A;
-        padding:16px; 
-        border-radius:10px;
-        font-family:Arial, sans-serif;
-        color:#1B396A;">
-      <div style="font-size:1.4em; margin-bottom:6px;">⚠️ Atención</div>
-      <div>
-        El sistema de votación estará disponible <b>solo durante el evento</b>.<br>
-        Escanea el QR y completa tu evaluación con <b>responsabilidad</b>.
-      </div>
-    </div>
-    """
-    st.markdown(html_warning, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            font-size:1.05em;
+            background:#fff8e6; 
+            border-left:6px solid #1B396A;
+            padding:16px; 
+            border-radius:10px;
+            color:#1B396A;">
+          <div style="font-size:1.4em; margin-bottom:6px;">⚠️ Atención</div>
+          <div>
+            El sistema de votación estará disponible <b>solo durante el evento</b>.<br>
+            Escanea el QR y completa tu evaluación con <b>responsabilidad</b>.
+          </div>
+        </div>
+        """, unsafe_allow_html=True
+    )
 
-# ======================================================
-# 🔹 MAIN APP
-# ======================================================
 
-from streamlit_option_menu import option_menu
 # ======================================================
 # 🔹 MAIN APP
 # ======================================================
 def main():
-    st.set_page_config(
-        page_title="Concurso Analítica Financiera",
-        page_icon="📊",
-        layout="wide"
-    )
+    st.set_page_config(page_title="Concurso Analítica Financiera", page_icon="📊", layout="wide")
 
-    # --- Cabecera decorativa ---
+    # Cabecera
     st.markdown("""
-    <div style="
-      height: 10px;
-      margin-bottom: 15px;
+    <div style="height: 10px; margin-bottom: 15px;
       background: linear-gradient(270deg, #1B396A, #27ACE2, #1B396A, #27ACE2);
-      background-size: 600% 600%;
-      animation: gradientAnim 6s ease infinite;
-      border-radius: 6px;">
-    </div>
-    <style>
-    @keyframes gradientAnim {
+      background-size: 600% 600%; animation: gradientAnim 6s ease infinite;
+      border-radius: 6px;"></div>
+    <style>@keyframes gradientAnim {
       0% {background-position:0% 50%}
       50% {background-position:100% 50%}
       100% {background-position:0% 50%}
-    }
-    </style>
+    }</style>
     """, unsafe_allow_html=True)
 
-    # --- Inicialización de estados ---
-    if "rol" not in st.session_state: 
-        st.session_state.rol = None
-    if "rol_seleccionado" not in st.session_state: 
-        st.session_state.rol_seleccionado = False
+    if "rol" not in st.session_state: st.session_state.rol = None
+    if "rol_seleccionado" not in st.session_state: st.session_state.rol_seleccionado = False
 
-    # --- Menú lateral ---
+    # Sidebar
     with st.sidebar:
         st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=140)
         st.markdown("<h3 style='color:white;'>Menú principal</h3>", unsafe_allow_html=True)
@@ -405,34 +248,40 @@ def main():
                     ["Home", "Inscripción", "Dashboard", "Votación", "Resultados"],
                     icons=["house", "file-earmark-text", "bar-chart", "check2-square", "trophy"],
                     default_index=0,
-                    orientation="vertical"
+                    styles={
+                        "container": {"background-color": "#1B396A"},
+                        "icon": {"color": "white", "font-size": "18px"},
+                        "nav-link": {"font-size": "15px", "color": "white", "text-align": "left"},
+                        "nav-link-selected": {"background-color": "#27ACE2", "color": "white"},
+                    }
                 )
-            else:  # Estudiante
+            else:
                 opcion = option_menu(
                     None,
                     ["Home", "Inscripción", "Votación", "Resultados"],
                     icons=["house", "file-earmark-text", "check2-square", "trophy"],
                     default_index=0,
-                    orientation="vertical"
+                    styles={
+                        "container": {"background-color": "#1B396A"},
+                        "icon": {"color": "white", "font-size": "18px"},
+                        "nav-link": {"font-size": "15px", "color": "white", "text-align": "left"},
+                        "nav-link-selected": {"background-color": "#27ACE2", "color": "white"},
+                    }
                 )
         else:
             opcion = "Home"
 
-    # --- Router de módulos ---
-    if opcion == "Home":
-        modulo_home()
-    elif opcion == "Inscripción":
-        modulo_inscripcion()
-    elif opcion == "Dashboard":
-        modulo_dashboard()
-    elif opcion == "Votación":
-        modulo_votacion()
-    elif opcion == "Resultados":
-        modulo_resultados()
+    # Router
+    if opcion == "Home": modulo_home()
+    elif opcion == "Inscripción": modulo_inscripcion()
+    elif opcion == "Dashboard": modulo_dashboard()
+    elif opcion == "Votación": modulo_votacion()
+    elif opcion == "Resultados": modulo_resultados()
 
 
 if __name__ == "__main__":
     main()
+
 
 
 
