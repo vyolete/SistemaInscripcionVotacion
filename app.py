@@ -74,6 +74,23 @@ st.markdown("""
         color: #27ACE2 !important;
         font-weight: 700 !important;
     }
+    /* Radio buttons */
+div[role='radiogroup'] label {
+    color: #1B396A !important;   /* texto normal */
+    font-weight: 500 !important;
+    font-size: 15px !important;
+}
+
+    /* Círculo y texto cuando está seleccionado */
+    div[role='radiogroup'] label[aria-checked="true"] {
+        color: #27ACE2 !important;   /* texto azul claro */
+        font-weight: 700 !important;
+    }
+    
+    div[role='radiogroup'] label[aria-checked="true"] svg {
+        fill: #1B396A !important;    /* círculo azul */
+    }
+
     /* Textos generales (inputs, radios, sliders) */
     .stRadio label, .stTextInput label, .stSlider label, div[role='radiogroup'] label span {
         color: #1B396A !important;
