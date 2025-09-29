@@ -74,18 +74,41 @@ st.markdown("""
         color: #27ACE2 !important;
         font-weight: 700 !important;
     }
-    /* Radio buttons */
-div[role='radiogroup'] label {
-    color: #1B396A !important;   /* texto normal */
-    font-weight: 500 !important;
-    font-size: 15px !important;
-}
+        /* Radio buttons */
+    div[role='radiogroup'] label {
+        color: #1B396A !important;   /* texto normal */
+        font-weight: 500 !important;
+        font-size: 15px !important;
+    }
 
     /* Círculo y texto cuando está seleccionado */
     div[role='radiogroup'] label[aria-checked="true"] {
         color: #27ACE2 !important;   /* texto azul claro */
         font-weight: 700 !important;
     }
+        /* Texto normal */
+    div[role='radiogroup'] label span {
+        color: #1B396A !important;
+        font-weight: 500 !important;
+    }
+
+    /* Círculo borde */
+    div[role='radiogroup'] input[type="radio"] + div {
+        border: 2px solid #1B396A !important;
+    }
+    
+    /* Círculo seleccionado */
+    div[role='radiogroup'] input[type="radio"]:checked + div {
+        background-color: #1B396A !important;
+        border-color: #1B396A !important;
+    }
+    
+    /* Texto seleccionado */
+    div[role='radiogroup'] input[type="radio"]:checked ~ span {
+        color: #27ACE2 !important;
+        font-weight: 700 !important;
+    }
+
     
     div[role='radiogroup'] label[aria-checked="true"] svg {
         fill: #1B396A !important;    /* círculo azul */
