@@ -108,11 +108,14 @@ def cargar_docentes(secrets):
 def modulo_home():
     # Logo
     st.markdown(
-        "<div style='text-align:center;'>"
-        "<img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='160'>"
-        "</div>",
-        unsafe_allow_html=True
-    )
+    """
+    <div style='text-align:center; position:relative; z-index:10; background-color: transparent;'>
+      <img src='https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png' width='160'>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
     # Títulos
     st.markdown("<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
