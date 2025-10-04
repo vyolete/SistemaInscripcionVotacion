@@ -1,10 +1,15 @@
 import streamlit as st
 import pandas as pd
 import gspread
+import random
+import string
+import base64
 from google.oauth2 import service_account
 from datetime import datetime
 import altair as alt
 from streamlit_option_menu import option_menu
+from email.mime.text import MIMEText
+from googleapiclient.discovery import build
 
 
 # ======================================================
@@ -139,51 +144,156 @@ def cargar_docentes(secrets):
 # 🔹 MÓDULOS
 # ======================================================
 
+
+        # ================================================================
+        # === FUNCIONES AUXILIARES ===
+        # ================================================================
+
+def cargar_hoja(nombre_hoja: str) -> pd.DataFrame:
+    """Carga una hoja específica de Google Sheets."""
+    sheet_id = st.secrets["sheet_id"]
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={nombre_hoja}"
+    return pd.read_csv(url)
+
+
+def generar_codigo_docente():
+    """Genera un código aleatorio tipo DOC-XXXX."""
+    codigo = "DOC-" + ''.join(random.choices(string.digits, k=4))
+    return codigo
+
+
+def enviar_correo_gmail(service_account_info, destinatario, asunto, mensaje_html):
+    """Envía un correo usando Gmail API con la cuenta concursos.itm@gmail.com"""
+    try:
+        credentials = service_account.Credentials.from_service_account_info(
+            service_account_info,
+            scopes=["https://www.googleapis.com/auth/gmail.send"]
+        )
+        delegated = credentials.with_subject(st.secrets["gmail"]["user"])
+        service = build("gmail", "v1", credentials=delegated)
+
+        mime_message = MIMEText(mensaje_html, "html")
+        mime_message["to"] = destinatario
+        mime_message["from"] = st.secrets["gmail"]["user"]
+        mime_message["subject"] = asunto
+
+        encoded_message = base64.urlsafe_b64encode(mime_message.as_bytes()).decode()
+        create_message = {"raw": encoded_message}
+
+        service.users().messages().send(userId="me", body=create_message).execute()
+        return True
+    except Exception as e:
+        st.error(f"⚠️ Error al enviar correo: {e}")
+        return False
+
+
+# ================================================================
+# === MÓDULO PRINCIPAL HOME ===
+# ================================================================
+
 def modulo_home():
     st.title("🏫 Portal del Concurso ITM")
 
-    # ====== SESIÓN ======
+    # Inicializar variables de sesión
     if "usuario_autenticado" not in st.session_state:
         st.session_state["usuario_autenticado"] = False
 
+    # =====================================================
+    # ======= LOGIN / REGISTRO DE DOCENTES ================
+    # =====================================================
     if not st.session_state["usuario_autenticado"]:
-        st.subheader("🔐 Iniciar sesión")
+        st.subheader("🔐 Iniciar sesión para docentes")
 
-        correo = st.text_input("📧 Correo institucional:")
-        accion = st.radio("Selecciona una opción:", ["Enviar código", "Validar código"])
+        correo = st.text_input("📧 Ingresa tu correo institucional:")
+        accion = st.radio("Selecciona una acción:", ["Enviar código", "Validar código"])
 
         if accion == "Enviar código":
             if st.button("Enviar"):
-                df_docentes = cargar_docentes(st.secrets)  # Tu función actual
+                if not correo:
+                    st.warning("⚠️ Ingresa tu correo institucional.")
+                    return
+
+                # Validar formato institucional
+                if not (correo.endswith("@itm.edu.co") or correo.endswith("@correo.itm.edu.co")):
+                    st.error("❌ Solo se permiten correos institucionales ITM.")
+                    return
+
+                # Cargar hojas
+                df_autorizados = cargar_hoja("Correos Autorizados")
+                df_docentes = cargar_hoja("Docentes")
+
+                # Validar si está autorizado
+                if correo not in df_autorizados["Correo"].values:
+                    st.error("🚫 Tu correo no está autorizado para registrarte como docente.")
+                    return
+
+                # Si ya está registrado
                 if correo in df_docentes["Correo institucional"].values:
-                    codigo = df_docentes.loc[df_docentes["Correo institucional"] == correo, "Código acceso"].values[0]
+                    codigo = df_docentes.loc[
+                        df_docentes["Correo institucional"] == correo, "Código acceso"
+                    ].values[0]
+                    mensaje_html = f"""
+                    <h3>🔑 Código de acceso al Portal ITM</h3>
+                    <p>Hola, este es tu código de acceso personal:</p>
+                    <div style="font-size:18px; font-weight:bold; color:#1B396A;">{codigo}</div>
+                    <p>Usa este código en la aplicación para validar tu acceso.</p>
+                    """
+                    enviar_correo_gmail(st.secrets["gcp"], correo, "Código de acceso - Concurso ITM", mensaje_html)
+                    st.success("📧 Código enviado a tu correo institucional.")
                     st.session_state["codigo_enviado"] = codigo
                     st.session_state["correo_actual"] = correo
-                    st.success(f"✅ Código de acceso generado: **{codigo}**")
-                    # 🔹 Aquí podrías enviar el código por correo si quieres automatizarlo
+
+                # Si está autorizado pero no registrado
                 else:
-                    st.error("❌ El correo no está registrado como docente.")
-        else:
+                    st.warning("⚠️ No estás registrado aún como docente.")
+                    if st.button("📝 Registrarme como docente"):
+                        codigo = generar_codigo_docente()
+
+                        # Enviar correo con el código
+                        cuerpo_html = f"""
+                        <h3>🎓 Bienvenido(a) al Portal del Concurso ITM</h3>
+                        <p>Tu registro ha sido aceptado. Este es tu código de acceso:</p>
+                        <div style="font-size:18px; font-weight:bold; color:#1B396A;">{codigo}</div>
+                        <p>Guárdalo, será tu clave para acceder al sistema.</p>
+                        """
+                        exito = enviar_correo_gmail(st.secrets["gcp"], correo, "Registro Docente - Concurso ITM", cuerpo_html)
+
+                        if exito:
+                            # Añadir nuevo registro (aquí se puede usar Apps Script o conexión Sheets API)
+                            st.success("✅ Se ha enviado tu código de acceso al correo institucional.")
+                            st.info("🔔 Contacta al administrador para activar tu cuenta si no aparece en la hoja Docentes.")
+                        else:
+                            st.error("❌ No se pudo enviar el correo. Intenta nuevamente.")
+
+        elif accion == "Validar código":
             codigo_ingresado = st.text_input("🔑 Ingresa tu código de acceso:")
             if st.button("Validar"):
-                if "codigo_enviado" in st.session_state and codigo_ingresado == st.session_state["codigo_enviado"]:
+                df_docentes = cargar_hoja("Docentes")
+                if codigo_ingresado in df_docentes["Código acceso"].values:
                     st.session_state["usuario_autenticado"] = True
                     st.session_state["rol"] = "Docente"
-                    st.success("✅ Autenticación exitosa. Bienvenido docente.")
+                    st.session_state["correo_actual"] = correo
+                    st.success("✅ Autenticación exitosa. Bienvenido(a) docente.")
                     st.rerun()
                 else:
-                    st.error("❌ Código incorrecto o expirado.")
+                    st.error("❌ Código incorrecto o usuario no registrado.")
         return
 
-    # ====== HOME DESPUÉS DEL LOGIN ======
-    st.markdown(f"👋 Bienvenido **{st.session_state.get('correo_actual', '')}** — Rol: {st.session_state.get('rol', '')}")
+    # =====================================================
+    # ======= MENÚ PRINCIPAL DESPUÉS DE LOGIN =============
+    # =====================================================
+    correo_actual = st.session_state.get("correo_actual", "")
+    rol = st.session_state.get("rol", "Invitado")
+
+    st.markdown(f"👋 Bienvenido **{correo_actual}** — Rol: **{rol}**")
 
     if st.button("🚪 Cerrar sesión"):
         st.session_state.clear()
         st.rerun()
 
     st.markdown("### 📘 Menú principal")
-    st.write("✅ Puedes acceder a los módulos de inscripción, votación o resultados según tu rol.")
+    st.write("✅ Puedes acceder a inscripciones, votaciones y resultados según tu rol.")
+
 
 
 def modulo_inscripcion():
