@@ -378,7 +378,7 @@ def modulo_eventos():
         <div style="color:#1B396A; font-family:'Segoe UI', sans-serif;">
             <h3 style="margin-bottom:0;">🎙️ Conferencista: <b>Carlos Naranjo</b></h3>
             <p style="font-size:15px; text-align:justify;">
-                Magíster en Gestión de Organizaciones, especialista en Gerencia para Ingenieros e Ingeniero Informático. 
+                Magíster en Gestión de Organizaciones, especialista en Gerencia para Ingenieros del ITM e Ingeniero Informático. 
                 Como Gerente de Monitoreo de Canales, ha liderado la integración de tecnologías e inteligencia artificial 
                 en procesos financieros, demostrando cómo la innovación puede transformar los retos en oportunidades. 
                 Su propósito es inspirar a las nuevas generaciones a aprovechar la tecnología como motor de cambio y crecimiento.
@@ -387,7 +387,7 @@ def modulo_eventos():
                 <p style="margin:0;"><b>🗓️ Fecha:</b> Jueves 30 de octubre</p>
                 <p style="margin:0;"><b>📍 Lugar:</b> Auditorio menor ITM - Sede Fraternidad, Barrio Boston, Medellín</p>
                 <p style="margin:0;"><b>💬 Charla:</b> “¿Alguna vez te has preguntado cómo funcionan los robo-advisors y si realmente están transformando la forma de invertir?”</p>
-                <p style="margin:0;"><b>🤝 Invitado especial:</b> Representante de Bancolombia</p>
+                <p style="margin:0;"><b>🤝 Invitado especial:</b> Gerente de Bancolombia</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
