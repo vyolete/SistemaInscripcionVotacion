@@ -123,7 +123,7 @@ def modulo_home():
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         st.image(
-            "https://upload.wikimedia.org/wikipedia/commons/7/77/ITM_logo.png",
+            "https://media1.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
             width=180
         )
 
@@ -139,6 +139,9 @@ def modulo_home():
         if st.button("🎓 Soy Estudiante", use_container_width=True):
             st.session_state["rol"] = "Estudiante"
             st.session_state["rol_seleccionado"] = True
+            st.session_state["validando_docente"] = False
+            st.success("✅ Rol seleccionado: Estudiante")
+            st.toast("Menú habilitado para estudiantes 🎓")
             st.rerun()
 
     with col2:
@@ -146,6 +149,7 @@ def modulo_home():
             st.session_state["rol"] = "Docente"
             st.session_state["rol_seleccionado"] = False
             st.session_state["validando_docente"] = True
+            st.toast("Valida tu correo institucional 👨‍🏫")
             st.rerun()
 
     if st.session_state.get("validando_docente", False):
