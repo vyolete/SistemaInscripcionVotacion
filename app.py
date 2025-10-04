@@ -223,7 +223,6 @@ def modulo_home():
             st.session_state["validando_docente"] = False
             st.toast("✅ Rol Estudiante seleccionado")
             st.rerun()
-        st.markdown(f"<div class='rol-card {'rol-selected' if rol_actual=='Estudiante' else ''}'>🎓 Estudiante</div>", unsafe_allow_html=True)
 
     with col2:
         if st.button("👨‍🏫 Soy Docente", use_container_width=True):
@@ -232,7 +231,6 @@ def modulo_home():
             st.session_state["validando_docente"] = True
             st.toast("Valida tu correo institucional 👨‍🏫")
             st.rerun()
-        st.markdown(f"<div class='rol-card {'rol-selected' if rol_actual=='Docente' else ''}'>👨‍🏫 Docente</div>", unsafe_allow_html=True)
 
     # ====== CONFIRMACIÓN DE ROL ======
     if rol_actual == "Estudiante":
