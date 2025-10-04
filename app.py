@@ -416,6 +416,7 @@ def modulo_eventos():
             </p>
             <div style="background-color:#F3F7FB; border-left:4px solid #1B396A; padding:10px 15px; border-radius:8px; margin-top:10px;">
                 <p style="margin:0;"><b>🗓️ Fecha:</b> Jueves 30 de octubre</p>
+                <p style="margin:0;"><b>🕗 Hora:</b> 8:00 p.m.</p>
                 <p style="margin:0;"><b>📍 Lugar:</b> Auditorio menor ITM - Sede Fraternidad, Barrio Boston, Medellín</p>
                 <p style="margin:0;"><b>💬 Charla:</b> “¿Alguna vez te has preguntado cómo funcionan los robo-advisors y si realmente están transformando la forma de invertir?”</p>
                 <p style="margin:0;"><b>🤝 Invitado especial:</b> Gerente de Bancolombia</p>
