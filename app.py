@@ -358,6 +358,37 @@ def modulo_resultados():
         <div>Escanea el QR y completa tu evaluación con <b>responsabilidad</b>.</div>
     </div>
     """, unsafe_allow_html=True)
+    
+def modulo_eventos():
+    st.markdown("<h2 style='color:#1B396A; text-align:center;'>📅 Próximo Evento</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+        st.image("82d228ac-f610-4d77-a953-6871ddde0f7a.png", use_column_width=True)
+
+    with col2:
+        st.markdown("""
+        <div style="color:#1B396A; font-family:'Segoe UI', sans-serif;">
+            <h3 style="margin-bottom:0;">🎙️ Conferencista: <b>Carlos Naranjo</b></h3>
+            <p style="font-size:15px; text-align:justify;">
+                Magíster en Gestión de Organizaciones, especialista en Gerencia para Ingenieros e Ingeniero Informático. 
+                Como Gerente de Monitoreo de Canales, ha liderado la integración de tecnologías e inteligencia artificial 
+                en procesos financieros, demostrando cómo la innovación puede transformar los retos en oportunidades. 
+                Su propósito es inspirar a las nuevas generaciones a aprovechar la tecnología como motor de cambio y crecimiento.
+            </p>
+            <div style="background-color:#F3F7FB; border-left:4px solid #1B396A; padding:10px 15px; border-radius:8px; margin-top:10px;">
+                <p style="margin:0;"><b>🗓️ Fecha:</b> Jueves 30 de octubre</p>
+                <p style="margin:0;"><b>📍 Lugar:</b> Auditorio menor ITM - Sede Fraternidad, Barrio Boston, Medellín</p>
+                <p style="margin:0;"><b>💬 Charla:</b> “¿Alguna vez te has preguntado cómo funcionan los robo-advisors y si realmente están transformando la forma de invertir?”</p>
+                <p style="margin:0;"><b>🤝 Invitado especial:</b> Representante de Bancolombia</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br><hr>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#1B396A;'>🌟 ¡No te pierdas esta oportunidad de aprendizaje e inspiración! 🌟</p>", unsafe_allow_html=True)
 
 
 # ======================================================
@@ -390,7 +421,7 @@ def main():
         if st.session_state.rol_seleccionado:
             if st.session_state.rol == "Docente":
                 opcion = option_menu(
-                    None, ["Home", "Inscripción", "Dashboard", "Votación", "Resultados"],
+                    None, ["Home", "Inscripción", "Dashboard", "Votación", "Resultados","Eventos"],
                     icons=["house", "file-earmark-text", "bar-chart", "check2-square", "trophy"],
                     styles={
                         "container": {"background-color": "#1B396A"},
@@ -400,7 +431,7 @@ def main():
                     })
             else:
                 opcion = option_menu(
-                    None, ["Home", "Inscripción", "Votación", "Resultados"],
+                    None, ["Home", "Inscripción", "Votación", "Resultados","Eventos"],
                     icons=["house", "file-earmark-text", "check2-square", "trophy"],
                     styles={
                         "container": {"background-color": "#1B396A"},
@@ -416,6 +447,8 @@ def main():
     elif opcion == "Dashboard": modulo_dashboard()
     elif opcion == "Votación": modulo_votacion()
     elif opcion == "Resultados": modulo_resultados()
+    elif opcion == "Eventos": modulo_eventos()
+
 
 
 if __name__ == "__main__":
