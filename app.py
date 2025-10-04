@@ -255,6 +255,20 @@ def modulo_home():
         else:
             st.markdown("<div class='confirm-box'>✅ Rol seleccionado: <b>Docente</b><br>Ya puedes acceder al menú de opciones.</div>", unsafe_allow_html=True)
 
+def modulo_inscripcion():
+    st.header("📝 Formulario de Inscripción")
+    st.markdown("Completa el formulario a través del siguiente módulo:")
+    
+    st.components.v1.iframe(
+        "https://forms.gle/hzBPg4THxcD64ygK9",
+        height=800,
+        width="100%"
+    )
+
+    st.markdown(
+        "Si el formulario no carga correctamente, da clic "
+        "[aquí](https://forms.gle/hzBPg4THxcD64ygK9) para abrirlo directamente."
+    )
 
 def modulo_dashboard():
     st.header("📊 Dashboard de Inscripciones")
