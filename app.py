@@ -190,51 +190,166 @@ def cargar_docentes(secrets):
 # 🔹 MÓDULOS
 # ======================================================
 
-def modulo_home():
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image(
-            "https://upload.wikimedia.org/wikipedia/commons/7/77/ITM_logo.png",
-            width=180
-        )
+def modulo_votacion():
+    # ========= ESTILOS =========
+    st.markdown("""
+        <style>
+        .stApp { background-color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }
+        h1, h2, h3, h4, h5, h6, label, p, span { color: #1B396A !important; }
+        /* Botones */
+        .stButton>button {
+            background-color: #1B396A !important;
+            color: #FFFFFF !important;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.6em 1.3em;
+            border: none;
+            transition: 0.3s ease;
+        }
+        .stButton>button:hover { background-color: #27406d !important; }
+        /* Cajas informativas */
+        .info-box {
+            background-color: #E6F0FA;
+            border-left: 5px solid #1B396A;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #1B396A;
+        }
+        .score-box {
+            background-color: #F3F7FB;
+            border-left: 4px solid #1B396A;
+            padding: 12px;
+            border-radius: 8px;
+            color: #1B396A;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    st.markdown("<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
+    # ========= ENCABEZADO =========
+    st.markdown("""
+        <div style='text-align:center; margin-bottom:20px;'>
+            <img src='https://upload.wikimedia.org/wikipedia/commons/7/77/ITM_logo.png' width='130'>
+            <h2 style='color:#1B396A;'>🗳 Sistema de Votación - Concurso Analítica Financiera ITM</h2>
+        </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("<h4 style='text-align:center; color:#1B396A;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
+    # ========= ESTADOS =========
+    if "validado_voto" not in st.session_state:
+        st.session_state.validado_voto = False
 
-    col1, col2 = st.columns(2)
+    # ========= PARÁMETROS DE URL =========
+    params = st.query_params
+    equipo_qr = params.get("equipo", [None])[0] if "equipo" in params else None
+    rol_qr = params.get("rol", [None])[0] if "rol" in params else None
 
-    with col1:
-        if st.button("🎓 Soy Estudiante", use_container_width=True):
-            st.session_state["rol"] = "Estudiante"
-            st.session_state["rol_seleccionado"] = True
-            st.rerun()
+    if equipo_qr:
+        st.markdown(f"""
+        <div class='info-box'>
+            <b>📲 Ingreso directo:</b> Estás votando por el equipo <b>{equipo_qr}</b>.
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class='info-box'>
+            🧭 Selecciona tu rol, ingresa tu correo institucional y el código del equipo que deseas evaluar.
+        </div>
+        """, unsafe_allow_html=True)
 
-    with col2:
-        if st.button("👨‍🏫 Soy Docente", use_container_width=True):
-            st.session_state["rol"] = "Docente"
-            st.session_state["rol_seleccionado"] = False  # todavía falta validar correo
-            st.session_state["validando_docente"] = True
-            st.rerun()
+    # ========= FASE 1: VALIDACIÓN =========
+    if not st.session_state.validado_voto:
+        # Rol detectado por QR o manual
+        if rol_qr:
+            rol = "Docente" if rol_qr.lower() == "docente" else "Estudiante / Asistente"
+            st.info(f"👤 Rol detectado automáticamente: **{rol}**")
+        else:
+            rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
 
-    # Si está en validación de docente
-    if st.session_state.get("validando_docente", False):
-        correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
-        if st.button("Validar"):
-            df_docentes = cargar_docentes(st.secrets)
-            if correo in df_docentes["Correo"].values:
-                st.session_state["rol_seleccionado"] = True
-                st.session_state["rol"] = "Docente"
-                st.session_state["validando_docente"] = False
-                st.success("✅ Acceso autorizado. Bienvenido docente.")
+        correo = st.text_input("📧 Correo institucional:")
+        equipo_id = st.text_input("🏷️ Código del equipo a evaluar:", value=equipo_qr or "")
+
+        if st.button("Continuar ▶️"):
+            if not correo or not equipo_id:
+                st.error("❌ Debes ingresar tu correo y el código del equipo.")
+                return
+
+            try:
+                df_insc = conectar_google_sheets(st.secrets)
+                df_insc = preparar_dataframe(df_insc)
+                equipos_validos = df_insc["ID Equipo"].astype(str).tolist()
+
+                if equipo_id not in equipos_validos:
+                    st.error("❌ El código del equipo no existe.")
+                    return
+
+                if "Docente" in rol:
+                    df_docentes = cargar_docentes(st.secrets)
+                    if correo not in df_docentes["Correo"].values:
+                        st.error("❌ Tu correo no está autorizado como jurado docente. Solicita registro.")
+                        return
+
+                # ✅ Validación exitosa
+                st.session_state.validado_voto = True
+                st.session_state.rol_voto = rol
+                st.session_state.correo_voto = correo
+                st.session_state.equipo_voto = equipo_id
+                st.success("✅ Validación exitosa. Puedes realizar la votación.")
                 st.rerun()
-            else:
-                st.error("❌ Tu correo no está autorizado como docente. Solicita registro.")
-                if st.button("Volver al inicio"):
-                    st.session_state.clear()
-                    st.rerun()
+
+            except Exception as e:
+                st.error(f"⚠️ Error al validar: {e}")
+                return
+
+    # ========= FASE 2: FORMULARIO DE VOTACIÓN =========
+    else:
+        rol = st.session_state.rol_voto
+        correo = st.session_state.correo_voto
+        equipo_id = st.session_state.equipo_voto
+
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown(f"<h4>📋 Evaluación del Proyecto ({rol})</h4>", unsafe_allow_html=True)
+
+        if "Docente" in rol:
+            col1, col2, col3 = st.columns(3)
+            with col1: rigor = st.slider("Rigor técnico", 1, 5, 3)
+            with col2: viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
+            with col3: innovacion = st.slider("Innovación", 1, 5, 3)
+            puntaje_total = rigor + viabilidad + innovacion
+        else:
+            col1, col2, col3 = st.columns(3)
+            with col1: creatividad = st.slider("Creatividad", 1, 5, 3)
+            with col2: claridad = st.slider("Claridad de la presentación", 1, 5, 3)
+            with col3: impacto = st.slider("Impacto percibido", 1, 5, 3)
+            puntaje_total = creatividad + claridad + impacto
+
+        st.markdown(f"<div class='score-box'>🧮 Puntaje total: <b>{puntaje_total}</b></div>", unsafe_allow_html=True)
+
+        if st.button("✅ Enviar voto"):
+            try:
+                credentials = service_account.Credentials.from_service_account_info(
+                    st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+                )
+                gc = gspread.authorize(credentials)
+                sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+                ws_votos = sh.worksheet("Votaciones")
+
+                votos = pd.DataFrame(ws_votos.get_all_records())
+                if not votos.empty:
+                    existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
+                    if not existe.empty:
+                        st.warning("⚠️ Ya registraste un voto para este equipo.")
+                        return
+
+                registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
+                ws_votos.append_row(registro)
+                st.success("✅ ¡Tu voto ha sido registrado exitosamente!")
+                st.balloons()
+                st.session_state.validado_voto = False  # para reiniciar si desea volver
+            except Exception as e:
+                st.error(f"⚠️ Error al registrar el voto: {e}")
+
 
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
