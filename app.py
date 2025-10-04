@@ -140,10 +140,27 @@ def cargar_docentes(secrets):
 # ======================================================
 
 def modulo_home():
+    # ====== LOGIN SIMPLE ======
+    if "usuario_autenticado" not in st.session_state:
+        st.session_state["usuario_autenticado"] = False
+
+    if not st.session_state["usuario_autenticado"]:
+        st.markdown("<h2 style='text-align:center;color:#1B396A;'>🔐 Iniciar Sesión</h2>", unsafe_allow_html=True)
+        usuario = st.text_input("👤 Usuario:")
+        contrasena = st.text_input("🔑 Contraseña:", type="password")
+
+        if st.button("Ingresar"):
+            if usuario == "admin" and contrasena == "itm2025":  # 🔹 Aquí defines tu usuario/clave
+                st.session_state["usuario_autenticado"] = True
+                st.success("✅ Inicio de sesión exitoso.")
+                st.rerun()
+            else:
+                st.error("❌ Usuario o contraseña incorrectos.")
+        return  # 🚫 No carga nada más si no está autenticado
+
     # ====== ESTILOS ======
     st.markdown("""
     <style>
-    /* Tarjetas de rol */
     .rol-card {
         border: 2px solid #d9e1ec;
         border-radius: 12px;
@@ -168,8 +185,6 @@ def modulo_home():
         font-weight: 700;
         box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
     }
-
-    /* Caja de confirmación */
     .confirm-box {
         background: #E6F0FA;
         color: #1B396A;
@@ -181,20 +196,9 @@ def modulo_home():
         border-left: 5px solid #1B396A;
         animation: fadeInUp 0.8s ease-out;
     }
-
-    /* Animación general */
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Animación del logo */
-    @keyframes floatIn {
-        0% { opacity: 0; transform: translateY(-20px) scale(0.95); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    img[data-testid="stImage"] {
-        animation: floatIn 1s ease-out;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -211,6 +215,11 @@ def modulo_home():
     st.markdown("<h3 style='text-align:center;color:#1B396A;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ====== BOTÓN DE CIERRE DE SESIÓN ======
+    if st.button("🚪 Cerrar Sesión"):
+        st.session_state.clear()
+        st.rerun()
+
     # ====== SELECCIÓN DE ROL ======
     st.markdown("<h4 style='text-align:center;color:#1B396A;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -220,7 +229,6 @@ def modulo_home():
         if st.button("🎓 Soy Estudiante", use_container_width=True):
             st.session_state["rol"] = "Estudiante"
             st.session_state["rol_seleccionado"] = True
-            st.session_state["validando_docente"] = False
             st.toast("✅ Rol Estudiante seleccionado")
             st.rerun()
 
@@ -243,7 +251,6 @@ def modulo_home():
                 df_docentes = cargar_docentes(st.secrets)
                 if correo in df_docentes["Correo"].values:
                     st.session_state["rol_seleccionado"] = True
-                    st.session_state["rol"] = "Docente"
                     st.session_state["validando_docente"] = False
                     st.success("✅ Acceso autorizado. Bienvenido docente.")
                     st.rerun()
@@ -254,6 +261,7 @@ def modulo_home():
                         st.rerun()
         else:
             st.markdown("<div class='confirm-box'>✅ Rol seleccionado: <b>Docente</b><br>Ya puedes acceder al menú de opciones.</div>", unsafe_allow_html=True)
+
 
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
