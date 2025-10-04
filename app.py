@@ -39,6 +39,12 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #27406d !important;
     }
+        /* Forzar color visible en botones y su texto interno */
+    .stButton>button * {
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 15px !important;
+    }
 
     /* Títulos */
     h1, h2, h3, h4, h5, h6, label, p, span, div {
@@ -287,20 +293,29 @@ def modulo_votacion():
                 gc = gspread.authorize(credentials)
                 sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
                 ws_votos = sh.worksheet("Votaciones")
+
                 votos = pd.DataFrame(ws_votos.get_all_records())
                 if not votos.empty:
                     existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
                     if not existe.empty:
                         st.warning("⚠️ Ya registraste un voto para este equipo.")
                         return
+
                 registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
                 ws_votos.append_row(registro)
                 st.success("✅ ¡Tu voto ha sido registrado exitosamente!")
                 st.balloons()
                 st.session_state.validado_voto = False
+
             except Exception as e:
                 st.error(f"⚠️ Error al registrar el voto: {e}")
 
+        # 🔙 Botón para volver o votar otro equipo
+        if st.button("🔙 Volver al inicio / Votar otro equipo"):
+            st.session_state.validado_voto = False
+            if "equipo_voto" in st.session_state:
+                del st.session_state["equipo_voto"]
+            st.rerun()
 
 def modulo_resultados():
     st.markdown("""
