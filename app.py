@@ -203,17 +203,10 @@ def modulo_home():
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
     st.markdown("Completa el formulario a través del siguiente módulo:")
-    st.markdown(
-        """
-        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfJaqrVwZHRbbDB8UIl4Jne9F9KMjVPMjZMM9IrD2LVWaFAwQ/viewform?embedded=true" 
-        width="640" height="1177" frameborder="0" marginheight="0" marginwidth="0">Cargando…</iframe>
-        """,
-        unsafe_allow_html=True
-    )
     st.components.v1.iframe(
     "https://forms.gle/hzBPg4THxcD64ygK9",
     height=800,
-    width=100
+    width=800
     )
     st.markdown(
     "Si el formulario no carga correctamente, da clic "
