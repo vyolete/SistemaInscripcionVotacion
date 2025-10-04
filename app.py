@@ -70,6 +70,26 @@ st.markdown("""
         border-left: 3px solid #1B396A !important;
         padding: 12px 15px !important;
     }
+    @media (max-width: 768px) {
+    /* Mostrar un aviso flotante al seleccionar Estudiante */
+    .menu-flotante {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #1B396A;
+        color: white;
+        font-weight: 600;
+        padding: 12px 18px;
+        border-radius: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 9999;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from {opacity: 0;}
+        to {opacity: 1;}
+    }
+}
     </style>
 """, unsafe_allow_html=True)
 
@@ -142,7 +162,18 @@ def modulo_home():
             st.session_state["validando_docente"] = False
             st.success("✅ Rol seleccionado: Estudiante")
             st.toast("Menú habilitado para estudiantes 🎓")
+            st.markdown("""
+                <div class="menu-flotante">
+                📱 Menú habilitado → toca el ícono ☰ arriba a la izquierda
+                </div>
+                """, unsafe_allow_html=True)
             st.rerun()
+            st.markdown("""
+                <script>
+                window.scrollTo({top: 0, behavior: 'smooth'});
+                </script>
+                """, unsafe_allow_html=True)
+
 
     with col2:
         if st.button("👨‍🏫 Soy Docente", use_container_width=True):
