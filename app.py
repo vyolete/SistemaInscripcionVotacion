@@ -194,44 +194,47 @@ def modulo_home():
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         st.image(
-            "https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png",
+            "https://upload.wikimedia.org/wikipedia/commons/7/77/ITM_logo.png",
             width=180
         )
 
-    # Logo
-
-
-    # Títulos
     st.markdown("<h1 style='text-align:center; color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align:center; color:#1B396A;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
+    st.markdown("<h4 style='text-align:center; color:#1B396A;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
 
-    st.markdown("<h4 style='color:#1B396A; margin-bottom:15px;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
-    # CSS para cambiar color de texto del radio
-    st.markdown("""
-        <style>
-        div[role='radiogroup'] label div:first-child {
-            background-color: #1B396A !important;  /* Azul institucional */
-            border-color: #1B396A !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
 
-    
-    # Radio normal (sin background-color)
-    rol = st.radio("Soy:", ["Estudiante", "Docente"], key="rol_radio", horizontal=True)
-    st.session_state["rol"] = rol
-
-
-
-    # Botón siempre visible (centrado y pequeño)
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        if st.button("Continuar ▶️"):
+    with col1:
+        if st.button("🎓 Soy Estudiante", use_container_width=True):
+            st.session_state["rol"] = "Estudiante"
             st.session_state["rol_seleccionado"] = True
             st.rerun()
 
+    with col2:
+        if st.button("👨‍🏫 Soy Docente", use_container_width=True):
+            st.session_state["rol"] = "Docente"
+            st.session_state["rol_seleccionado"] = False  # todavía falta validar correo
+            st.session_state["validando_docente"] = True
+            st.rerun()
+
+    # Si está en validación de docente
+    if st.session_state.get("validando_docente", False):
+        correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
+        if st.button("Validar"):
+            df_docentes = cargar_docentes(st.secrets)
+            if correo in df_docentes["Correo"].values:
+                st.session_state["rol_seleccionado"] = True
+                st.session_state["rol"] = "Docente"
+                st.session_state["validando_docente"] = False
+                st.success("✅ Acceso autorizado. Bienvenido docente.")
+                st.rerun()
+            else:
+                st.error("❌ Tu correo no está autorizado como docente. Solicita registro.")
+                if st.button("Volver al inicio"):
+                    st.session_state.clear()
+                    st.rerun()
 
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
