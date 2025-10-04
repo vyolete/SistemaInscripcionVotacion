@@ -210,6 +210,16 @@ def modulo_inscripcion():
         """,
         unsafe_allow_html=True
     )
+    st.components.v1.iframe(
+    "https://forms.gle/hzBPg4THxcD64ygK9",
+    height=800,
+    width=100%
+    )
+    st.markdown(
+    "Si el formulario no carga correctamente, da clic "
+    "[aquí](https://forms.gle/hzBPg4THxcD64ygK9) para abrirlo directamente."
+    
+)
 
 
 def modulo_dashboard():
