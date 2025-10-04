@@ -140,40 +140,90 @@ def cargar_docentes(secrets):
 # ======================================================
 
 def modulo_home():
+    # ====== ESTILOS ======
+    st.markdown("""
+    <style>
+    /* Tarjetas de rol */
+    .rol-card {
+        border: 2px solid #d9e1ec;
+        border-radius: 12px;
+        padding: 25px 10px;
+        text-align: center;
+        transition: 0.3s ease;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1B396A;
+        background-color: #F9FBFD;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.05);
+    }
+    .rol-card:hover {
+        border-color: #1B396A;
+        background-color: #E6F0FA;
+        transform: translateY(-3px);
+    }
+    .rol-selected {
+        border-color: #1B396A;
+        background-color: #E6F0FA;
+        color: #1B396A;
+        font-weight: 700;
+        box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Caja de confirmación */
+    .confirm-box {
+        background: #E6F0FA;
+        color: #1B396A;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: 600;
+        margin-top: 15px;
+        border-left: 5px solid #1B396A;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    /* Animación general */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Animación del logo */
+    @keyframes floatIn {
+        0% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    img[data-testid="stImage"] {
+        animation: floatIn 1s ease-out;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ====== ENCABEZADO ======
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         st.image(
             "https://media1.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
-            width=180
+            use_container_width=True
         )
 
-    st.markdown("<h1 style='text-align:center;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align:center;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;color:#1B396A;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center;color:#1B396A;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown("<h4 style='text-align:center;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
-
+    # ====== SELECCIÓN DE ROL ======
+    st.markdown("<h4 style='text-align:center;color:#1B396A;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
+    rol_actual = st.session_state.get("rol", None)
 
     with col1:
         if st.button("🎓 Soy Estudiante", use_container_width=True):
             st.session_state["rol"] = "Estudiante"
             st.session_state["rol_seleccionado"] = True
             st.session_state["validando_docente"] = False
-            st.success("✅ Rol seleccionado: Estudiante")
-            st.toast("Menú habilitado para estudiantes 🎓")
-            st.markdown("""
-                <div class="menu-flotante">
-                📱 Menú habilitado → toca el ícono ☰ arriba a la izquierda
-                </div>
-                """, unsafe_allow_html=True)
+            st.toast("✅ Rol Estudiante seleccionado")
             st.rerun()
-            st.markdown("""
-                <script>
-                window.scrollTo({top: 0, behavior: 'smooth'});
-                </script>
-                """, unsafe_allow_html=True)
-
+        st.markdown(f"<div class='rol-card {'rol-selected' if rol_actual=='Estudiante' else ''}'>🎓 Estudiante</div>", unsafe_allow_html=True)
 
     with col2:
         if st.button("👨‍🏫 Soy Docente", use_container_width=True):
@@ -182,36 +232,30 @@ def modulo_home():
             st.session_state["validando_docente"] = True
             st.toast("Valida tu correo institucional 👨‍🏫")
             st.rerun()
+        st.markdown(f"<div class='rol-card {'rol-selected' if rol_actual=='Docente' else ''}'>👨‍🏫 Docente</div>", unsafe_allow_html=True)
 
-    if st.session_state.get("validando_docente", False):
-        correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
-        if st.button("Validar"):
-            df_docentes = cargar_docentes(st.secrets)
-            if correo in df_docentes["Correo"].values:
-                st.session_state["rol_seleccionado"] = True
-                st.session_state["rol"] = "Docente"
-                st.session_state["validando_docente"] = False
-                st.success("✅ Acceso autorizado. Bienvenido docente.")
-                st.rerun()
-            else:
-                st.error("❌ Tu correo no está autorizado como docente.")
-                if st.button("Volver al inicio"):
-                    st.session_state.clear()
+    # ====== CONFIRMACIÓN DE ROL ======
+    if rol_actual == "Estudiante":
+        st.markdown("<div class='confirm-box'>✅ Rol seleccionado: <b>Estudiante</b><br>Ya puedes acceder al menú de opciones.</div>", unsafe_allow_html=True)
+
+    elif rol_actual == "Docente":
+        if st.session_state.get("validando_docente", False):
+            correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
+            if st.button("Validar"):
+                df_docentes = cargar_docentes(st.secrets)
+                if correo in df_docentes["Correo"].values:
+                    st.session_state["rol_seleccionado"] = True
+                    st.session_state["rol"] = "Docente"
+                    st.session_state["validando_docente"] = False
+                    st.success("✅ Acceso autorizado. Bienvenido docente.")
                     st.rerun()
-
-
-def modulo_inscripcion():
-    st.header("📝 Formulario de Inscripción")
-    st.markdown("Completa el formulario a través del siguiente módulo:")
-    st.components.v1.iframe(
-    "https://forms.gle/hzBPg4THxcD64ygK9",
-    height=800,
-    width="100%"
-    )
-    st.markdown(
-    "Si el formulario no carga correctamente, da clic "
-    "[aquí](https://forms.gle/hzBPg4THxcD64ygK9) para abrirlo directamente."
-    )
+                else:
+                    st.error("❌ Tu correo no está autorizado como docente.")
+                    if st.button("Volver al inicio"):
+                        st.session_state.clear()
+                        st.rerun()
+        else:
+            st.markdown("<div class='confirm-box'>✅ Rol seleccionado: <b>Docente</b><br>Ya puedes acceder al menú de opciones.</div>", unsafe_allow_html=True)
 
 
 def modulo_dashboard():
