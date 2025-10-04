@@ -332,108 +332,127 @@ def modulo_dashboard():
 
 
 def modulo_votacion():
-    st.markdown("<h2 style='color:#1B396A;'>🗳 Votación de Equipos</h2>", unsafe_allow_html=True)
+    # ========= ESTILOS =========
+    st.markdown("""
+        <style>
+        .stApp { background-color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }
+        h1, h2, h3, h4, h5, h6, label, p, span, div { color: #1B396A !important; }
+        .stButton>button {
+            background-color: #1B396A !important;
+            color: white !important;
+            border-radius: 6px;
+            font-weight: 600;
+            padding: 0.6em 1.3em;
+            border: none;
+            transition: 0.3s ease;
+        }
+        .stButton>button:hover { background-color: #27406d !important; }
+        .info-box {
+            background-color: #E6F0FA; border-left: 5px solid #1B396A;
+            padding: 14px; border-radius: 8px; margin-bottom: 15px;
+        }
+        .score-box {
+            background-color: #F3F7FB; border-left: 4px solid #1B396A;
+            padding: 12px; border-radius: 8px; color: #1B396A; font-weight: 600;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    # --- Detectar si vino desde QR ---
+    # ========= ENCABEZADO =========
+    st.markdown("""
+        <div style='text-align:center; margin-bottom:20px;'>
+            <img src='https://upload.wikimedia.org/wikipedia/commons/7/77/ITM_logo.png' width='130'>
+            <h2 style='color:#1B396A;'>🗳 Sistema de Votación - Concurso Analítica Financiera ITM</h2>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # ========= LEER PARÁMETROS DE URL =========
     params = st.query_params
     equipo_qr = params.get("equipo", [None])[0] if "equipo" in params else None
+    rol_qr = params.get("rol", [None])[0] if "rol" in params else None
 
-    # --- Contexto visual del ingreso ---
     if equipo_qr:
         st.markdown(f"""
-        <div style="background-color:#E6F0FA; padding:15px; border-left:5px solid #1B396A; border-radius:8px;">
-            <b>📲 Ingreso directo:</b> Estás votando por el equipo 
-            <span style="color:#1B396A; font-weight:600;">{equipo_qr}</span> desde el código QR.
+        <div class='info-box'>
+            <b>📲 Ingreso directo:</b> Estás votando por el equipo <b>{equipo_qr}</b>.
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.info("Selecciona tu rol, ingresa tu correo y el código de equipo que deseas evaluar.")
+        st.markdown("""
+        <div class='info-box'>
+            🧭 Selecciona tu rol, ingresa tu correo institucional y el código del equipo.
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    # ========= SELECCIÓN DE ROL =========
+    if rol_qr:
+        if rol_qr.lower() == "docente":
+            rol = "Docente"
+        else:
+            rol = "Estudiante / Asistente"
+        st.info(f"👤 Rol detectado automáticamente: **{rol}**")
+    else:
+        rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
 
-    # --- Ingreso de datos del votante ---
-    col1, col2 = st.columns(2)
-    with col1:
-        rol = st.radio(
-            "Selecciona tu rol:",
-            ["Estudiante / Asistente", "Docente"],
-            horizontal=True,
-            key="rol_votacion"
-        )
-    with col2:
-        correo = st.text_input("📧 Correo institucional:")
-
+    correo = st.text_input("📧 Correo institucional:")
     equipo_id = st.text_input("🏷️ Código del equipo a evaluar:", value=equipo_qr or "")
 
-    # --- Validación inicial ---
-    if st.button("Continuar ▶️", use_container_width=False):
+    if st.button("Continuar ▶️"):
         if not correo or not equipo_id:
             st.error("❌ Debes ingresar tu correo y el código del equipo.")
             return
 
         try:
-            # --- Conectar con Sheets y validar equipo ---
+            # ========= VALIDACIONES =========
             df_insc = conectar_google_sheets(st.secrets)
             df_insc = preparar_dataframe(df_insc)
-            if equipo_id not in df_insc["ID Equipo"].values:
+            equipos_validos = df_insc["ID Equipo"].astype(str).tolist()
+
+            if equipo_id not in equipos_validos:
                 st.error("❌ El código del equipo no existe.")
                 return
 
-            # --- Validar si es docente ---
             if "Docente" in rol:
                 df_docentes = cargar_docentes(st.secrets)
                 if correo not in df_docentes["Correo"].values:
-                    st.error("❌ Tu correo no está autorizado como jurado docente. Solicita tu registro.")
+                    st.error("❌ Tu correo no está autorizado como jurado docente. Solicita registro.")
                     return
 
-            # --- Abrir hoja de votaciones ---
-            credentials = service_account.Credentials.from_service_account_info(
-                st.secrets["gcp"],
-                scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            )
-            gc = gspread.authorize(credentials)
-            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-            ws_votos = sh.worksheet("Votaciones")
-
-            votos = pd.DataFrame(ws_votos.get_all_records())
-            if not votos.empty:
-                duplicado = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
-                if not duplicado.empty:
-                    st.error("⚠️ Ya registraste un voto para este equipo.")
-                    return
-
-            # --- Formulario visual según rol ---
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("<h4 style='color:#1B396A;'>📋 Evaluación del proyecto</h4>", unsafe_allow_html=True)
+            # ========= FORMULARIO DE VOTACIÓN =========
+            st.markdown("<hr>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='color:#1B396A;'>📋 Evaluación del Proyecto ({rol})</h4>", unsafe_allow_html=True)
 
             if "Docente" in rol:
                 col1, col2, col3 = st.columns(3)
-                with col1:
-                    rigor = st.slider("Rigor técnico", 1, 5, 3, help="Calidad metodológica y análisis técnico del proyecto")
-                with col2:
-                    viabilidad = st.slider("Viabilidad financiera", 1, 5, 3, help="Sustentabilidad económica y coherencia financiera")
-                with col3:
-                    innovacion = st.slider("Innovación", 1, 5, 3, help="Novedad, creatividad y aporte diferencial")
+                with col1: rigor = st.slider("Rigor técnico", 1, 5, 3)
+                with col2: viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
+                with col3: innovacion = st.slider("Innovación", 1, 5, 3)
                 puntaje_total = rigor + viabilidad + innovacion
             else:
                 col1, col2, col3 = st.columns(3)
-                with col1:
-                    creatividad = st.slider("Creatividad", 1, 5, 3, help="Originalidad e impacto visual del proyecto")
-                with col2:
-                    claridad = st.slider("Claridad de la presentación", 1, 5, 3, help="Comprensión, estructura y exposición")
-                with col3:
-                    impacto = st.slider("Impacto percibido", 1, 5, 3, help="Relevancia y aplicabilidad práctica")
+                with col1: creatividad = st.slider("Creatividad", 1, 5, 3)
+                with col2: claridad = st.slider("Claridad de la presentación", 1, 5, 3)
+                with col3: impacto = st.slider("Impacto percibido", 1, 5, 3)
                 puntaje_total = creatividad + claridad + impacto
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(f"""
-                <div style='background-color:#F3F7FB; padding:12px; border-radius:8px; 
-                border-left:4px solid #1B396A; color:#1B396A; font-weight:600;'>
-                🧮 Puntaje total: <span style='font-size:18px;'>{puntaje_total}</span>
-                </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f"<div class='score-box'>🧮 Puntaje total: <b>{puntaje_total}</b></div>", unsafe_allow_html=True)
 
-            if st.button("✅ Enviar voto", use_container_width=False):
+            # ========= GUARDAR =========
+            if st.button("✅ Enviar voto"):
+                credentials = service_account.Credentials.from_service_account_info(
+                    st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+                )
+                gc = gspread.authorize(credentials)
+                sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+                ws_votos = sh.worksheet("Votaciones")
+
+                votos = pd.DataFrame(ws_votos.get_all_records())
+                if not votos.empty:
+                    existe = votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)]
+                    if not existe.empty:
+                        st.warning("⚠️ Ya registraste un voto para este equipo.")
+                        return
+
                 registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
                 ws_votos.append_row(registro)
                 st.success("✅ ¡Tu voto ha sido registrado exitosamente!")
@@ -441,8 +460,6 @@ def modulo_votacion():
 
         except Exception as e:
             st.error(f"⚠️ Error al registrar el voto: {e}")
-
-
 
 def modulo_resultados():
     st.markdown(
