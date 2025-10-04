@@ -218,8 +218,7 @@ def modulo_inscripcion():
     st.markdown(
     "Si el formulario no carga correctamente, da clic "
     "[aquí](https://forms.gle/hzBPg4THxcD64ygK9) para abrirlo directamente."
-    
-)
+    )
 
 
 def modulo_dashboard():
