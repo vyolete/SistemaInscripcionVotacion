@@ -213,7 +213,7 @@ def modulo_inscripcion():
     st.components.v1.iframe(
     "https://forms.gle/hzBPg4THxcD64ygK9",
     height=800,
-    width=100%
+    width=100%,
     )
     st.markdown(
     "Si el formulario no carga correctamente, da clic "
