@@ -6,4 +6,9 @@ qrcode[pil]>=7.4.2
 Pillow>=9.5.0
 altair
 streamlit-option-menu
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+
 
