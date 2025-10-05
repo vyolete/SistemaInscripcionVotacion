@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 import pandas as pd
 import gspread
@@ -247,67 +246,14 @@ def enviar_correo_gmail(destinatario, asunto, mensaje_html):
 # ======================================================
 # 🔹 MÓDULOS: Home, Inscripción, Dashboard, Votación, Resultados, Eventos
 # ======================================================
-
-# --- 🔹 HOME / LOGIN ---
 def modulo_home():
-    st.title("🏛️ Sistema de Inscripción y Votación ITM")
-
-    df_autorizados = cargar_hoja("Correos Autorizados")
-    df_docentes = cargar_hoja("Docentes")
-
-    st.subheader("🔐 Ingreso al sistema")
-    correo = st.text_input("Correo institucional")
-    codigo = st.text_input("Código de acceso", type="password")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        ingresar = st.button("Ingresar", use_container_width=True)
-    with col2:
-        nuevo = st.button("Nuevo usuario", use_container_width=True)
-
-    if ingresar:
-        if not correo or not codigo:
-            st.warning("Debe ingresar el correo y el código.")
-            return
-
-        if correo in list(df_docentes["Correo institucional"]):
-            fila = df_docentes[df_docentes["Correo institucional"] == correo].iloc[0]
-            if fila["Código acceso"] == codigo:
-                st.success(f"Bienvenido, {fila['Nombre']} ({fila['Rol']}) 👋")
-            else:
-                st.error("Código incorrecto.")
-        else:
-            st.error("Correo no registrado. Puede registrarse como docente.")
-
-    if nuevo:
-        if correo not in list(df_autorizados["Correo institucional"]):
-            st.error("Este correo no está autorizado para registrarse como docente.")
-        else:
-            st.session_state["registro_correo"] = correo
-            st.session_state["vista"] = "registro_docente"
-
-
-# --- 🔹 REGISTRO DE DOCENTE ---
-def modulo_registro_docente():
-    st.title("📋 Registro de Docente")
-
-    correo = st.session_state.get("registro_correo", "")
-    if not correo:
-        st.warning("Debe iniciar desde la pantalla principal.")
-        return
-
-    nombre = st.text_input("Nombre completo")
-    facultad = st.selectbox("Facultad", ["Ciencias Económicas"])
-    enviar = st.button("Registrar", use_container_width=True)
-
-    if enviar:
-        codigo = "DOC-" + generar_codigo(4)
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-        fila = [timestamp, nombre, correo, facultad, codigo, "Docente", "Activo"]
-        guardar_en_hoja("Docentes", fila)
-        enviar_codigo_email(correo, codigo)
-        st.success("Registro exitoso. Se envió el código de acceso a su correo.")
-        st.session_state.pop("vista", None)
+    st.title("🏫 Portal del Concurso ITM")
+    if "correo_usuario" in st.session_state and st.session_state.get("correo_usuario"):
+        st.markdown(f"👋 Bienvenido **{st.session_state.get('correo_usuario')}** — Rol: **{st.session_state.get('rol_usuario', 'Invitado')}**")
+    else:
+        st.markdown("👋 Bienvenido — por favor inicia sesión para acceder al panel completo.")
+    st.markdown("### 📘 Menú principal")
+    st.write("✅ Puedes acceder a inscripciones, votaciones y resultados según tu rol.")
 
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
@@ -585,6 +531,118 @@ def modulo_votacion():
 
 
 # ======================================================
+# 🔐 MÓDULO DE LOGIN REGISTRO DE USUARIOS
+# =====================================================
+def login_general():
+    import streamlit as st
+    import gspread
+    from google.oauth2 import service_account
+
+    # ======================================================
+    # 🔹 CONEXIÓN GOOGLE SHEETS
+    # ======================================================
+    credentials = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"])
+    client = gspread.authorize(credentials)
+
+    # ======================================================
+    # 🔹 INTERFAZ
+    # ======================================================
+    st.markdown("<h2 style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
+    rol = st.radio("Selecciona tu rol:", ["Docente", "Estudiante"], horizontal=True)
+    email = st.text_input("📧 Correo institucional:")
+
+    # ======================================================
+    # 🔹 FUNCIONES AUXILIARES
+    # ======================================================
+    def es_correo_itm(correo):
+        return correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
+
+    def buscar_correo(hoja, correo):
+        try:
+            dataframe = conectar_google_sheets(st.secrets)
+            correos = [c.strip().lower() for c in ws.col_values(1)[1:]]  # omitir encabezado
+            return correo.lower() in correos
+        except Exception as e:
+            st.error(f"⚠️ No se pudo acceder a la hoja {hoja}: {e}")
+            return False
+
+    # ======================================================
+    # 🔹 DOCENTE
+    # ======================================================
+    if rol == "Docente":
+        if st.button("Ingresar como Docente"):
+            if not email:
+                st.warning("Ingrese su correo institucional.")
+                st.stop()
+            if not es_correo_itm(email):
+                st.error("Solo se permiten correos institucionales del ITM.")
+                st.stop()
+
+            # 1️⃣ Validar si está autorizado
+            if not buscar_correo("Correos Autorizados", email):
+                st.error("❌ Este correo no está autorizado. Solicite acceso al coordinador académico.")
+                st.stop()
+
+            # 2️⃣ Si está autorizado, validar si ya está registrado
+            if not buscar_correo("Docentes", email):
+                st.info("Correo autorizado pero no registrado.")
+                codigo = st.text_input("Ingrese el código de validación enviado a su correo")
+                if st.button("Registrar nuevo docente"):
+                    if not codigo.strip():
+                        st.warning("Debe ingresar un código de validación.")
+                        st.stop()
+                    hoja_docentes = client.open("Docentes").worksheet("Docentes")
+                    hoja_docentes.append_row([email, codigo])
+                    st.success("✅ Registro completado. Ya puede ingresar.")
+                    st.stop()
+            else:
+                st.info("Este correo ya está registrado. Verifique su código de validación.")
+                codigo = st.text_input("Ingrese su código de validación:")
+                if st.button("Validar e ingresar"):
+                    hoja_docentes = client.open("Docentes").worksheet("Docentes")
+                    datos = hoja_docentes.get_all_records()
+                    for fila in datos:
+                        if fila.get("Correo", "").lower() == email.lower():
+                            if str(fila.get("Codigo", "")).strip() == codigo.strip():
+                                st.success(f"Bienvenido docente {email}")
+                                st.session_state["usuario"] = email
+                                st.session_state["rol"] = "Docente"
+                                st.session_state["autenticado"] = True
+                                st.switch_page("home_docente.py")
+                                st.stop()
+                    st.error("❌ Código de validación incorrecto.")
+                    st.stop()
+
+    # ======================================================
+    # 🔹 ESTUDIANTE
+    # ======================================================
+    if rol == "Estudiante":
+        if st.button("Ingresar como Estudiante"):
+            if not email:
+                st.warning("Ingrese su correo institucional.")
+                st.stop()
+            if not es_correo_itm(email):
+                st.error("Solo se permiten correos institucionales del ITM.")
+                st.stop()
+
+            if not buscar_correo("Estudiantes", "Estudiantes", email):
+                st.info("Correo no encontrado. Puede registrarse a continuación.")
+                if st.button("Registrar nuevo estudiante"):
+                    hoja_estudiantes = client.open("Estudiantes").worksheet("Estudiantes")
+                    hoja_estudiantes.append_row([email])
+                    st.success("✅ Registro exitoso. Ya puede iniciar sesión.")
+                    st.stop()
+            else:
+                st.success(f"Bienvenido estudiante {email}")
+                st.session_state["usuario"] = email
+                st.session_state["rol"] = "Estudiante"
+                st.session_state["autenticado"] = True
+                st.switch_page("home_estudiante.py")
+                st.stop()
+
+
+
+# ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
 # ======================================================
 def main():
@@ -740,4 +798,3 @@ def main():
 # ======================================================
 if __name__ == "__main__":
     main()
-
