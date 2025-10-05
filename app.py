@@ -15,111 +15,110 @@ from google.oauth2.service_account import Credentials
 
 
 # ======================================================
-# 🔹 CONFIGURACIÓN Y ESTILOS PERSONALIZADOS ITM
+# 🔹 CONFIGURACIÓN Y ESTILOS INSTITUCIONALES ITM
 # ======================================================
 
+
+st.set_page_config(
+    page_title="Concurso Analítica Financiera ITM",
+    page_icon="📊",
+    layout="wide",
+)
+
+# 🔧 Forzamos colores institucionales (sin usar config.toml)
 st.markdown("""
 <style>
 /* ======================================================
-   🎨 ESTILOS INSTITUCIONALES ITM
+   🎨 ESTILOS INSTITUCIONALES ITM (ACTUALIZADO)
    ====================================================== */
 
-/* --- Fondo principal blanco --- */
+/* Fondo general del contenido */
 [data-testid="stAppViewContainer"] {
     background-color: #FFFFFF !important;
-    color: #1B396A !important;
 }
 
-/* --- Sidebar azul institucional --- */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1B396A 0%, #0E2750 100%) !important;
+/* Fondo azul institucional en el sidebar */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
     color: #FFFFFF !important;
-    padding: 1.2rem 0.8rem !important;
-    border-right: 4px solid #133060 !important;
+    padding: 1.5rem 1rem !important;
+    border-right: 3px solid #163564 !important;
 }
 
-/* --- Logo superior --- */
-.sidebar-header {
-    text-align: center !important;
-    margin-bottom: 1rem !important;
-}
-.sidebar-header img {
-    width: 110px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-.sidebar-header h1 {
-    font-size: 16px;
-    color: #EAF3FF !important;
-    font-weight: 700;
-}
-
-/* --- Bloque de usuario --- */
-.user-card {
-    background-color: rgba(255,255,255,0.12) !important;
-    border-radius: 10px !important;
-    padding: 12px !important;
-    margin: 12px 0 !important;
-}
-.user-card p, .user-card span {
+/* Texto dentro del sidebar */
+section[data-testid="stSidebar"] * {
     color: #FFFFFF !important;
-    font-size: 14px !important;
-    line-height: 1.4em;
-}
-.user-card b {
-    color: #A8D1FF !important;
+    font-family: 'Segoe UI', sans-serif !important;
 }
 
-/* --- Menú principal --- */
-ul.nav.nav-pills {
+/* ======================================================
+   🧭 MENÚ PRINCIPAL (option_menu)
+   ====================================================== */
+div[data-testid="stSidebarNav"] ul.nav.nav-pills {
     background: transparent !important;
     padding: 0 !important;
     margin-top: 10px !important;
 }
-ul.nav.nav-pills li a {
-    background-color: rgba(255, 255, 255, 0.10) !important;
+
+div[data-testid="stSidebarNav"] ul.nav.nav-pills li a {
+    background-color: rgba(255,255,255,0.15) !important;
     color: #E6EAF0 !important;
     border-radius: 10px !important;
     font-weight: 600 !important;
     font-size: 15px !important;
     padding: 10px 14px !important;
-    margin: 4px 8px !important;
-    transition: all 0.3s ease !important;
+    margin: 6px 8px !important;
     border: none !important;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    display: block !important;
 }
-ul.nav.nav-pills li a:hover {
-    background-color: rgba(255, 255, 255, 0.25) !important;
+
+div[data-testid="stSidebarNav"] ul.nav.nav-pills li a:hover {
+    background-color: rgba(255, 255, 255, 0.3) !important;
     color: #FFFFFF !important;
-    transform: translateX(3px);
 }
-ul.nav.nav-pills li a.active {
+
+div[data-testid="stSidebarNav"] ul.nav.nav-pills li a.active {
     background-color: #FFFFFF !important;
     color: #1B396A !important;
     font-weight: 700 !important;
-    box-shadow: 0 3px 8px rgba(255,255,255,0.25);
+    box-shadow: 0 3px 6px rgba(255,255,255,0.25);
 }
 
-/* --- Botones institucionales --- */
+/* ======================================================
+   🔘 BOTONES
+   ====================================================== */
 .stButton>button {
     background-color: #1B396A !important;
     color: #FFFFFF !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
-    font-size: 15px !important;
-    padding: 0.6em 1.4em !important;
-    border: none !important;
+    font-size: 14px !important;
+    padding: 0.5em 1.2em !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 6px rgba(27, 57, 106, 0.3);
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(27, 57, 106, 0.3);
 }
 .stButton>button:hover {
     background-color: #244A8F !important;
     transform: scale(1.04);
 }
 
-/* --- Inputs y campos --- */
+/* ======================================================
+   🏠 TITULOS Y TEXTOS
+   ====================================================== */
+h1, h2, h3, h4, h5, h6 {
+    color: #1B396A !important;
+    font-weight: 700 !important;
+}
+p, label, span, div, li {
+    color: #1B396A !important;
+}
+
+/* ======================================================
+   🧾 INPUTS Y CAMPOS
+   ====================================================== */
 input, textarea, select {
     border: 1.5px solid #C7D3E1 !important;
     border-radius: 6px !important;
@@ -134,32 +133,20 @@ input:focus, textarea:focus {
     outline: none !important;
 }
 
-/* --- Títulos y textos --- */
-h1, h2, h3, h4, h5, h6 {
-    color: #1B396A !important;
-    font-weight: 700 !important;
-}
-p, label, span, div {
-    color: #1B396A !important;
-}
-
-/* --- Modo responsive móvil --- */
+/* ======================================================
+   📱 RESPONSIVO (vista móvil)
+   ====================================================== */
 @media (max-width: 768px) {
-    [data-testid="stSidebar"] {
-        padding: 0.8rem !important;
+    section[data-testid="stSidebar"] {
+        padding: 10px !important;
     }
-    .sidebar-header img {
-        width: 80px !important;
-    }
-    ul.nav.nav-pills li a {
+    div[data-testid="stSidebarNav"] ul.nav.nav-pills li a {
         font-size: 14px !important;
-        padding: 8px 12px !important;
-        margin: 3px 6px !important;
+        padding: 8px 10px !important;
     }
 }
 </style>
 """, unsafe_allow_html=True)
-
 
 
 # ======================================================
