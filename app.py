@@ -582,81 +582,91 @@ def login_general():
 # ======================================================
 # 🔹 APP MAIN y menú lateral habilitado después del login
 # ======================================================
+# ======================================================
+# 🔹 FUNCIÓN PRINCIPAL
+# ======================================================
 def main():
-    # Barra decorativa superior
+    st.set_page_config(page_title="Concurso Analítica Financiera ITM", layout="wide")
+    
+    # --- Inicializar variables de sesión ---
+    if "usuario_autenticado" not in st.session_state:
+        st.session_state["usuario_autenticado"] = False
+    if "rol" not in st.session_state:
+        st.session_state["rol"] = "Invitado"
+    if "correo_actual" not in st.session_state:
+        st.session_state["correo_actual"] = ""
+    if "logueado" not in st.session_state:
+        st.session_state["logueado"] = False
+
+    # --- Título institucional ---
     st.markdown("""
-    <div style="height:10px; margin-bottom:15px;
-      background:linear-gradient(270deg,#1B396A,#27ACE2,#1B396A,#27ACE2);
-      background-size:600% 600%; animation:gradientAnim 6s ease infinite;
-      border-radius:6px;"></div>
-    <style>@keyframes gradientAnim {
-      0% {background-position:0% 50%}
-      50% {background-position:100% 50%}
-      100% {background-position:0% 50%}
-    }</style>
+        <style>
+        .main > div {
+            padding-top: 1rem;
+        }
+        .titulo {
+            color: #1B396A;
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        </style>
+        <div class="titulo">🏫 Concurso de Analítica Financiera ITM</div>
     """, unsafe_allow_html=True)
 
-    # Sidebar: si no hay rol seleccionado, solo mostrar Login/Inicio sencillo
+    # --- Mostrar login si no hay sesión activa ---
+    if not st.session_state["logueado"]:
+        login_general()
+        return  # detener aquí si no está logueado
+
+    # ======================================================
+    # 🔹 MENÚ LATERAL PRINCIPAL (solo si hay sesión activa)
+    # ======================================================
     with st.sidebar:
-        st.image("https://es.catalat.org/wp-content/uploads/2020/09/fondo-editorial-itm-2020-200x200.png", width=140)
-        st.markdown("<h3 style='color:white;'>Menú principal</h3>", unsafe_allow_html=True)
+        st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=150)
+        st.markdown("---")
+        st.markdown(f"👤 **Usuario:** {st.session_state['correo_actual']}")
+        st.markdown(f"🧩 **Rol:** {st.session_state['rol']}")
+        st.markdown("---")
 
-        if st.session_state.get("rol_seleccionado"):
-            # usuario ya autenticado -> mostrar menú completo
-            if st.session_state.get("rol_usuario") == "Docente":
-                opcion = option_menu(
-                    None, ["Home", "Inscripción", "Dashboard", "Votación", "Resultados", "Eventos"],
-                    icons=["house", "file-earmark-text", "bar-chart", "check2-square", "trophy", "calendar"],
-                    styles={
-                        "container": {"background-color": "#1B396A"},
-                        "icon": {"color": "white"},
-                        "nav-link": {"color": "white"},
-                        "nav-link-selected": {"background-color": "#27ACE2", "color": "white"},
-                    })
-            else:
-                opcion = option_menu(
-                    None, ["Home", "Inscripción", "Votación", "Resultados", "Eventos"],
-                    icons=["house", "file-earmark-text", "check2-square", "trophy", "calendar"],
-                    styles={
-                        "container": {"background-color": "#1B396A"},
-                        "icon": {"color": "white"},
-                        "nav-link": {"color": "white"},
-                        "nav-link-selected": {"background-color": "#27ACE2", "color": "white"},
-                    })
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🚪 Cerrar sesión"):
-                st.session_state.clear()
-                st.experimental_rerun()
-        else:
-            option = "Home"
-            st.markdown("#### 🔐 Acceso")
-            if st.button("Ir a Login"):
-                st.session_state['show_login'] = True
-    if st.session_state.get("logueado"):
-    header_institucional()
+        seleccion = option_menu(
+            "Menú Principal",
+            ["Inicio", "Inscripción", "Dashboard", "Votación", "Resultados", "Eventos"],
+            icons=["house", "clipboard2-data", "bar-chart", "check2-square", "trophy", "calendar-event"],
+            menu_icon="cast",
+            default_index=0,
+        )
 
-    # Renderizar módulos según opción
-    if option == "Home":
+        st.markdown("---")
+        if st.button("🚪 Cerrar sesión"):
+            st.session_state["logueado"] = False
+            st.session_state["usuario_autenticado"] = False
+            st.session_state["correo_actual"] = ""
+            st.session_state["rol"] = "Invitado"
+            st.success("Sesión cerrada correctamente.")
+            st.rerun()
+
+    # ======================================================
+    # 🔹 RUTEO DE MÓDULOS SEGÚN SELECCIÓN
+    # ======================================================
+    if seleccion == "Inicio":
         modulo_home()
-        # Si se solicitó abrir login, mostrarlo
-        if st.session_state.get('show_login'):
-            login_general()
-    elif option == "Inscripción":
-        if st.session_state.get("rol_seleccionado"):
-            modulo_inscripcion()
-        else:
-            st.warning("🔒 Debes iniciar sesión para acceder a Inscripción.")
-    elif option == "Dashboard":
-        if st.session_state.get("rol_seleccionado") and st.session_state.get("rol_usuario") == "Docente":
-            modulo_dashboard()
-        else:
-            st.warning("🔒 Solo docentes pueden ver el Dashboard.")
-    elif option == "Votación":
+    elif seleccion == "Inscripción":
+        modulo_inscripcion()
+    elif seleccion == "Dashboard":
+        modulo_dashboard()
+    elif seleccion == "Votación":
         modulo_votacion()
-    elif option == "Resultados":
+    elif seleccion == "Resultados":
         modulo_resultados()
-    elif option == "Eventos":
+    elif seleccion == "Eventos":
         modulo_eventos()
 
+
+# ======================================================
+# 🔹 FUNCIÓN PRINCIPAL DE EJECUCIÓN
+# ======================================================
 if __name__ == "__main__":
     main()
+
