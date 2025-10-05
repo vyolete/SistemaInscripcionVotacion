@@ -154,6 +154,32 @@ ul.nav.nav-pills li a.active {
 div[data-testid="stSidebarContent"] {
     background: transparent !important;
 }
+with st.sidebar:
+    seleccion = option_menu(
+        menu_title="Menú principal",
+        options=["Inicio", "Inscripción", "Votación", "Resultados"],
+        icons=["house", "file-earmark-text", "box-arrow-in-right", "trophy"],
+        menu_icon="cast",
+        default_index=0,
+        styles={
+            "container": {"background-color": "#1B396A"},
+            "icon": {"color": "white", "font-size": "18px"},
+            "nav-link": {
+                "color": "white",
+                "font-size": "16px",
+                "text-align": "left",
+                "margin": "5px 0",
+                "--hover-color": "#27406d",
+            },
+            "nav-link-selected": {
+                "background-color": "white",
+                "color": "#1B396A",
+                "font-weight": "700",
+                "border-left": "4px solid #1B396A",
+            },
+        },
+    )
+
 
 </style>
 """, unsafe_allow_html=True)
