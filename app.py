@@ -19,130 +19,81 @@ from google.oauth2.service_account import Credentials
 # ======================================================
 
 
-st.set_page_config(
-    page_title="Concurso Analítica Financiera ITM",
-    page_icon="📊",
-    layout="wide",
-)
-
-# 🔧 Forzamos colores institucionales (sin usar config.toml)
+# ======================================================
+# 🔹 ESTILOS INSTITUCIONALES ITM
+# ======================================================
 st.markdown("""
 <style>
-/* ======================================================
-   🎨 ESTILOS INSTITUCIONALES ITM (ACTUALIZADO)
-   ====================================================== */
-
-/* Fondo general del contenido */
+/* === Fondo general === */
 [data-testid="stAppViewContainer"] {
-    background-color: #FFFFFF !important;
+    background-color: #ffffff !important; /* Fondo blanco del área principal */
+    color: #1A1A1A;
 }
 
-/* Fondo azul institucional en el sidebar */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
-    color: #FFFFFF !important;
-    padding: 1.5rem 1rem !important;
-    border-right: 3px solid #163564 !important;
+/* === Lateral izquierdo (sidebar) === */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #003366 0%, #004080 100%);
+    color: white !important;
+    padding: 1rem 0.8rem;
 }
 
-/* Texto dentro del sidebar */
-section[data-testid="stSidebar"] * {
-    color: #FFFFFF !important;
-    font-family: 'Segoe UI', sans-serif !important;
+[data-testid="stSidebar"] * {
+    color: white !important;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-/* ======================================================
-   🧭 MENÚ PRINCIPAL (option_menu)
-   ====================================================== */
-div[data-testid="stSidebarNav"] ul.nav.nav-pills {
-    background: transparent !important;
-    padding: 0 !important;
-    margin-top: 10px !important;
-}
-
-div[data-testid="stSidebarNav"] ul.nav.nav-pills li a {
-    background-color: rgba(255,255,255,0.15) !important;
-    color: #E6EAF0 !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    font-size: 15px !important;
-    padding: 10px 14px !important;
-    margin: 6px 8px !important;
-    border: none !important;
-    transition: all 0.3s ease !important;
+[data-testid="stSidebar"] a {
     text-decoration: none !important;
-    display: block !important;
 }
 
-div[data-testid="stSidebarNav"] ul.nav.nav-pills li a:hover {
-    background-color: rgba(255, 255, 255, 0.3) !important;
-    color: #FFFFFF !important;
+/* === Menú principal === */
+.css-1v3fvcr, .css-1d391kg {
+    background-color: rgba(255,255,255,0.1) !important;
+    border-radius: 12px;
 }
 
-div[data-testid="stSidebarNav"] ul.nav.nav-pills li a.active {
-    background-color: #FFFFFF !important;
-    color: #1B396A !important;
-    font-weight: 700 !important;
-    box-shadow: 0 3px 6px rgba(255,255,255,0.25);
+.css-1v3fvcr:hover, .css-1d391kg:hover {
+    background-color: rgba(255,255,255,0.2) !important;
 }
 
-/* ======================================================
-   🔘 BOTONES
-   ====================================================== */
-.stButton>button {
-    background-color: #1B396A !important;
-    color: #FFFFFF !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    padding: 0.5em 1.2em !important;
-    transition: all 0.2s ease !important;
-    border: none !important;
-    box-shadow: 0 2px 4px rgba(27, 57, 106, 0.3);
-}
-.stButton>button:hover {
-    background-color: #244A8F !important;
-    transform: scale(1.04);
+/* === Botones del menú === */
+div[data-testid="stSidebarNav"] button {
+    background-color: #003366 !important;
+    color: white !important;
+    border-radius: 8px;
 }
 
-/* ======================================================
-   🏠 TITULOS Y TEXTOS
-   ====================================================== */
-h1, h2, h3, h4, h5, h6 {
-    color: #1B396A !important;
-    font-weight: 700 !important;
-}
-p, label, span, div, li {
-    color: #1B396A !important;
+/* === Logo ITM en el lateral === */
+.sidebar-logo {
+    width: 120px;
+    margin: 10px auto;
+    display: block;
 }
 
-/* ======================================================
-   🧾 INPUTS Y CAMPOS
-   ====================================================== */
-input, textarea, select {
-    border: 1.5px solid #C7D3E1 !important;
-    border-radius: 6px !important;
-    padding: 8px 10px !important;
-    background-color: #FFFFFF !important;
-    color: #1B396A !important;
-    font-size: 15px !important;
-}
-input:focus, textarea:focus {
-    border-color: #1B396A !important;
-    box-shadow: 0 0 4px rgba(27, 57, 106, 0.4);
-    outline: none !important;
+/* === Encabezados del contenido === */
+h1, h2, h3, h4 {
+    color: #002D72;
+    font-weight: 700;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-/* ======================================================
-   📱 RESPONSIVO (vista móvil)
-   ====================================================== */
+/* === Enlaces y texto === */
+a {
+    color: #002D72 !important;
+}
+
+.st-emotion-cache-6qob1r {
+    background-color: #003366 !important;
+}
+
+/* === Responsivo (pantalla móvil) === */
 @media (max-width: 768px) {
-    section[data-testid="stSidebar"] {
-        padding: 10px !important;
+    [data-testid="stSidebar"] {
+        background-color: #003366 !important;
+        padding: 0.5rem;
     }
-    div[data-testid="stSidebarNav"] ul.nav.nav-pills li a {
-        font-size: 14px !important;
-        padding: 8px 10px !important;
+    .sidebar-logo {
+        width: 90px;
     }
 }
 </style>
@@ -628,7 +579,7 @@ def main():
     # 🔹 MENÚ LATERAL PRINCIPAL (solo visible si hay login)
     # ======================================================
     with st.sidebar:
-        st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=120)
+        st.image("https://repositorio.itm.edu.co/assets/custom/images/logo.png", width=120)
         st.markdown("---")
         st.markdown(f"👤 **Usuario:** {st.session_state['correo_actual']}")
         st.markdown(f"🧩 **Rol:** {st.session_state['rol']}")
@@ -636,7 +587,7 @@ def main():
 
         # 🔸 Menú según rol
         if st.session_state["rol"] == "Docente":
-            opciones = ["Inicio", "Inscripción", "Dashboard", "Resultados", "Eventos"]
+            opciones = ["Inicio", "Inscripción","Votación", "Dashboard", "Resultados", "Eventos"]
             iconos = ["house", "clipboard2-data", "bar-chart", "trophy", "calendar-event"]
         else:  # Estudiante / Asistente
             opciones = ["Inicio", "Inscripción", "Votación", "Resultados", "Eventos"]
