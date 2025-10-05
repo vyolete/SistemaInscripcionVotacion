@@ -17,7 +17,6 @@ from google.oauth2.service_account import Credentials
 # ======================================================
 # 🔹 CONFIGURACIÓN Y ESTILOS PERSONALIZADOS ITM
 # ======================================================
-import streamlit as st
 
 st.set_page_config(
     page_title="Concurso Analítica Financiera ITM",
@@ -25,76 +24,112 @@ st.set_page_config(
     layout="wide"
 )
 
-# === CSS personalizado ===
+# === CSS Personalizado ===
 st.markdown("""
     <style>
-    /* Fondo general */
+    /* -------------------- GENERAL -------------------- */
     .stApp {
-        background-color: #FFFFFF !important;
+        background-color: #F8FAFC !important;
+        font-family: 'Segoe UI', Roboto, sans-serif !important;
+        color: #1B396A !important;
+    }
+
+    /* -------------------- SIDEBAR -------------------- */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
+        color: white !important;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: white !important;
         font-family: 'Segoe UI', sans-serif !important;
     }
 
-    /* Sidebar azul institucional */
-    [data-testid="stSidebar"] {
-        background-color: #1B396A !important;
-        color: white !important;
-    }
-    [data-testid="stSidebar"] * {
-        color: white !important;
-    }
-
-    /* Logo y título centrado */
     .sidebar-logo {
         text-align: center;
-        padding: 15px 0;
+        padding: 15px 0 5px 0;
     }
     .sidebar-logo img {
-        width: 160px;
-        margin-bottom: 10px;
+        width: 140px;
+        margin-bottom: 8px;
+        filter: brightness(1.2);
     }
     .sidebar-title {
         font-size: 18px;
-        font-weight: 600;
-        color: white;
+        font-weight: 700;
+        color: #ffffff;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    hr {
+        border: 0;
+        border-top: 1px solid rgba(255,255,255,0.3);
+        margin: 0 10px 15px 10px;
     }
 
-    /* Botones principales */
+    /* -------------------- BOTONES -------------------- */
     .stButton>button {
         background-color: #1B396A !important;
-        color: white !important;
-        border-radius: 6px !important;
-        font-weight: bold !important;
-        padding: 0.6em 1.4em !important;
-        font-size: 15px !important;
-        transition: 0.3s ease;
+        color: #FFFFFF !important;
         border: none !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        font-size: 15px !important;
+        padding: 0.6em 1.3em !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 6px rgba(27, 57, 106, 0.3);
     }
+
     .stButton>button:hover {
-        background-color: #27406d !important;
-        transform: scale(1.02);
+        background-color: #244A8F !important;
+        transform: scale(1.04);
+        box-shadow: 0 3px 8px rgba(27, 57, 106, 0.5);
     }
 
-    /* Títulos y textos */
-    h1, h2, h3, h4, h5, h6, label, p, span, div {
+    .stButton>button * {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+
+    /* -------------------- TITULOS Y TEXTOS -------------------- */
+    h1, h2, h3, h4, h5, h6 {
         color: #1B396A !important;
-        font-family: 'Segoe UI', sans-serif !important;
+        font-weight: 700 !important;
     }
 
-    /* Expander personalizado */
+    label, p, span, div, input, textarea {
+        color: #1B396A !important;
+        font-size: 15px !important;
+    }
+
+    /* -------------------- INPUTS Y CAMPOS -------------------- */
+    input[type="text"], input[type="email"], textarea, select {
+        border: 1.5px solid #C7D3E1 !important;
+        border-radius: 6px !important;
+        padding: 8px 10px !important;
+        background-color: #FFFFFF !important;
+        color: #1B396A !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    input:focus, textarea:focus, select:focus {
+        border-color: #1B396A !important;
+        box-shadow: 0 0 4px rgba(27, 57, 106, 0.4) !important;
+        outline: none !important;
+    }
+
+    /* -------------------- EXPANDERS -------------------- */
     div[data-testid="stExpander"] > details > summary {
         font-weight: 700 !important;
         font-size: 15px !important;
         color: #1B396A !important;
-        background-color: #F3F7FB !important;
-        border: 1px solid #d9e1ec !important;
+        background-color: #E8EEF6 !important;
+        border: 1px solid #C7D3E1 !important;
         border-radius: 6px !important;
         padding: 10px 14px !important;
         cursor: pointer;
     }
     div[data-testid="stExpander"] > details > summary:hover {
-        background-color: #E6F0FA !important;
+        background-color: #DDE7F3 !important;
     }
     div[data-testid="stExpander"] div[data-testid="stExpanderContent"] {
         background-color: #FFFFFF !important;
@@ -102,30 +137,32 @@ st.markdown("""
         padding: 12px 15px !important;
     }
 
-    /* Option Menu personalizado */
+    /* -------------------- OPTION MENU -------------------- */
     ul.nav.nav-pills {
         background-color: transparent !important;
         padding: 0;
+        margin: 0;
     }
     ul.nav.nav-pills li a {
         background-color: transparent !important;
-        color: white !important;
-        border-radius: 6px !important;
+        color: #E4E8F0 !important;
+        border-radius: 8px !important;
         font-weight: 600 !important;
-        margin: 2px 0 !important;
+        margin: 4px 0 !important;
         padding: 10px 16px !important;
-        transition: background-color 0.3s ease !important;
+        transition: background-color 0.3s ease, color 0.3s ease !important;
     }
     ul.nav.nav-pills li a:hover {
         background-color: rgba(255,255,255,0.15) !important;
+        color: #FFFFFF !important;
     }
     ul.nav.nav-pills li a.active {
-        background-color: rgba(255,255,255,0.25) !important;
-        color: #ffffff !important;
+        background-color: #FFFFFF !important;
+        color: #1B396A !important;
         font-weight: 700 !important;
     }
 
-    /* Compatibilidad móvil */
+    /* -------------------- COMPATIBILIDAD MÓVIL -------------------- */
     @media (max-width: 768px) {
         .menu-flotante {
             position: fixed;
@@ -148,15 +185,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === Encabezado del sidebar (logo y título) ===
+# === Sidebar con logo y título ITM ===
 with st.sidebar:
     st.markdown("""
     <div class="sidebar-logo">
         <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Logo_ITM_Medell%C3%ADn.png" alt="Logo ITM">
-        <div class="sidebar-title">Concurso ITM</div>
-        <hr style="border:1px solid rgba(255,255,255,0.3);">
+        <div class="sidebar-title">Concurso Analítica Financiera</div>
+        <hr>
     </div>
     """, unsafe_allow_html=True)
+
 
 # ======================================================
 # 🔹 UTILIDADES: Conexión y operaciones con Google Sheets
