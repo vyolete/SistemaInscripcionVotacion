@@ -24,97 +24,102 @@ st.markdown("""
    🎨 ESTILOS INSTITUCIONALES ITM
    ====================================================== */
 
-/* Fondo general del cuerpo (área principal) */
+/* --- Fondo principal blanco --- */
 [data-testid="stAppViewContainer"] {
     background-color: #FFFFFF !important;
-}
-
-/* Fondo azul institucional en el sidebar */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
-    color: #FFFFFF !important;
-    padding: 1.5rem 1rem !important;
-    border-right: 3px solid #163564 !important;
-}
-
-/* Texto del sidebar */
-[data-testid="stSidebar"] * {
-    color: #FFFFFF !important;
-    font-family: 'Segoe UI', sans-serif !important;
-}
-
-/* ======================================================
-   🧭 MENÚ PRINCIPAL (option_menu)
-   ====================================================== */
-ul.nav.nav-pills {
-    background: transparent !important;
-    padding: 0 !important;
-    margin-top: 10px !important;
-}
-
-ul.nav.nav-pills li a {
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    color: #E6EAF0 !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    font-size: 15px !important;
-    padding: 10px 14px !important;
-    margin: 6px 8px !important;
-    border: none !important;
-    transition: all 0.3s ease !important;
-}
-
-ul.nav.nav-pills li a:hover {
-    background-color: rgba(255, 255, 255, 0.3) !important;
-    color: #FFFFFF !important;
-}
-
-ul.nav.nav-pills li a.active {
-    background-color: #FFFFFF !important;
     color: #1B396A !important;
-    font-weight: 700 !important;
-    box-shadow: 0 3px 6px rgba(255,255,255,0.25);
 }
 
-/* ======================================================
-   🧍‍♂️ BLOQUE USUARIO
-   ====================================================== */
+/* --- Sidebar azul institucional --- */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1B396A 0%, #0E2750 100%) !important;
+    color: #FFFFFF !important;
+    padding: 1.2rem 0.8rem !important;
+    border-right: 4px solid #133060 !important;
+}
+
+/* --- Logo superior --- */
+.sidebar-header {
+    text-align: center !important;
+    margin-bottom: 1rem !important;
+}
+.sidebar-header img {
+    width: 110px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+.sidebar-header h1 {
+    font-size: 16px;
+    color: #EAF3FF !important;
+    font-weight: 700;
+}
+
+/* --- Bloque de usuario --- */
 .user-card {
-    background-color: rgba(255,255,255,0.1) !important;
+    background-color: rgba(255,255,255,0.12) !important;
     border-radius: 10px !important;
-    padding: 12px 14px !important;
+    padding: 12px !important;
     margin: 12px 0 !important;
 }
-.user-card p, .user-card a, .user-card span {
+.user-card p, .user-card span {
     color: #FFFFFF !important;
-    font-size: 13px !important;
+    font-size: 14px !important;
+    line-height: 1.4em;
 }
 .user-card b {
     color: #A8D1FF !important;
 }
 
-/* ======================================================
-   🔘 BOTONES
-   ====================================================== */
+/* --- Menú principal --- */
+ul.nav.nav-pills {
+    background: transparent !important;
+    padding: 0 !important;
+    margin-top: 10px !important;
+}
+ul.nav.nav-pills li a {
+    background-color: rgba(255, 255, 255, 0.10) !important;
+    color: #E6EAF0 !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    padding: 10px 14px !important;
+    margin: 4px 8px !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+ul.nav.nav-pills li a:hover {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    color: #FFFFFF !important;
+    transform: translateX(3px);
+}
+ul.nav.nav-pills li a.active {
+    background-color: #FFFFFF !important;
+    color: #1B396A !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 8px rgba(255,255,255,0.25);
+}
+
+/* --- Botones institucionales --- */
 .stButton>button {
     background-color: #1B396A !important;
     color: #FFFFFF !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
-    font-size: 14px !important;
-    padding: 0.5em 1.2em !important;
-    transition: all 0.2s ease !important;
+    font-size: 15px !important;
+    padding: 0.6em 1.4em !important;
     border: none !important;
-    box-shadow: 0 2px 4px rgba(27, 57, 106, 0.3);
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 6px rgba(27, 57, 106, 0.3);
 }
 .stButton>button:hover {
     background-color: #244A8F !important;
     transform: scale(1.04);
 }
 
-/* ======================================================
-   🧾 INPUTS Y CAMPOS DE TEXTO
-   ====================================================== */
+/* --- Inputs y campos --- */
 input, textarea, select {
     border: 1.5px solid #C7D3E1 !important;
     border-radius: 6px !important;
@@ -129,9 +134,7 @@ input:focus, textarea:focus {
     outline: none !important;
 }
 
-/* ======================================================
-   🏠 TITULOS Y TEXTOS
-   ====================================================== */
+/* --- Títulos y textos --- */
 h1, h2, h3, h4, h5, h6 {
     color: #1B396A !important;
     font-weight: 700 !important;
@@ -140,16 +143,23 @@ p, label, span, div {
     color: #1B396A !important;
 }
 
-/* ======================================================
-   📱 RESPONSIVO
-   ====================================================== */
+/* --- Modo responsive móvil --- */
 @media (max-width: 768px) {
     [data-testid="stSidebar"] {
-        padding: 10px !important;
+        padding: 0.8rem !important;
+    }
+    .sidebar-header img {
+        width: 80px !important;
+    }
+    ul.nav.nav-pills li a {
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+        margin: 3px 6px !important;
     }
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # ======================================================
