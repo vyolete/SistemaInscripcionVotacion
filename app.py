@@ -632,6 +632,8 @@ def main():
             st.markdown("#### 🔐 Acceso")
             if st.button("Ir a Login"):
                 st.session_state['show_login'] = True
+    if st.session_state.get("logueado"):
+    header_institucional()
 
     # Renderizar módulos según opción
     if option == "Home":
