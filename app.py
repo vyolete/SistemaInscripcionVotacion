@@ -26,7 +26,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-
+[data-testid="stSidebarNav"] {display: none;}
 /* ======================================================
    🌐 GLOBAL
    ====================================================== */
