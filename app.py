@@ -149,11 +149,18 @@ def cargar_docentes(secrets):
         # === FUNCIONES AUXILIARES ===
         # ================================================================
 
-def cargar_hoja(nombre_hoja: str) -> pd.DataFrame:
-    """Carga una hoja específica de Google Sheets."""
-    sheet_id = st.secrets["sheet_id"]
-    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={nombre_hoja}"
-    return pd.read_csv(url)
+def cargar_hoja(nombre_hoja):
+    import gspread
+    from google.oauth2.service_account import Credentials
+
+    creds = Credentials.from_service_account_info(st.secrets["gcp"])
+    client = gspread.authorize(creds)
+    sheet_id = st.secrets["spreadsheet"]["id"]
+    sheet = client.open_by_key(sheet_id)
+    worksheet = sheet.worksheet(nombre_hoja)
+    data = worksheet.get_all_records()
+    return pd.DataFrame(data)
+
 
 
 def generar_codigo_docente():
@@ -201,83 +208,90 @@ def modulo_home():
     # =====================================================
     # ======= LOGIN / REGISTRO DE DOCENTES ================
     # =====================================================
-    if not st.session_state["usuario_autenticado"]:
-        st.subheader("🔐 Iniciar sesión para docentes")
-
-        correo = st.text_input("📧 Ingresa tu correo institucional:")
-        accion = st.radio("Selecciona una acción:", ["Enviar código", "Validar código"])
-
-        if accion == "Enviar código":
-            if st.button("Enviar"):
-                if not correo:
-                    st.warning("⚠️ Ingresa tu correo institucional.")
-                    return
-
-                # Validar formato institucional
-                if not (correo.endswith("@itm.edu.co") or correo.endswith("@correo.itm.edu.co")):
-                    st.error("❌ Solo se permiten correos institucionales ITM.")
-                    return
-
-                # Cargar hojas
-                df_autorizados = cargar_hoja("Correos Autorizados")
-                df_docentes = cargar_hoja("Docentes")
-
-                # Validar si está autorizado
-                if correo not in df_autorizados["Correo"].values:
-                    st.error("🚫 Tu correo no está autorizado para registrarte como docente.")
-                    return
-
-                # Si ya está registrado
-                if correo in df_docentes["Correo institucional"].values:
-                    codigo = df_docentes.loc[
-                        df_docentes["Correo institucional"] == correo, "Código acceso"
-                    ].values[0]
-                    mensaje_html = f"""
-                    <h3>🔑 Código de acceso al Portal ITM</h3>
-                    <p>Hola, este es tu código de acceso personal:</p>
-                    <div style="font-size:18px; font-weight:bold; color:#1B396A;">{codigo}</div>
-                    <p>Usa este código en la aplicación para validar tu acceso.</p>
-                    """
-                    enviar_correo_gmail(st.secrets["gcp"], correo, "Código de acceso - Concurso ITM", mensaje_html)
-                    st.success("📧 Código enviado a tu correo institucional.")
-                    st.session_state["codigo_enviado"] = codigo
-                    st.session_state["correo_actual"] = correo
-
-                # Si está autorizado pero no registrado
-                else:
-                    st.warning("⚠️ No estás registrado aún como docente.")
-                    if st.button("📝 Registrarme como docente"):
-                        codigo = generar_codigo_docente()
-
-                        # Enviar correo con el código
-                        cuerpo_html = f"""
-                        <h3>🎓 Bienvenido(a) al Portal del Concurso ITM</h3>
-                        <p>Tu registro ha sido aceptado. Este es tu código de acceso:</p>
-                        <div style="font-size:18px; font-weight:bold; color:#1B396A;">{codigo}</div>
-                        <p>Guárdalo, será tu clave para acceder al sistema.</p>
-                        """
-                        exito = enviar_correo_gmail(st.secrets["gcp"], correo, "Registro Docente - Concurso ITM", cuerpo_html)
-
-                        if exito:
-                            # Añadir nuevo registro (aquí se puede usar Apps Script o conexión Sheets API)
-                            st.success("✅ Se ha enviado tu código de acceso al correo institucional.")
-                            st.info("🔔 Contacta al administrador para activar tu cuenta si no aparece en la hoja Docentes.")
-                        else:
-                            st.error("❌ No se pudo enviar el correo. Intenta nuevamente.")
-
-        elif accion == "Validar código":
-            codigo_ingresado = st.text_input("🔑 Ingresa tu código de acceso:")
-            if st.button("Validar"):
-                df_docentes = cargar_hoja("Docentes")
-                if codigo_ingresado in df_docentes["Código acceso"].values:
-                    st.session_state["usuario_autenticado"] = True
+    def modulo_login():
+        st.header("🔐 Acceso al sistema")
+    
+        correo = st.text_input("Correo institucional")
+        codigo = st.text_input("Código de acceso", type="password")
+    
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            login = st.button("Iniciar sesión")
+        with col2:
+            nuevo = st.button("Usuario nuevo")
+        with col3:
+            olvidar = st.button("Olvidé mi código")
+    
+        if login:
+            if not correo or not codigo:
+                st.warning("Por favor completa ambos campos.")
+                return
+    
+            df_doc = cargar_hoja("Docentes")
+            df_aut = cargar_hoja("Correos Autorizados")
+    
+            # Validar si el correo está autorizado
+            if correo not in df_aut["Correo"].values:
+                st.error("❌ Este correo no está autorizado para registrarse como docente.")
+                return
+    
+            # Validar si está registrado
+            fila_docente = df_doc[df_doc["Correo institucional"] == correo]
+            if fila_docente.empty:
+                st.warning("⚠️ Este correo aún no está registrado. Regístrate primero.")
+            else:
+                codigo_guardado = fila_docente.iloc[0]["Código acceso"]
+                if codigo.strip() == str(codigo_guardado).strip():
+                    st.success(f"✅ Bienvenido {fila_docente.iloc[0]['Nombre']}")
+                    st.session_state["usuario"] = correo
                     st.session_state["rol"] = "Docente"
-                    st.session_state["correo_actual"] = correo
-                    st.success("✅ Autenticación exitosa. Bienvenido(a) docente.")
-                    st.rerun()
                 else:
-                    st.error("❌ Código incorrecto o usuario no registrado.")
-        return
+                    st.error("❌ Código incorrecto.")
+    
+        elif nuevo:
+            df_aut = cargar_hoja("Correos Autorizados")
+            if correo not in df_aut["Correo"].values:
+                st.error("❌ Este correo no está autorizado para registrarse como docente.")
+                return
+    
+            df_doc = cargar_hoja("Docentes")
+            if correo in df_doc["Correo institucional"].values:
+                st.info("✅ Ya estás registrado. Inicia sesión con tu código.")
+                return
+    
+            nombre = st.text_input("Nombre completo")
+            facultad = st.selectbox("Facultad", ["Ciencias Económicas", "Otra (futura)"])
+            if st.button("Registrar docente"):
+                codigo = "DOC-" + ''.join(random.choices(string.digits, k=4))
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+                fila = [timestamp, nombre, correo, facultad, codigo, "Docente", "Activo"]
+                guardar_fila("Docentes", fila)
+    
+                mensaje_html = f"""
+                <h3>👋 Hola {nombre}</h3>
+                <p>Tu registro como <b>docente</b> en el sistema ITM ha sido exitoso.</p>
+                <p>Tu código de acceso es: <b>{codigo}</b></p>
+                <p>Guarda este código, lo necesitarás para ingresar.</p>
+                """
+                enviar_correo(correo, "Código de acceso ITM", mensaje_html)
+                st.success("✅ Registrado correctamente. Revisa tu correo para obtener tu código.")
+    
+        elif olvidar:
+            if not correo:
+                st.warning("Por favor ingresa tu correo institucional.")
+                return
+            df_doc = cargar_hoja("Docentes")
+            fila_docente = df_doc[df_doc["Correo institucional"] == correo]
+            if fila_docente.empty:
+                st.error("No encontramos tu registro como docente.")
+            else:
+                codigo_guardado = fila_docente.iloc[0]["Código acceso"]
+                mensaje_html = f"""
+                <h3>🔑 Recuperación de código</h3>
+                <p>Tu código de acceso es: <b>{codigo_guardado}</b></p>
+                """
+                enviar_correo(correo, "Recuperación de código ITM", mensaje_html)
+                st.success("📩 Código enviado nuevamente a tu correo institucional.")
 
     # =====================================================
     # ======= MENÚ PRINCIPAL DESPUÉS DE LOGIN =============
