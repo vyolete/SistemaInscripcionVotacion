@@ -540,7 +540,7 @@ def login_general():
     from google.oauth2 import service_account
 
     # ======================================================
-    # 🔹 CONEXIÓN A GOOGLE SHEETS
+    # 🔹 CONEXIÓN GOOGLE SHEETS
     # ======================================================
     credentials = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"])
     client = gspread.authorize(credentials)
@@ -559,51 +559,47 @@ def login_general():
         return correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
 
     def buscar_correo(archivo, hoja, correo):
-        """Devuelve True si el correo existe en la primera columna"""
         try:
             ws = client.open(archivo).worksheet(hoja)
-            correos = [c.strip().lower() for c in ws.col_values(1)]
+            correos = [c.strip().lower() for c in ws.col_values(1)[1:]]  # omitir encabezado
             return correo.lower() in correos
-        except Exception:
-            st.error(f"⚠️ No se pudo acceder a la hoja {hoja}")
+        except Exception as e:
+            st.error(f"⚠️ No se pudo acceder a la hoja {hoja}: {e}")
             return False
 
     # ======================================================
-    # 🔹 LÓGICA DOCENTE
+    # 🔹 DOCENTE
     # ======================================================
     if rol == "Docente":
-        if st.button("Ingresar"):
+        if st.button("Ingresar como Docente"):
             if not email:
                 st.warning("Ingrese su correo institucional.")
-                return
+                st.stop()
             if not es_correo_itm(email):
                 st.error("Solo se permiten correos institucionales del ITM.")
-                return
+                st.stop()
 
             # 1️⃣ Validar si está autorizado
             if not buscar_correo("Correos Autorizados", "Correos_Admitidos", email):
                 st.error("❌ Este correo no está autorizado. Solicite acceso al coordinador académico.")
-                return
+                st.stop()
 
             # 2️⃣ Si está autorizado, validar si ya está registrado
             if not buscar_correo("Docentes", "Docentes", email):
                 st.info("Correo autorizado pero no registrado.")
                 codigo = st.text_input("Ingrese el código de validación enviado a su correo")
-                registrar = st.button("Registrar nuevo docente")
-                if registrar:
-                    if codigo.strip() == "":
+                if st.button("Registrar nuevo docente"):
+                    if not codigo.strip():
                         st.warning("Debe ingresar un código de validación.")
-                    else:
-                        hoja_docentes = client.open("Docentes").worksheet("Docentes")
-                        hoja_docentes.append_row([email, codigo])
-                        st.success("✅ Registro completado. Ya puede ingresar.")
                         st.stop()
+                    hoja_docentes = client.open("Docentes").worksheet("Docentes")
+                    hoja_docentes.append_row([email, codigo])
+                    st.success("✅ Registro completado. Ya puede ingresar.")
+                    st.stop()
             else:
-                # 3️⃣ Ya registrado → pedir código para validar ingreso
                 st.info("Este correo ya está registrado. Verifique su código de validación.")
                 codigo = st.text_input("Ingrese su código de validación:")
-                ingresar = st.button("Validar e ingresar")
-                if ingresar:
+                if st.button("Validar e ingresar"):
                     hoja_docentes = client.open("Docentes").worksheet("Docentes")
                     datos = hoja_docentes.get_all_records()
                     for fila in datos:
@@ -614,34 +610,37 @@ def login_general():
                                 st.session_state["rol"] = "Docente"
                                 st.session_state["autenticado"] = True
                                 st.switch_page("home_docente.py")
-                                return
+                                st.stop()
                     st.error("❌ Código de validación incorrecto.")
+                    st.stop()
 
     # ======================================================
-    # 🔹 LÓGICA ESTUDIANTE
+    # 🔹 ESTUDIANTE
     # ======================================================
     if rol == "Estudiante":
-        if st.button("Ingresar"):
+        if st.button("Ingresar como Estudiante"):
             if not email:
                 st.warning("Ingrese su correo institucional.")
-                return
+                st.stop()
             if not es_correo_itm(email):
                 st.error("Solo se permiten correos institucionales del ITM.")
-                return
+                st.stop()
 
             if not buscar_correo("Estudiantes", "Estudiantes", email):
                 st.info("Correo no encontrado. Puede registrarse a continuación.")
-                registrar = st.button("Registrar nuevo estudiante")
-                if registrar:
+                if st.button("Registrar nuevo estudiante"):
                     hoja_estudiantes = client.open("Estudiantes").worksheet("Estudiantes")
                     hoja_estudiantes.append_row([email])
                     st.success("✅ Registro exitoso. Ya puede iniciar sesión.")
+                    st.stop()
             else:
                 st.success(f"Bienvenido estudiante {email}")
                 st.session_state["usuario"] = email
                 st.session_state["rol"] = "Estudiante"
                 st.session_state["autenticado"] = True
                 st.switch_page("home_estudiante.py")
+                st.stop()
+
 
 # ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
