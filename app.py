@@ -596,7 +596,7 @@ def modulo_votacion():
         if st.button("🔙 Volver / Votar otro equipo"):
             st.session_state.validado_voto = False
             if "equipo_voto" in st.session_state:
-                del st.session_state["equipo_voto"]
+                    del st.session_state["equipo_voto"]
             st.rerun()
 
 
@@ -604,235 +604,75 @@ def modulo_votacion():
 # 🔐 MÓDULO DE LOGIN INSTITUCIONAL
 # =====================================================
 
-
-
-
-# ======================================================
-# 🔹 LOGIN Y REGISTRO DE USUARIOS
-# ======================================================
-# ======================================================
-# 🔹 LOGIN Y REGISTRO DE USUARIOS
-# ======================================================
 def login_general():
     st.markdown("<h2 class='titulo' style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
 
-    correo_input = st.text_input("📧 Ingresa tu correo institucional:", key="correo_login")
-    rol_seleccion = st.radio(
-        "Selecciona tu rol:",
-        ["Estudiante / Asistente", "Docente"],
-        horizontal=True,
-        key="rol_login"
-    )
-
-    # --- Acción al presionar el botón ---
-    if st.button("Ingresar", key="btn_login"):
-        correo = correo_input.strip().lower()
-
-        if correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co"):
-            st.session_state["correo_actual"] = correo
-            st.session_state["rol"] = "Docente" if rol_seleccion == "Docente" else "Estudiante"
-            st.session_state["logueado"] = True
-            st.success("✅ Inicio de sesión exitoso.")
-            st.rerun()
-        else:
-            st.error("❌ Usa tu correo institucional @correo.itm.edu.co o @itm.edu.co")
-
-    # --- Función auxiliar para buscar hoja ---
-    def find_sheet_by_keywords(hojas, keywords):
-        for h in hojas:
-            for kw in keywords:
-                if kw.lower() in h.lower():
-                    return h
-        return None
-
-
-    def find_column_name_containing(df, key):
-        for c in df.columns:
-            if key in str(c).lower():
-                return c
-        return None
+    correo = st.text_input("📧 Ingresa tu correo institucional:")
+    rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
 
     if st.button("Ingresar"):
-        if not correo_input:
-            st.error("❌ Debes ingresar un correo.")
+        if not correo:
+            st.error("❌ Ingresa tu correo institucional.")
             return
 
-        correo = correo_input.strip().lower()
+        correo = correo.strip().lower()
 
-        # conectar a Google Sheets
+        # --- Validar formato institucional ---
+        if not (correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")):
+            st.error("🚫 Usa un correo institucional ITM válido.")
+            return
+
         try:
-            creds = Credentials.from_service_account_info(st.secrets["gcp"],scopes=["https://www.googleapis.com/auth/spreadsheets"])
+            # --- Conexión a Sheets ---
+            creds = service_account.Credentials.from_service_account_info(
+                st.secrets["gcp"],
+                scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            )
             client = gspread.authorize(creds)
             sheet = client.open_by_key(st.secrets["spreadsheet"]["id"])
-            hojas = [ws.title for ws in sheet.worksheets()]
-        except Exception as e:
-            st.error(f"⚠️ Error al conectar con Google Sheets: {e}")
-            return
 
-        autorizado = False
-        rol_detectado = rol_seleccion  # valor por defecto
+            # --- Buscar en hojas ---
+            docentes = sheet.worksheet("Docentes").get_all_records()
+            estudiantes = sheet.worksheet("Estudiantes").get_all_records()
 
-        # 1) Buscar en "Correos autorizados" (si existe cualquier hoja que contenga 'correo' y 'autoriz')
-        corr_sheet_name = find_sheet_by_keywords(hojas, ["correos autorizados", "correos_autorizados", "autorizados"])
-        if corr_sheet_name:
-            try:
-                df_aut = pd.DataFrame(sheet.worksheet(corr_sheet_name).get_all_records())
-                col_correo = find_column_name_containing(df_aut, "correo")
-                if col_correo is not None and correo in df_aut[col_correo].astype(str).str.lower().values:
-                    autorizado = True
-                    rol_detectado = "Docente"
-                    # asegurarse que exista hoja de docentes y agregar si no está
-                    doc_sheet_name = find_sheet_by_keywords(hojas, ["docentes", "docente"]) or "Docentes"
-                    if doc_sheet_name not in hojas:
-                        sheet.add_worksheet(title=doc_sheet_name, rows="100", cols="10")
-                        hojas.append(doc_sheet_name)
-                        # opcional: header
-                        sheet.worksheet(doc_sheet_name).append_row(["Nombre", "Correo", "Timestamp"])
-                    # agregar a Docentes si no existe
-                    df_doc = pd.DataFrame(sheet.worksheet(doc_sheet_name).get_all_records())
-                    col_doc_correo = find_column_name_containing(df_doc, "correo")
-                    already = False
-                    if col_doc_correo is not None:
-                        already = correo in df_doc[col_doc_correo].astype(str).str.lower().values
-                    if not already:
-                        sheet.worksheet(doc_sheet_name).append_row([correo, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-                    st.success(f"✅ Bienvenido {correo}, acceso concedido como **Docente**")
-                    st.session_state["logueado"] = True
-                    st.session_state["rol"] = "Docente"
-                    st.session_state["correo"] = correo
-                    st.session_state["correo_actual"] = correo
-                    st.rerun()
-                    return
-            except Exception as e:
-                st.warning(f"⚠️ Error al leer hoja '{corr_sheet_name}': {e}")
+            df_doc = pd.DataFrame(docentes)
+            df_est = pd.DataFrame(estudiantes)
 
-        # 2) Verificar si ya está registrado en hojas Docentes / Estudiantes (buscar por keywords)
-        doc_sheet_name = find_sheet_by_keywords(hojas, ["docentes", "docente"])
-        est_sheet_name = find_sheet_by_keywords(hojas, ["estudiantes", "estudiante"])
-
-        try:
-            if doc_sheet_name:
-                df_doc = pd.DataFrame(sheet.worksheet(doc_sheet_name).get_all_records())
-                col_doc_correo = find_column_name_containing(df_doc, "correo")
-                if col_doc_correo is not None and correo in df_doc[col_doc_correo].astype(str).str.lower().values:
-                    autorizado = True
-                    rol_detectado = "Docente"
-            if not autorizado and est_sheet_name:
-                df_est = pd.DataFrame(sheet.worksheet(est_sheet_name).get_all_records())
-                col_est_correo = find_column_name_containing(df_est, "correo")
-                if col_est_correo is not None and correo in df_est[col_est_correo].astype(str).str.lower().values:
-                    autorizado = True
-                    rol_detectado = "Estudiante / Asistente"
-        except Exception as e:
-            st.warning(f"⚠️ Error al verificar registros: {e}")
-
-        # 3) Si está registrado, entrar
-        if autorizado:
-            st.success(f"✅ Bienvenido {correo}, acceso concedido como **{rol_detectado}**")
-            st.session_state["logueado"] = True
-            st.session_state["rol"] = rol_detectado
-            st.session_state["correo"] = correo
-            st.session_state["correo_actual"] = correo
-            st.rerun()
-            return
-
-        # 4) Si no está registrado, mostrar formulario de registro y enviar código
-        st.warning("🔸 No encontramos tu correo en el sistema. Completa tu registro institucional.")
-        with st.form("registro_form"):
-            nombre = st.text_input("👤 Nombre completo")
-            confirmar = st.text_input("📧 Confirma tu correo institucional")
-            enviar = st.form_submit_button("Enviar código de activación")
-
-            if enviar:
-                if not nombre or confirmar.strip().lower() != correo:
-                    st.error("❌ Verifica los datos. El correo debe coincidir.")
-                elif not (correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")):
-                    st.error("🚫 Solo se permiten correos institucionales ITM.")
-                else:
-                    codigo = str(random.randint(100000, 999999))
-                    st.session_state["codigo_enviado"] = codigo
-                    st.session_state["correo_pendiente"] = correo
-                    st.session_state["nombre_pendiente"] = nombre
-                    st.session_state["rol_pendiente"] = rol_seleccion
-
-                    mensaje_html = f"""
-                    <h3>Confirmación de registro - Concurso ITM</h3>
-                    <p>Hola {nombre},</p>
-                    <p>Tu código de activación es:</p>
-                    <h2 style='color:#1B396A'>{codigo}</h2>
-                    <p>Ingresa este código en la plataforma para activar tu cuenta.</p>
-                    <br><p style='color:#1B396A;'>Comité Analítica Financiera ITM</p>
-                    """
-                    # --- Llamada CORRECTA a la función de envío ---
-                    try:
-                        enviar_correo_gmail(correo, "Código de activación - Concurso ITM", mensaje_html)
-                        st.success("📩 Se envió un código de activación a tu correo institucional.")
-                    except Exception as e:
-                        st.error(f"⚠️ No se pudo enviar el correo: {e}")
-
-    # --- 5️⃣ Validación del código (fuera del botón Ingresar) ---
-    if "codigo_enviado" in st.session_state:
-        st.info("✉️ Ingresa el código que recibiste por correo para completar tu registro.")
-        codigo_ingresado = st.text_input("🔑 Código de activación")
-        if st.button("Activar cuenta"):
-            if codigo_ingresado == st.session_state["codigo_enviado"]:
-                rol_final = st.session_state.get("rol_pendiente", rol_seleccion)
-                correo_final = st.session_state.get("correo_pendiente")
-                nombre_final = st.session_state.get("nombre_pendiente")
-
-                # volver a conectar a sheets
-                try:
-                    creds = Credentials.from_service_account_info(st.secrets["gcp"])
-                    client = gspread.authorize(creds)
-                    sheet = client.open_by_key(st.secrets["spreadsheet"]["id"])
-                    hojas = [ws.title for ws in sheet.worksheets()]
-                except Exception as e:
-                    st.error(f"⚠️ Error al conectar con Google Sheets: {e}")
-                    return
-
-                # elegir hoja destino (Docentes o Estudiantes) basada en rol_final
-                destino = None
-                if "docente" in rol_final.lower():
-                    destino = find_sheet_by_keywords(hojas, ["docentes", "docente"]) or "Docentes"
-                else:
-                    destino = find_sheet_by_keywords(hojas, ["estudiantes", "estudiante"]) or "Estudiantes"
-
-                # crear hoja si no existe
-                if destino not in hojas:
-                    sheet.add_worksheet(title=destino, rows="100", cols="10")
-                    sheet.worksheet(destino).append_row(["Nombre", "Correo", "Timestamp"])
-
-                # finalmente append
-                try:
-                    sheet.worksheet(destino).append_row([nombre_final, correo_final, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-                except Exception as e:
-                    st.error(f"⚠️ Error al registrar en hoja '{destino}': {e}")
-                    return
-
-                st.success("✅ Registro completado con éxito. Bienvenido al sistema.")
+            # --- Comprobar si ya está registrado ---
+            if "Correo" in df_doc.columns and correo in df_doc["Correo"].astype(str).str.lower().values:
+                st.session_state["rol"] = "Docente"
                 st.session_state["logueado"] = True
-                st.session_state["rol"] = rol_final
-                st.session_state["correo"] = correo_final
-                st.session_state["correo_actual"] = correo_final
-
-                # limpiar variables temporales
-                for key in ["codigo_enviado", "correo_pendiente", "nombre_pendiente", "rol_pendiente"]:
-                    if key in st.session_state:
-                        del st.session_state[key]
+                st.session_state["correo_actual"] = correo
+                st.success("✅ Bienvenido Docente ITM.")
                 st.rerun()
-            else:
-                st.error("❌ Código incorrecto. Verifica el correo.")
+                return
+
+            if "Correo" in df_est.columns and correo in df_est["Correo"].astype(str).str.lower().values:
+                st.session_state["rol"] = "Estudiante / Asistente"
+                st.session_state["logueado"] = True
+                st.session_state["correo_actual"] = correo
+                st.success("✅ Bienvenido Estudiante ITM.")
+                st.rerun()
+                return
+
+            # --- Si no está registrado, pedir inscripción ---
+            st.warning("🔸 No encontramos tu correo en el sistema. Por favor regístrate en el siguiente formulario:")
+            st.markdown("""
+                👉 [Formulario de inscripción a la plataforma](https://docs.google.com/forms/d/e/1FAIpQLSczRQyJKuTdIiho12LuuOwqakATVJSWUgAgGV1yvvtkepF6FQ/viewform?usp=sharing)
+            """, unsafe_allow_html=True)
+
+        except Exception as e:
+            st.error(f"⚠️ Error al validar usuario: {e}")
+
+
 
 # ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
 # ======================================================
-import streamlit as st
-from streamlit_option_menu import option_menu
-
 def main():
     st.set_page_config(page_title="Concurso Analítica Financiera ITM", layout="wide")
 
-    # --- Variables de sesión ---
+    # --- Inicializar variables de sesión ---
     if "logueado" not in st.session_state:
         st.session_state["logueado"] = False
     if "rol" not in st.session_state:
@@ -840,29 +680,30 @@ def main():
     if "correo_actual" not in st.session_state:
         st.session_state["correo_actual"] = ""
 
-    # --- Título principal (solo decorativo, visible en ambas vistas) ---
+    # --- Título general ---
     st.markdown("""
         <style>
-        .stApp { background-color: #f9fafc; font-family: 'Segoe UI'; }
-        section[data-testid="stSidebar"] { background-color: #1B396A; }
-        section[data-testid="stSidebar"] * { color: white !important; }
+        .titulo {
+            color: #1B396A;
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
         </style>
-        <h2 style='text-align:center; color:#1B396A;'>
-        🏫 Concurso de Analítica Financiera ITM
-        </h2>
+        <div class="titulo">🏫 Concurso de Analítica Financiera ITM</div>
     """, unsafe_allow_html=True)
 
-    # --- Si no está logueado, mostrar login (sin menú lateral) ---
+    # ======================================================
+    # 🔹 LOGIN (solo si no hay sesión)
+    # ======================================================
     if not st.session_state["logueado"]:
-        login_general()  # << Tu función de login
-        return
+        login_general()
+        return  # detiene ejecución si aún no está logueado
 
-    # --- Si está logueado, mostrar menú lateral y módulos ---
-    mostrar_menu_principal()
-
-
-def mostrar_menu_principal():
-    """Muestra el menú lateral y carga el módulo seleccionado"""
+    # ======================================================
+    # 🔹 MENÚ LATERAL (solo si hay sesión)
+    # ======================================================
     with st.sidebar:
         st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=150)
         st.markdown("---")
@@ -870,28 +711,44 @@ def mostrar_menu_principal():
         st.markdown(f"🧩 **Rol:** {st.session_state['rol']}")
         st.markdown("---")
 
+        # --- Menú dinámico según rol ---
+        if st.session_state["rol"] == "Docente":
+            opciones_menu = ["Inicio", "Inscripción", "Votación", "Resultados", "Dashboard", "Eventos"]
+            iconos_menu = ["house", "clipboard2-data", "check2-square", "trophy", "bar-chart", "calendar-event"]
+        else:  # Estudiantes / Invitados
+            opciones_menu = ["Inicio", "Inscripción", "Votación", "Resultados"]
+            iconos_menu = ["house", "clipboard2-data", "check2-square", "trophy"]
+
         seleccion = option_menu(
             "Menú Principal",
-            ["Inicio", "Inscripción", "Votación", "Resultados"],
-            icons=["house", "pencil", "check2-square", "trophy"],
+            opciones_menu,
+            icons=iconos_menu,
+            menu_icon="cast",
             default_index=0,
             styles={
                 "container": {"padding": "5px", "background-color": "#1B396A"},
                 "icon": {"color": "white", "font-size": "18px"},
-                "nav-link": {"color": "white", "font-size": "16px"},
+                "nav-link": {
+                    "color": "white",
+                    "font-size": "16px",
+                    "text-align": "left",
+                    "margin": "0px",
+                },
                 "nav-link-selected": {"background-color": "#27406d"},
             },
         )
 
         st.markdown("---")
         if st.button("🚪 Cerrar sesión"):
+            for key in ["logueado", "correo_actual", "rol"]:
+                st.session_state[key] = None
             st.session_state["logueado"] = False
-            st.session_state["correo_actual"] = ""
-            st.session_state["rol"] = "Invitado"
             st.success("Sesión cerrada correctamente.")
             st.rerun()
 
-    # --- Ruteo de módulos ---
+    # ======================================================
+    # 🔹 RUTEO DE MÓDULOS SEGÚN SELECCIÓN
+    # ======================================================
     if seleccion == "Inicio":
         modulo_home()
     elif seleccion == "Inscripción":
@@ -900,7 +757,16 @@ def mostrar_menu_principal():
         modulo_votacion()
     elif seleccion == "Resultados":
         modulo_resultados()
+    elif seleccion == "Dashboard" and st.session_state["rol"] == "Docente":
+        modulo_dashboard()
+    elif seleccion == "Eventos" and st.session_state["rol"] == "Docente":
+        modulo_eventos()
 
 
+# ======================================================
+# 🔹 EJECUCIÓN
+# ======================================================
 if __name__ == "__main__":
     main()
+
+
