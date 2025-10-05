@@ -610,20 +610,27 @@ def modulo_votacion():
 # ======================================================
 # 🔹 LOGIN Y REGISTRO DE USUARIOS
 # ======================================================
+# ======================================================
+# 🔹 LOGIN Y REGISTRO DE USUARIOS
+# ======================================================
 def login_general():
     st.markdown("<h2 class='titulo' style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
 
     correo_input = st.text_input("📧 Ingresa tu correo institucional:")
     rol_seleccion = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
+
+    # --- Acción al presionar el botón ---
     if st.button("Ingresar"):
-    if correo.endswith("@correo.itm.edu.co"):
-        st.session_state["correo_actual"] = correo
-        st.session_state["rol"] = "Docente" if rol == "Docente" else "Estudiante"
-        st.session_state["logueado"] = True
-        st.success("Inicio de sesión exitoso.")
-        st.rerun()
-    else:
-        st.error("❌ Usa tu correo institucional @correo.itm.edu.co")
+        correo = correo_input.strip().lower()
+
+        if correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co"):
+            st.session_state["correo_actual"] = correo
+            st.session_state["rol"] = "Docente" if rol_seleccion == "Docente" else "Estudiante"
+            st.session_state["logueado"] = True
+            st.success("✅ Inicio de sesión exitoso.")
+            st.rerun()
+        else:
+            st.error("❌ Usa tu correo institucional @correo.itm.edu.co o @itm.edu.co")
 
     def find_sheet_by_keywords(hojas, keywords):
         for h in hojas:
