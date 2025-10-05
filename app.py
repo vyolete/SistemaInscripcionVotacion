@@ -181,26 +181,25 @@ p, label, span, div {
 """, unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown("""
-        <div style="text-align:center; padding: 10px 0;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Logo_ITM.png" width="90">
-            <h2 style="font-size:16px; color:#FFFFFF; margin-top:8px;">Concurso Analítica Financiera</h2>
-        </div>
-        <div style="
-            background-color: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 10px;
-            color: white;
-            font-size: 14px;
-            margin-bottom: 15px;
-        ">
-            <p><b>Usuario:</b> {correo}</p>
-            <p><b>Rol:</b> {rol}</p>
-        </div>
-    """.format(
-        correo=st.session_state.get("correo", "Invitado"),
-        rol=st.session_state.get("rol", "Sin rol")
-    ), unsafe_allow_html=True)
+    st.markdown("<h2 style='color:white;'>🎓 Concurso ITM</h2>", unsafe_allow_html=True)
+    selected = option_menu(
+        "",
+        ["Inicio", "Inscripción", "Votación", "Resultados"],
+        icons=["house", "pencil", "vote", "trophy"],
+        default_index=0,
+        styles={
+            "container": {"padding": "5px", "background-color": "#1B396A"},
+            "icon": {"color": "white", "font-size": "18px"},
+            "nav-link": {
+                "color": "white",
+                "font-size": "16px",
+                "text-align": "left",
+                "margin": "0px",
+            },
+            "nav-link-selected": {"background-color": "#27406d"},
+        },
+    )
+
 
 # ======================================================
 # 🔹 UTILIDADES: Conexión y operaciones con Google Sheets
