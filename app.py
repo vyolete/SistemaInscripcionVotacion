@@ -577,32 +577,63 @@ def login_general():
                 st.error(f"⚠️ Error al conectar con Google Sheets: {e}")
                 st.stop()
 
-            # --- Verificar si el correo pertenece a docentes o estudiantes ---
+   
+            # ======================================================
+            # 🔹 Validación del correo según rol y hoja correspondiente
+            # ======================================================
+            
             autorizado = False
-
-            if "Docente" in rol and "Docentes" in hojas:
-                df_docentes = cargar_hoja_por_nombre(st.secrets, "Docentes")
-                if "Correo" in df_docentes.columns:
-                    correos_doc = df_docentes["Correo"].astype(str).str.strip().tolist()
-                    if correo.strip().lower() in [c.lower() for c in correos_doc]:
-                        autorizado = True
-            elif "Estudiante" in rol and "Estudiantes" in hojas:
-                df_estudiantes = cargar_hoja_por_nombre(st.secrets, "Estudiantes")
-                if "Correo" in df_estudiantes.columns:
-                    correos_est = df_estudiantes["Correo"].astype(str).str.strip().tolist()
-                    if correo.strip().lower() in [c.lower() for c in correos_est]:
-                        autorizado = True
-
+            correo_input = correo.strip().lower()
+            
+            # Cargar las hojas existentes
+            gc = gspread.authorize(service_account.Credentials.from_service_account_info(
+                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            ))
+            spreadsheet = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+            hojas = [ws.title for ws in spreadsheet.worksheets()]
+            
+            # Cargar hoja de correos autorizados
+            df_aut = cargar_hoja_por_nombre(st.secrets, "Correos Autorizados")
+            df_aut["Correo"] = df_aut["Correo"].astype(str).str.strip().str.lower()
+            
+            # Validar si el correo está autorizado
+            if correo_input in df_aut["Correo"].values:
+            
+                # Si el usuario seleccionó DOCENTE
+                if "Docente" in rol:
+                    if "Docentes" in hojas:
+                        df_docentes = cargar_hoja_por_nombre(st.secrets, "Docentes")
+                    else:
+                        df_docentes = pd.DataFrame(columns=["Correo", "Fecha registro"])
+                    
+                    if correo_input not in df_docentes["Correo"].astype(str).str.lower().values:
+                        # Agregar nuevo docente
+                        ws = spreadsheet.worksheet("Docentes")
+                        ws.append_row([correo_input, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                    autorizado = True
+            
+                # Si el usuario seleccionó ESTUDIANTE
+                elif "Estudiante" in rol:
+                    if "Estudiantes" in hojas:
+                        df_estudiantes = cargar_hoja_por_nombre(st.secrets, "Estudiantes")
+                    else:
+                        df_estudiantes = pd.DataFrame(columns=["Correo", "Fecha registro"])
+                    
+                    if correo_input not in df_estudiantes["Correo"].astype(str).str.lower().values:
+                        # Agregar nuevo estudiante
+                        ws = spreadsheet.worksheet("Estudiantes")
+                        ws.append_row([correo_input, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                    autorizado = True
+            
             if autorizado:
                 st.success(f"✅ Bienvenido, acceso concedido como **{rol}**")
                 st.session_state["logueado"] = True
                 st.session_state["rol"] = rol
-                st.session_state["correo"] = correo.strip().lower()
+                st.session_state["correo"] = correo_input
                 st.rerun()
             else:
                 st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
 
-        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ======================================================
