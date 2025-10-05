@@ -517,6 +517,7 @@ def login_general():
             st.session_state["correo_actual"] = correo
             st.session_state["rol"] = "Docente" if rol == "Docente" else "Estudiante"
             st.session_state["logueado"] = True
+            st.markdown("<body class='logged-in'></body>", unsafe_allow_html=True)
             st.success("Inicio de sesión exitoso.")
             st.rerun()
         else:
@@ -552,6 +553,8 @@ def main():
 
     # --- Si NO está logueado: solo mostrar login ---
     if not st.session_state["logueado"]:
+       # Si el usuario NO está logueado, usar diseño sin menú
+        st.markdown("<body class='not-logged-in'></body>", unsafe_allow_html=True)
         st.markdown("<div class='titulo'>🏫 Concurso de Analítica Financiera ITM</div>", unsafe_allow_html=True)
         login_general()
         return
