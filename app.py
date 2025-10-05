@@ -497,35 +497,7 @@ def modulo_votacion():
 # =====================================================
 
 
-# ======================================================
-# 🔹 FUNCIÓN DE ENVÍO DE CORREO
-# ======================================================
-def enviar_correo_gmail(credentials_info, destinatario, asunto, mensaje_html):
-    creds = Credentials.from_service_account_info(credentials_info, scopes=["https://www.googleapis.com/auth/gmail.send"])
-    service = build("gmail", "v1", credentials=creds)
-    mensaje = MIMEText(mensaje_html, "html")
-    mensaje["to"] = destinatario
-    mensaje["subject"] = asunto
-    mensaje_bytes = base64.urlsafe_b64encode(mensaje.as_bytes()).decode()
-    service.users().messages().send(userId="me", body={"raw": mensaje_bytes}).execute()
 
-def main():
-    st.title("🚀 Sistema ITM Concursos")
-
-    # 🔹 Prueba de conexión
-    try:
-        from google.oauth2.service_account import Credentials
-        import gspread
-
-        creds = Credentials.from_service_account_info(st.secrets["gcp"])
-        client = gspread.authorize(creds)
-        sheet = client.open_by_key(st.secrets["spreadsheet"]["id"])
-        st.success("✅ Conexión correcta con Google Sheets.")
-    except Exception as e:
-        st.error(f"❌ Error al conectar con Sheets: {e}")
-
-    # 🔹 Luego tu flujo normal
-    login_general()
 
 # ======================================================
 # 🔹 LOGIN Y REGISTRO DE USUARIOS
