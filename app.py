@@ -553,6 +553,87 @@ def login_general():
         else:
             st.error("❌ Usa tu correo institucional @correo.itm.edu.co")
 
+# ======================================================
+# 🔹 LOGIN CON VALIDACIONES POR ROL
+# ======================================================
+def login_general():
+    import streamlit as st
+    import gspread
+    from google.oauth2 import service_account
+
+    # ======================================================
+    # 🔹 CONFIGURAR CONEXIÓN A GOOGLE SHEETS
+    # ======================================================
+    credentials = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"])
+    client = gspread.authorize(credentials)
+
+    # ======================================================
+    # 🔹 INTERFAZ DE LOGIN
+    # ======================================================
+    st.markdown("<h2 style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
+    rol = st.radio("Selecciona tu rol:", ["Docente", "Estudiante"], horizontal=True)
+    email = st.text_input("📧 Correo institucional:")
+
+    # ======================================================
+    # 🔹 FUNCIONES AUXILIARES
+    # ======================================================
+    def es_correo_itm(correo):
+        return correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
+
+    def existe_en_hoja(archivo, hoja, correo):
+        ws = client.open(archivo).worksheet(hoja)
+        correos = ws.col_values(1)
+        return correo in correos
+
+    # ======================================================
+    # 🔹 LÓGICA DOCENTE
+    # ======================================================
+    if rol == "Docente":
+        if st.button("Ingresar como Docente"):
+            if not email:
+                st.warning("Ingrese su correo institucional.")
+            elif not es_correo_itm(email):
+                st.error("Solo se permiten correos institucionales del ITM.")
+            elif not existe_en_hoja("Correos Autorizados", "Correos_Admitidos", email):
+                st.error("❌ Este correo no está autorizado. Solicite acceso al coordinador académico.")
+            else:
+                if not existe_en_hoja("Docentes", "Docentes", email):
+                    st.info("Correo admitido pero no registrado.")
+                    codigo = st.text_input("Ingrese el código de validación enviado a su correo")
+                    if st.button("Registrar nuevo docente"):
+                        hoja_docentes = client.open("Docentes").worksheet("Docentes")
+                        hoja_docentes.append_row([email, codigo])
+                        st.success("Registro completado. Puede ingresar ahora.")
+                else:
+                    st.success(f"Bienvenido docente {email}")
+                    st.session_state["usuario"] = email
+                    st.session_state["rol"] = "Docente"
+                    st.session_state["autenticado"] = True
+                    st.switch_page("home_docente.py")
+
+    # ======================================================
+    # 🔹 LÓGICA ESTUDIANTE
+    # ======================================================
+    if rol == "Estudiante":
+        if st.button("Ingresar como Estudiante"):
+            if not email:
+                st.warning("Ingrese su correo institucional.")
+            elif not es_correo_itm(email):
+                st.error("Solo se permiten correos institucionales del ITM.")
+            else:
+                if not existe_en_hoja("Estudiantes", "Estudiantes", email):
+                    st.info("Correo no encontrado. Puede registrarse a continuación.")
+                    if st.button("Registrar nuevo estudiante"):
+                        hoja_estudiantes = client.open("Estudiantes").worksheet("Estudiantes")
+                        hoja_estudiantes.append_row([email])
+                        st.success("Registro exitoso. Ya puede iniciar sesión.")
+                else:
+                    st.success(f"Bienvenido estudiante {email}")
+                    st.session_state["usuario"] = email
+                    st.session_state["rol"] = "Estudiante"
+                    st.session_state["autenticado"] = True
+                    st.switch_page("home_estudiante.py")
+
 
 # ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
