@@ -11,12 +11,18 @@ from streamlit_option_menu import option_menu
 from email.mime.text import MIMEText
 from googleapiclient.discovery import build
 
+import streamlit as st
+import gspread
+import random
+from google.oauth2 import service_account
+from streamlit_option_menu import option_menu
+
 # ======================================================
 # CONFIGURACIÓN GENERAL
 # ======================================================
-st.set_page_config(page_title="Concurso ITM", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="Concurso ITM - Analítica Financiera", page_icon="📊", layout="wide")
 
-# Inicialización de variables de sesión
+# Variables de sesión
 if "usuario_autenticado" not in st.session_state:
     st.session_state["usuario_autenticado"] = False
 if "correo_actual" not in st.session_state:
@@ -24,37 +30,55 @@ if "correo_actual" not in st.session_state:
 if "rol" not in st.session_state:
     st.session_state["rol"] = None
 
+
 # ======================================================
-# FUNCIONES DE APOYO
+# FUNCIONES AUXILIARES
 # ======================================================
 def conectar_hoja(nombre_hoja):
-    """Conecta con una hoja de Google Sheets"""
     creds = service_account.Credentials.from_service_account_info(st.secrets["gcp"])
     client = gspread.authorize(creds)
     return client.open("BD_CONCURSO_ITM").worksheet(nombre_hoja)
 
+def obtener_correos(hoja):
+    try:
+        return [c.lower().strip() for c in hoja.col_values(1)[1:]]
+    except:
+        return []
+
 def generar_codigo():
-    """Genera un código aleatorio de 6 dígitos"""
     return str(random.randint(100000, 999999))
 
 def enviar_correo_gmail(service_account_info, destinatario, asunto, mensaje_html):
-    """Simulación de envío de correo (puedes reemplazar con tu función real de Gmail API)"""
-    st.info(f"📩 Correo enviado a **{destinatario}** con asunto: *{asunto}*")
-    # Aquí colocarías el código real de envío usando la API de Gmail
+    st.info(f"📩 Se envió un correo a **{destinatario}** con el código de acceso.")
 
 
 # ======================================================
 # MÓDULO DE LOGIN Y REGISTRO
 # ======================================================
 def modulo_login():
-    st.title("🔐 Acceso al Portal del Concurso ITM")
-    st.write("Por favor, inicia sesión o regístrate para continuar.")
+    st.title("🎓 Bienvenido al Portal del Concurso de Analítica Financiera")
 
-    opcion = st.radio("Selecciona una opción", ["Iniciar sesión", "Registrarme"], horizontal=True)
-
+    st.write("Por favor, ingresa tu **correo institucional** para continuar:")
     correo = st.text_input("📧 Correo institucional")
 
-    if opcion == "Iniciar sesión":
+    if not correo:
+        st.stop()
+
+    correo = correo.strip().lower()
+
+    # --- Conexiones a hojas ---
+    hoja_autorizados = conectar_hoja("correos_autorizados")
+    hoja_docentes = conectar_hoja("docentes")
+    hoja_estudiantes = conectar_hoja("estudiantes")
+
+    autorizados = obtener_correos(hoja_autorizados)
+    docentes = obtener_correos(hoja_docentes)
+    estudiantes = obtener_correos(hoja_estudiantes)
+
+    # --- Verificaciones ---
+    if correo in docentes or correo in estudiantes:
+        st.success("✅ Usuario encontrado. Ingresa para continuar.")
+
         if st.button("Enviar código de acceso"):
             codigo = generar_codigo()
             st.session_state["codigo_enviado"] = codigo
@@ -62,35 +86,50 @@ def modulo_login():
             enviar_correo_gmail(st.secrets["gcp"], correo, "Código de acceso ITM",
                                 f"<p>Tu código de acceso es: <b>{codigo}</b></p>")
             st.success("Se ha enviado un código a tu correo.")
-        
+
         codigo_ingresado = st.text_input("Introduce el código recibido")
 
         if st.button("Validar código"):
             if codigo_ingresado == st.session_state.get("codigo_enviado") and correo == st.session_state.get("correo_temp"):
                 st.session_state["usuario_autenticado"] = True
                 st.session_state["correo_actual"] = correo
-                st.session_state["rol"] = "Docente" if "profesor" in correo.lower() else "Estudiante"
+                st.session_state["rol"] = "Docente" if correo in docentes else "Estudiante"
                 st.success("✅ Acceso concedido correctamente.")
                 st.rerun()
             else:
                 st.error("❌ Código incorrecto o expirado.")
 
-    elif opcion == "Registrarme":
-        rol = st.selectbox("Selecciona tu rol", ["Docente", "Estudiante"])
-        if st.button("Registrar cuenta"):
-            # Guardar en la hoja correspondiente
-            hoja = conectar_hoja("usuarios")
-            hoja.append_row([correo, rol])
-            st.success("✅ Registro completado. Ahora puedes iniciar sesión.")
-            st.session_state["rol"] = rol
+    else:
+        # Usuario no registrado
+        st.warning("⚠️ Este correo no se encuentra registrado.")
+        st.info("Selecciona tu tipo de registro:")
+
+        rol_seleccionado = st.radio("Rol de registro", ["Estudiante", "Docente"], horizontal=True)
+
+        if rol_seleccionado == "Docente":
+            if correo not in autorizados:
+                st.error("🚫 Este correo no está autorizado como docente. Contacta al administrador.")
+                st.stop()
+            else:
+                if st.button("Registrar como Docente Autorizado"):
+                    hoja_docentes.append_row([correo, "Docente"])
+                    st.success("✅ Registro exitoso. Ahora puedes iniciar sesión.")
+                    st.rerun()
+
+        elif rol_seleccionado == "Estudiante":
+            if st.button("Registrar como Estudiante"):
+                hoja_estudiantes.append_row([correo, "Estudiante"])
+                st.success("✅ Registro exitoso. Ahora puedes iniciar sesión.")
+                st.rerun()
+
+        st.button("Salir", type="secondary")
 
 
 # ======================================================
-# MÓDULO HOME PRINCIPAL
+# MÓDULOS PRINCIPALES
 # ======================================================
 def modulo_home():
     st.markdown("## 🏫 Portal del Concurso ITM")
-
     correo = st.session_state.get("correo_actual", "****")
     rol = st.session_state.get("rol", "Sin rol")
 
@@ -107,24 +146,18 @@ def modulo_home():
     st.markdown("✅ Puedes acceder a inscripciones, votaciones y resultados según tu rol.")
 
 
-# ======================================================
-# MÓDULOS DE SECCIONES
-# ======================================================
 def modulo_inscripcion():
     st.title("📝 Inscripción de participantes")
-    st.info("Formulario de inscripción disponible aquí.")
 
 def modulo_votacion():
     st.title("🗳️ Sistema de votación")
-    st.info("Aquí podrás votar durante el evento.")
 
 def modulo_resultados():
     st.title("🏆 Resultados del concurso")
-    st.info("Consulta los ganadores y estadísticas.")
 
 def modulo_eventos():
     st.title("📅 Agenda del evento")
-    st.info("Consulta los horarios y actividades.")
+
 
 # ======================================================
 # CONTROL DE ACCESO
@@ -134,7 +167,7 @@ if not st.session_state["usuario_autenticado"]:
     st.stop()
 
 # ======================================================
-# MENÚ LATERAL PRINCIPAL (solo después de login)
+# MENÚ LATERAL (solo visible después de login)
 # ======================================================
 with st.sidebar:
     seleccion = option_menu(
