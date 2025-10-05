@@ -869,13 +869,13 @@ def mostrar_menu_principal():
             },
         )
 
-        st.markdown("---")
-        if st.button("🚪 Cerrar sesión"):
-            st.session_state["logueado"] = False
-            st.session_state["correo_actual"] = ""
-            st.session_state["rol"] = "Invitado"
-            st.success("Sesión cerrada correctamente.")
-            st.rerun()
+    st.markdown("---")
+    if st.button("🚪 Cerrar sesión"):
+        st.session_state["logueado"] = False
+        st.session_state["correo_actual"] = ""
+        st.session_state["rol"] = "Invitado"
+        st.success("Sesión cerrada correctamente.")
+        st.rerun()
 
     # --- Ruteo de módulos ---
     if seleccion == "Inicio":
