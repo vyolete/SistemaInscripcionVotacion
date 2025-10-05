@@ -150,9 +150,6 @@ def cargar_docentes(secrets):
         # ================================================================
 
 def cargar_hoja(nombre_hoja):
-    import gspread
-    from google.oauth2.service_account import Credentials
-
     creds = Credentials.from_service_account_info(st.secrets["gcp"])
     client = gspread.authorize(creds)
     sheet_id = st.secrets["spreadsheet"]["id"]
@@ -160,6 +157,14 @@ def cargar_hoja(nombre_hoja):
     worksheet = sheet.worksheet(nombre_hoja)
     data = worksheet.get_all_records()
     return pd.DataFrame(data)
+
+def guardar_fila(nombre_hoja, fila):
+    creds = Credentials.from_service_account_info(st.secrets["gcp"])
+    client = gspread.authorize(creds)
+    sheet_id = st.secrets["spreadsheet"]["id"]
+    sheet = client.open_by_key(sheet_id)
+    worksheet = sheet.worksheet(nombre_hoja)
+    worksheet.append_row(fila)
 
 
 
