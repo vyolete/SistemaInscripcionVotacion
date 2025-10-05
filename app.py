@@ -559,11 +559,11 @@ def login_general():
 
     def buscar_correo(hoja, correo):
         try:
-            dataframe = conectar_google_sheets(st.secrets)
-            correos = [c.strip().lower() for c in ws.col_values(1)[1:]]  # omitir encabezado
-            return correo.lower() in correos
-        except Exception as e:
-            st.error(f"⚠️ No se pudo acceder a la hoja {hoja}: {e}")
+            correos_autorizados = cargar_hoja_por_nombre(st.secrets, "Correos Autorizados")
+            st.session_state.log.append(f"Buscando correo: {correo}")
+            return correo.lower() in [c.lower() for c in correos_autorizados.get("Correo", [])]
+        except Exception:
+            st.error("❌ Error al conectar con Google Sheets para buscar correos.")
             return False
 
     # ======================================================
