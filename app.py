@@ -30,66 +30,31 @@ html, body, [class*="css"] {
 /* ===== CONTENEDOR PRINCIPAL ===== */
 [data-testid="stAppViewContainer"] {
     background-color: #FFFFFF !important;
-    padding: 1rem;
-}
-
-/* ===== SIDEBAR ===== */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1B396A 0%, #244A8F 100%) !important;
-    color: #FFFFFF !important;
-    padding: 20px 15px;
-    border-right: 2px solid #EAF3FF;
-}
-
-/* ===== TEXTO DEL SIDEBAR ===== */
-[data-testid="stSidebar"] * {
-    color: #FFFFFF !important;
-}
-
-/* ===== LOGO ===== */
-.sidebar-logo {
-    width: 130px;
-    display: block;
-    margin: 0 auto 15px auto;
-}
-
-/* ===== BLOQUE USUARIO ===== */
-.user-card {
-    background-color: rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 10px 15px;
-    text-align: left;
-    margin-bottom: 1rem;
-}
-.user-card p {
-    margin: 4px 0;
-    font-size: 13px;
-}
-
-/* ===== MENÚ PRINCIPAL ===== */
-ul.nav.nav-pills {
-    background: transparent !important;
-    margin-top: 10px !important;
-}
-ul.nav.nav-pills li a {
-    background-color: rgba(255,255,255,0.1) !important;
-    border-radius: 10px !important;
-    color: #E6EAF0 !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    padding: 10px 14px !important;
-    margin: 5px 6px !important;
-    transition: all 0.3s ease !important;
-}
-ul.nav.nav-pills li a:hover {
-    background-color: rgba(255,255,255,0.25) !important;
-    color: #FFFFFF !important;
-}
-ul.nav.nav-pills li a.active {
-    background-color: #FFFFFF !important;
     color: #1B396A !important;
-    font-weight: 700 !important;
-    box-shadow: 0 2px 6px rgba(255,255,255,0.3);
+    padding: 1.5rem !important;
+}
+
+/* ===== TEXTO GENERAL ===== */
+h1, h2, h3, h4, h5, h6, p, label, span, div {
+    color: #1B396A !important;
+}
+
+/* ===== TEXTOS SECUNDARIOS ===== */
+small, .stCaption, .stMarkdown small, .stText {
+    color: #3C4F76 !important;
+}
+
+/* ===== PLACEHOLDERS E INPUTS ===== */
+input, textarea {
+    color: #1B396A !important;
+    background-color: #FFFFFF !important;
+    border: 1.5px solid #1B396A !important;
+    border-radius: 6px !important;
+    padding: 0.5em !important;
+}
+input::placeholder, textarea::placeholder {
+    color: #6C7A99 !important;
+    opacity: 1 !important;
 }
 
 /* ===== BOTONES ===== */
@@ -108,13 +73,38 @@ ul.nav.nav-pills li a.active {
     transform: scale(1.04);
 }
 
-/* ===== LOGIN ===== */
+/* ===== SIDEBAR ===== */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1B396A 0%, #244A8F 100%) !important;
+    color: #FFFFFF !important;
+    padding: 20px 15px;
+    border-right: 2px solid #EAF3FF;
+}
+[data-testid="stSidebar"] * {
+    color: #FFFFFF !important;
+}
+
+/* ===== MENÚ PRINCIPAL ===== */
+ul.nav.nav-pills li a {
+    background-color: transparent !important;
+    color: #EAF3FF !important;
+    font-weight: 600 !important;
+}
+ul.nav.nav-pills li a:hover {
+    background-color: rgba(255,255,255,0.2) !important;
+}
+ul.nav.nav-pills li a.active {
+    background-color: #FFFFFF !important;
+    color: #1B396A !important;
+}
+
+/* ===== TÍTULOS LOGIN ===== */
 .titulo {
-    font-size: 28px;
-    font-weight: 700;
-    color: #1B396A;
-    text-align: center;
-    margin-bottom: 25px;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: #1B396A !important;
+    text-align: center !important;
+    margin-bottom: 25px !important;
 }
 
 /* ===== RESPONSIVO ===== */
@@ -128,7 +118,6 @@ ul.nav.nav-pills li a.active {
 }
 </style>
 """, unsafe_allow_html=True)
-
 
 
 # ======================================================
