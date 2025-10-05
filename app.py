@@ -626,13 +626,12 @@ def login_general():
                     autorizado = True
             
             if autorizado:
-                st.success(f"✅ Bienvenido, acceso concedido como **{rol}**")
                 st.session_state["logueado"] = True
                 st.session_state["rol"] = rol
-                st.session_state["correo"] = correo_input
-                st.rerun()
-            else:
-                st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
+                st.session_state["correo"] = correo.strip().lower()
+                st.success(f"✅ Bienvenido, acceso concedido como **{rol}**")
+                st.stop()  # 👈 Detiene la ejecución aquí sin reiniciar
+
 
 
 
