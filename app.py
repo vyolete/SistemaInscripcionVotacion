@@ -13,17 +13,6 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from google.oauth2.service_account import Credentials
 
-# Define los alcances explícitamente
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
-
-creds = Credentials.from_service_account_info(
-    st.secrets["gcp"],
-    scopes=SCOPES
-)
-
 
 # ======================================================
 # 🔹 ESTILOS PERSONALIZADOS (mantener tal cual)
@@ -122,9 +111,6 @@ def conectar_google_sheets(secrets):
       - st.secrets["gcp"]: credenciales service account
       - st.secrets["spreadsheet"]["id"]: id del spreadsheet
     """
-    from google.oauth2 import service_account
-    import gspread
-    import pandas as pd
 
     # 🔹 Scopes correctos
     SCOPES = [
