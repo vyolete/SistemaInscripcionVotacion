@@ -58,21 +58,31 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ===== BOTONES ===== */
-.stButton>button {
+.stButton>button, .stButton>button * {
     background-color: #1B396A !important;
-    color: #FFFFFF !important;        /* 🔹 Color de texto blanco forzado */
+    color: #FFFFFF !important;        /* 🔹 Forzamos texto blanco */
     border-radius: 8px !important;
     font-weight: 600 !important;
-    font-size: 14px !important;
-    padding: 0.5em 1.2em !important;
+    font-size: 15px !important;
+    padding: 0.6em 1.4em !important;
     border: none !important;
-    box-shadow: 0 2px 4px rgba(27,57,106,0.3);
+    box-shadow: 0 2px 4px rgba(27,57,106,0.3) !important;
+    text-align: center !important;
 }
-.stButton>button:hover {
-    background-color: #244A8F !important;
-    color: #FFFFFF !important;        /* 🔹 Reforzado también en hover */
-    transform: scale(1.04);
 
+/* 🔹 Hover */
+.stButton>button:hover, .stButton>button:hover * {
+    background-color: #244A8F !important;
+    color: #FFFFFF !important;        /* Reforzamos el blanco en hover */
+    transform: scale(1.03);
+    transition: all 0.2s ease-in-out;
+}
+
+/* 🔹 Estado activo o foco */
+.stButton>button:active, .stButton>button:focus {
+    outline: none !important;
+    color: #FFFFFF !important;
+    background-color: #162B57 !important;
 }
 
 /* ===== SIDEBAR ===== */
