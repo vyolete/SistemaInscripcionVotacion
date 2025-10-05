@@ -603,157 +603,90 @@ def modulo_votacion():
 # ======================================================
 # 🔐 MÓDULO DE LOGIN INSTITUCIONAL
 # =====================================================
-
-from google.oauth2 import service_account
-import gspread
-import pandas as pd
-from datetime import datetime
-
+# ======================================================
+# 🔹 LOGIN Y REGISTRO DE USUARIOS
+# ======================================================
 def login_general():
     st.markdown("<h2 class='titulo' style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
-
-    correo = st.text_input("📧 Ingresa tu correo institucional:")
+    
+    correo = st.text_input("📧 Correo institucional:")
     rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
+    ingresar = st.button("Ingresar")
 
-    if st.button("Ingresar"):
-        if not correo:
-            st.error("❌ Ingresa tu correo institucional.")
-            return
+    if ingresar:
+        if correo.endswith("@correo.itm.edu.co"):
+            st.session_state["correo_actual"] = correo
+            st.session_state["rol"] = "Docente" if rol == "Docente" else "Estudiante"
+            st.session_state["logueado"] = True
+            st.success("Inicio de sesión exitoso.")
+            st.rerun()
+        else:
+            st.error("❌ Usa tu correo institucional @correo.itm.edu.co")
 
-        correo = correo.strip().lower()
-
-        # --- Validar formato institucional ---
-        if not (correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")):
-            st.error("🚫 Usa un correo institucional ITM válido.")
-            return
-
-        try:
-            # --- Conexión a Sheets ---
-            creds = service_account.Credentials.from_service_account_info(
-                st.secrets["gcp"],
-                scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            )
-            client = gspread.authorize(creds)
-            sheet = client.open_by_key(st.secrets["spreadsheet"]["id"])
-
-            docentes_ws = sheet.worksheet("Docentes")
-            estudiantes_ws = sheet.worksheet("Estudiantes")
-
-            df_doc = pd.DataFrame(docentes_ws.get_all_records())
-            df_est = pd.DataFrame(estudiantes_ws.get_all_records())
-
-            # --- Comprobar si ya está registrado ---
-            if "Correo" in df_doc.columns and correo in df_doc["Correo"].astype(str).str.lower().values:
-                st.session_state["rol"] = "Docente"
-                st.session_state["logueado"] = True
-                st.session_state["correo_actual"] = correo
-                st.success("✅ Bienvenido Docente ITM.")
-                st.rerun()
-                return
-
-            if "Correo" in df_est.columns and correo in df_est["Correo"].astype(str).str.lower().values:
-                st.session_state["rol"] = "Estudiante / Asistente"
-                st.session_state["logueado"] = True
-                st.session_state["correo_actual"] = correo
-                st.success("✅ Bienvenido Estudiante ITM.")
-                st.rerun()
-                return
-
-            # --- Si no está registrado ---
-            st.warning("🔸 No encontramos tu correo en el sistema. Puedes registrarte a continuación:")
-
-            with st.form("registro_form"):
-                nombre = st.text_input("👤 Nombre completo:")
-                programa = st.text_input("🎓 Programa académico:")
-                telefono = st.text_input("📞 Teléfono de contacto:")
-                submit_registro = st.form_submit_button("Registrar usuario")
-
-            if submit_registro:
-                if not nombre or not programa or not telefono:
-                    st.error("⚠️ Completa todos los campos antes de continuar.")
-                else:
-                    nuevo_registro = [nombre, correo, programa, telefono, datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
-
-                    if rol == "Docente":
-                        docentes_ws.append_row(nuevo_registro)
-                        st.success(f"✅ Registro exitoso. Bienvenido Docente {nombre}.")
-                        st.session_state["rol"] = "Docente"
-                    else:
-                        estudiantes_ws.append_row(nuevo_registro)
-                        st.success(f"✅ Registro exitoso. Bienvenido Estudiante {nombre}.")
-                        st.session_state["rol"] = "Estudiante / Asistente"
-
-                    st.session_state["correo_actual"] = correo
-                    st.session_state["logueado"] = True
-                    st.rerun()
-
-        except Exception as e:
-            st.error(f"⚠️ Error al validar o registrar usuario: {e}")
 
 # ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
 # ======================================================
 def main():
-    # Variables de sesión
+    st.set_page_config(page_title="Concurso Analítica Financiera ITM", layout="wide")
+
+    # --- Inicializar sesión ---
     if "logueado" not in st.session_state:
         st.session_state["logueado"] = False
-    if "correo_actual" not in st.session_state:
-        st.session_state["correo_actual"] = ""
-    if "rol" not in st.session_state:
         st.session_state["rol"] = "Invitado"
+        st.session_state["correo_actual"] = ""
 
-    # --- Título institucional ---
+    # --- Estilos institucionales ---
     st.markdown("""
-        <div style='text-align:center; color:#1B396A; font-weight:700; font-size:1.8rem; margin-bottom:1rem;'>
-            🏫 Concurso de Analítica Financiera ITM
-        </div>
+        <style>
+        .stApp { background-color: #FFFFFF; font-family: 'Segoe UI', sans-serif; }
+        section[data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #1B396A 0%, #1E4B8E 100%) !important;
+            color: white !important;
+        }
+        section[data-testid="stSidebar"] * { color: white !important; font-weight: 500; }
+        .titulo { color: #1B396A; font-weight: 700; text-align: center; font-size: 1.8rem; margin-bottom: 1rem; }
+        .stButton>button { background-color: #1B396A !important; color: white !important; border-radius: 6px; font-weight: bold; }
+        .stButton>button:hover { background-color: #27406d !important; }
+        </style>
     """, unsafe_allow_html=True)
 
-    # --- Si no ha iniciado sesión, mostrar login limpio ---
+    # --- Si NO está logueado: solo mostrar login ---
     if not st.session_state["logueado"]:
+        st.markdown("<div class='titulo'>🏫 Concurso de Analítica Financiera ITM</div>", unsafe_allow_html=True)
         login_general()
         return
 
-    # ======================================================
-    # 🔹 MENÚ LATERAL — SOLO SI ESTÁ LOGUEADO
-    # ======================================================
+    # --- Si está logueado: mostrar sidebar y menú dinámico ---
     with st.sidebar:
-        st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=150)
-        st.markdown("---")
-        st.markdown(f"👤 **Usuario:** {st.session_state['correo_actual']}")
-        st.markdown(f"🧩 **Rol:** {st.session_state['rol']}")
+        st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=140)
+        st.markdown("### 📊 Concurso ITM")
+        st.markdown(f"👤 **{st.session_state['correo_actual']}**")
+        st.markdown(f"🧩 Rol: **{st.session_state['rol']}**")
         st.markdown("---")
 
-        # Menú institucional con opción visual limpia
+        if st.session_state["rol"] == "Docente":
+            opciones = ["Inicio", "Inscripción", "Dashboard", "Votación", "Resultados", "Eventos"]
+            iconos = ["house", "clipboard2-data", "bar-chart", "check2-square", "trophy", "calendar-event"]
+        else:
+            opciones = ["Inicio", "Inscripción", "Votación", "Resultados"]
+            iconos = ["house", "pencil", "check2-square", "trophy"]
+
         seleccion = option_menu(
-            menu_title="Menú Principal",
-            options=["Inicio", "Inscripción", "Dashboard", "Votación", "Resultados", "Eventos"],
-            icons=["house", "clipboard2-data", "bar-chart", "check2-square", "trophy", "calendar-event"],
-            default_index=0,
-            styles={
-                "container": {"padding": "5px", "background-color": "#1B396A"},
-                "icon": {"color": "white", "font-size": "18px"},
-                "nav-link": {
-                    "color": "white",
-                    "font-size": "16px",
-                    "text-align": "left",
-                    "margin": "0px",
-                },
-                "nav-link-selected": {"background-color": "#27406D"},
-            },
+            "Menú Principal",
+            opciones,
+            icons=iconos,
+            menu_icon="cast",
+            default_index=0
         )
 
         st.markdown("---")
         if st.button("🚪 Cerrar sesión"):
-            st.session_state["logueado"] = False
-            st.session_state["correo_actual"] = ""
-            st.session_state["rol"] = "Invitado"
+            st.session_state.clear()
             st.success("Sesión cerrada correctamente.")
             st.rerun()
 
-    # ======================================================
-    # 🔹 RUTEO DE MÓDULOS
-    # ======================================================
+    # --- Cargar módulo según selección ---
     if seleccion == "Inicio":
         modulo_home()
     elif seleccion == "Inscripción":
@@ -764,32 +697,12 @@ def main():
         modulo_votacion()
     elif seleccion == "Resultados":
         modulo_resultados()
-    elif seleccion == "Eventos":
+    elif seleccion == "Eventos" and st.session_state["rol"] == "Docente":
         modulo_eventos()
 
 
 # ======================================================
-# 🔹 LOGIN SIMPLE TEMPORAL
-# ======================================================
-def login_general():
-    st.markdown("<h3 style='color:#1B396A;'>🔐 Acceso a la Plataforma</h3>", unsafe_allow_html=True)
-    correo = st.text_input("📧 Correo institucional:")
-    rol = st.radio("Selecciona tu rol:", ["Estudiante", "Docente"], horizontal=True)
-
-    if st.button("Ingresar"):
-        if correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co"):
-            st.session_state["correo_actual"] = correo
-            st.session_state["rol"] = rol
-            st.session_state["logueado"] = True
-            st.success("✅ Inicio de sesión exitoso.")
-            st.rerun()
-        else:
-            st.error("🚫 Usa un correo institucional @correo.itm.edu.co o @itm.edu.co.")
-
-
-# ======================================================
-# 🔹 EJECUCIÓN
+# 🔹 EJECUCIÓN PRINCIPAL
 # ======================================================
 if __name__ == "__main__":
     main()
-
