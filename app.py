@@ -643,8 +643,6 @@ def login_general():
                 st.session_state["autenticado"] = True
                 st.switch_page("home_estudiante.py")
 
-
-
 # ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
 # ======================================================
