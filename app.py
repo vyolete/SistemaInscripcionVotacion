@@ -604,6 +604,11 @@ def modulo_votacion():
 # 🔐 MÓDULO DE LOGIN INSTITUCIONAL
 # =====================================================
 
+from google.oauth2 import service_account
+import gspread
+import pandas as pd
+from datetime import datetime
+
 def login_general():
     st.markdown("<h2 class='titulo' style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
 
@@ -631,12 +636,11 @@ def login_general():
             client = gspread.authorize(creds)
             sheet = client.open_by_key(st.secrets["spreadsheet"]["id"])
 
-            # --- Buscar en hojas ---
-            docentes = sheet.worksheet("Docentes").get_all_records()
-            estudiantes = sheet.worksheet("Estudiantes").get_all_records()
+            docentes_ws = sheet.worksheet("Docentes")
+            estudiantes_ws = sheet.worksheet("Estudiantes")
 
-            df_doc = pd.DataFrame(docentes)
-            df_est = pd.DataFrame(estudiantes)
+            df_doc = pd.DataFrame(docentes_ws.get_all_records())
+            df_est = pd.DataFrame(estudiantes_ws.get_all_records())
 
             # --- Comprobar si ya está registrado ---
             if "Correo" in df_doc.columns and correo in df_doc["Correo"].astype(str).str.lower().values:
@@ -655,14 +659,36 @@ def login_general():
                 st.rerun()
                 return
 
-            # --- Si no está registrado, pedir inscripción ---
-            st.warning("🔸 No encontramos tu correo en el sistema. Por favor regístrate en el siguiente formulario:")
-            st.markdown("""
-                👉 [Formulario de inscripción a la plataforma](https://docs.google.com/forms/d/e/1FAIpQLSczRQyJKuTdIiho12LuuOwqakATVJSWUgAgGV1yvvtkepF6FQ/viewform?usp=sharing)
-            """, unsafe_allow_html=True)
+            # --- Si no está registrado ---
+            st.warning("🔸 No encontramos tu correo en el sistema. Puedes registrarte a continuación:")
+
+            with st.form("registro_form"):
+                nombre = st.text_input("👤 Nombre completo:")
+                programa = st.text_input("🎓 Programa académico:")
+                telefono = st.text_input("📞 Teléfono de contacto:")
+                submit_registro = st.form_submit_button("Registrar usuario")
+
+            if submit_registro:
+                if not nombre or not programa or not telefono:
+                    st.error("⚠️ Completa todos los campos antes de continuar.")
+                else:
+                    nuevo_registro = [nombre, correo, programa, telefono, datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+
+                    if rol == "Docente":
+                        docentes_ws.append_row(nuevo_registro)
+                        st.success(f"✅ Registro exitoso. Bienvenido Docente {nombre}.")
+                        st.session_state["rol"] = "Docente"
+                    else:
+                        estudiantes_ws.append_row(nuevo_registro)
+                        st.success(f"✅ Registro exitoso. Bienvenido Estudiante {nombre}.")
+                        st.session_state["rol"] = "Estudiante / Asistente"
+
+                    st.session_state["correo_actual"] = correo
+                    st.session_state["logueado"] = True
+                    st.rerun()
 
         except Exception as e:
-            st.error(f"⚠️ Error al validar usuario: {e}")
+            st.error(f"⚠️ Error al validar o registrar usuario: {e}")
 
 
 
