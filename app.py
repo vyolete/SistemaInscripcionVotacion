@@ -13,6 +13,16 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from google.oauth2.service_account import Credentials
 
+# Define los alcances explícitamente
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+creds = Credentials.from_service_account_info(
+    st.secrets["gcp"],
+    scopes=SCOPES
+)
 
 
 # ======================================================
@@ -112,16 +122,28 @@ def conectar_google_sheets(secrets):
       - st.secrets["gcp"]: credenciales service account
       - st.secrets["spreadsheet"]["id"]: id del spreadsheet
     """
+    from google.oauth2 import service_account
+    import gspread
+    import pandas as pd
+
+    # 🔹 Scopes correctos
+    SCOPES = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+
     creds = service_account.Credentials.from_service_account_info(
         secrets["gcp"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        scopes=SCOPES
     )
 
     client = gspread.authorize(creds)
     sh = client.open_by_key(secrets["spreadsheet"]["id"])
     worksheet = sh.sheet1
     data = worksheet.get_all_records()
+
     return pd.DataFrame(data)
+
 
 def cargar_hoja_por_nombre(secrets, nombre_hoja):
     try:
