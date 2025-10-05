@@ -12,91 +12,91 @@ from email.mime.text import MIMEText
 from googleapiclient.discovery import build
 
 
-   # ======================================================
-   # 🔹 ESTILOS PERSONALIZADOS
-   # ======================================================
-   st.markdown("""
-       <style>
-       /* Fondo principal */
-       .stApp {
-           background-color: #FFFFFF;
-           font-family: 'Segoe UI', sans-serif;
-       }
+# ======================================================
+# 🔹 ESTILOS PERSONALIZADOS
+# ======================================================
+st.markdown("""
+    <style>
+    /* Fondo principal */
+    .stApp {
+        background-color: #FFFFFF;
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-       /* Sidebar azul */
-       section[data-testid="stSidebar"] {
-           background-color: #1B396A !important;
-       }
-       section[data-testid="stSidebar"] * {
-           color: white !important;
-       }
+    /* Sidebar azul */
+    section[data-testid="stSidebar"] {
+        background-color: #1B396A !important;
+    }
+    section[data-testid="stSidebar"] * {
+        color: white !important;
+    }
 
-       /* Botones visibles */
-       .stButton>button, button, .stButton>button span {
-           background-color: #1B396A !important;
-           color: white !important;
-           border-radius: 6px;
-           font-weight: bold;
-           padding: 0.5em 1.2em;
-           font-size: 14px;
-           transition: 0.3s ease;
-       }
-       .stButton>button:hover {
-           background-color: #27406d !important;
-       }
-           /* Forzar color visible en botones y su texto interno */
-       .stButton>button * {
-           color: white !important;
-           font-weight: 600 !important;
-           font-size: 15px !important;
-       }
+    /* Botones visibles */
+    .stButton>button, button, .stButton>button span {
+        background-color: #1B396A !important;
+        color: white !important;
+        border-radius: 6px;
+        font-weight: bold;
+        padding: 0.5em 1.2em;
+        font-size: 14px;
+        transition: 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #27406d !important;
+    }
+        /* Forzar color visible en botones y su texto interno */
+    .stButton>button * {
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 15px !important;
+    }
 
-       /* Títulos */
-       h1, h2, h3, h4, h5, h6, label, p, span, div {
-           color: #1B396A !important;
-       }
+    /* Títulos */
+    h1, h2, h3, h4, h5, h6, label, p, span, div {
+        color: #1B396A !important;
+    }
 
-       /* Expander personalizado */
-       div[data-testid="stExpander"] > details > summary {
-           font-weight: 700 !important;
-           font-size: 15px !important;
-           color: #1B396A !important;
-           background-color: #F3F7FB !important;
-           border: 1px solid #d9e1ec !important;
-           border-radius: 6px !important;
-           padding: 10px 14px !important;
-           cursor: pointer;
-       }
-       div[data-testid="stExpander"] > details > summary:hover {
-           background-color: #E6F0FA !important;
-       }
-       div[data-testid="stExpander"] div[data-testid="stExpanderContent"] {
-           background-color: #FFFFFF !important;
-           border-left: 3px solid #1B396A !important;
-           padding: 12px 15px !important;
-       }
-       @media (max-width: 768px) {
-       /* Mostrar un aviso flotante al seleccionar Estudiante */
-       .menu-flotante {
-           position: fixed;
-           bottom: 20px;
-           right: 20px;
-           background-color: #1B396A;
-           color: white;
-           font-weight: 600;
-           padding: 12px 18px;
-           border-radius: 30px;
-           box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-           z-index: 9999;
-           animation: fadeIn 0.5s ease-in-out;
-       }
-       @keyframes fadeIn {
-           from {opacity: 0;}
-           to {opacity: 1;}
-       }
-   }
-       </style>
-   """, unsafe_allow_html=True)
+    /* Expander personalizado */
+    div[data-testid="stExpander"] > details > summary {
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        color: #1B396A !important;
+        background-color: #F3F7FB !important;
+        border: 1px solid #d9e1ec !important;
+        border-radius: 6px !important;
+        padding: 10px 14px !important;
+        cursor: pointer;
+    }
+    div[data-testid="stExpander"] > details > summary:hover {
+        background-color: #E6F0FA !important;
+    }
+    div[data-testid="stExpander"] div[data-testid="stExpanderContent"] {
+        background-color: #FFFFFF !important;
+        border-left: 3px solid #1B396A !important;
+        padding: 12px 15px !important;
+    }
+    @media (max-width: 768px) {
+    /* Mostrar un aviso flotante al seleccionar Estudiante */
+    .menu-flotante {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #1B396A;
+        color: white;
+        font-weight: 600;
+        padding: 12px 18px;
+        border-radius: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 9999;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from {opacity: 0;}
+        to {opacity: 1;}
+    }
+}
+    </style>
+""", unsafe_allow_html=True)
 
 
    # ======================================================
