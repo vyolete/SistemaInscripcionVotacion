@@ -494,83 +494,88 @@ def modulo_votacion():
 # 🔐 MÓDULO DE LOGIN INSTITUCIONAL
 # ======================================================
 def login_general():
-    st.header("🔐 Acceso al Sistema")
+    st.markdown("### 🔐 Acceso al Sistema")
     st.markdown("Concurso de Analítica Financiera — ITM")
 
+    # ------------------------------------------------------------
+    # 1️⃣ Conectar con Google Sheets
+    # ------------------------------------------------------------
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    client = gspread.authorize(creds)
+    sheet = client.open_by_key(st.secrets["spreadsheet"]["id"])
+    hojas = [ws.title for ws in sheet.worksheets()]
+
+    # ------------------------------------------------------------
+    # 2️⃣ Selección de rol y correo
+    # ------------------------------------------------------------
     rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
-    correo = st.text_input("📧 Correo institucional")
+    correo_input = st.text_input("📧 Correo institucional").strip().lower()
 
-    # 👇 AQUÍ comienza el bloque bien indentado
     if st.button("Ingresar"):
-        if not correo:
-            st.error("❌ Por favor ingresa tu correo institucional.")
-            st.stop()
-
-        correo = correo.strip().lower()
-        dominio_valido = correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
-
-        if not dominio_valido:
-            st.error("❌ Solo se permiten correos institucionales del ITM.")
-            st.stop()
-
-        autorizado = False
-        rol_final = rol  # rol seleccionado por el usuario
-
         try:
-            # --- Leer lista de hojas ---
-            creds = Credentials.from_service_account_info(
-                st.secrets["gcp"],
-                scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            )
-            gc = gspread.authorize(creds)
-            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-            hojas = [ws.title for ws in sh.worksheets()]
+            # --------------------------------------------------------
+            # 3️⃣ Validación de dominio institucional
+            # --------------------------------------------------------
+            dominios_validos = ["@correo.itm.edu.co", "@itm.edu.co"]
+            if not any(correo_input.endswith(dom) for dom in dominios_validos):
+                st.error("❌ Debes usar un correo institucional del ITM.")
+                return
 
-            # --- 1️⃣ Validar si está en "Correos Autorizados" ---
+            autorizado = False
+            rol_asignado = rol
+
+            # --------------------------------------------------------
+            # 4️⃣ Validar si el correo está en la hoja 'Correos Autorizados'
+            #     Si está, el usuario se considera Docente
+            # --------------------------------------------------------
             if "Correos Autorizados" in hojas:
-                df_autorizados = pd.DataFrame(sh.worksheet("Correos Autorizados").get_all_records())
-                if not df_autorizados.empty:
-                    col_correo_auto = next((c for c in df_autorizados.columns if "correo" in c.lower()), None)
-                    if col_correo_auto:
-                        lista_autorizados = df_autorizados[col_correo_auto].astype(str).str.strip().str.lower().tolist()
-                        if correo in lista_autorizados:
-                            autorizado = True
-                            rol_final = "Docente"  # Forzar rol docente
-                            st.info("👨‍🏫 Acceso concedido como **Docente autorizado**.")
+                df_autorizados = pd.DataFrame(sheet.worksheet("Correos Autorizados").get_all_records())
+                if not df_autorizados.empty and "Correo" in df_autorizados.columns:
+                    correos_aut = df_autorizados["Correo"].astype(str).str.strip().str.lower().tolist()
+                    if correo_input in correos_aut:
+                        autorizado = True
+                        rol_asignado = "Docente"
 
-            # --- 2️⃣ Si no está autorizado, validar estudiante ---
+            # --------------------------------------------------------
+            # 5️⃣ Validar en Docentes
+            # --------------------------------------------------------
+            if not autorizado and "Docentes" in hojas:
+                df_docentes = pd.DataFrame(sheet.worksheet("Docentes").get_all_records())
+                if not df_docentes.empty and "Correo" in df_docentes.columns:
+                    correos_doc = df_docentes["Correo"].astype(str).str.strip().str.lower().tolist()
+                    if correo_input in correos_doc:
+                        autorizado = True
+                        rol_asignado = "Docente"
+
+            # --------------------------------------------------------
+            # 6️⃣ Validar en Estudiantes
+            # --------------------------------------------------------
             if not autorizado and "Estudiantes" in hojas:
-                df_estudiantes = pd.DataFrame(sh.worksheet("Estudiantes").get_all_records())
-                if not df_estudiantes.empty:
-                    col_correo_est = next((c for c in df_estudiantes.columns if "correo" in c.lower()), None)
-                    if col_correo_est:
-                        lista_est = df_estudiantes[col_correo_est].astype(str).str.strip().str.lower().tolist()
-                        if correo in lista_est:
-                            autorizado = True
-                            rol_final = "Estudiante / Asistente"
+                df_estudiantes = pd.DataFrame(sheet.worksheet("Estudiantes").get_all_records())
+                if not df_estudiantes.empty and "Correo" in df_estudiantes.columns:
+                    correos_est = df_estudiantes["Correo"].astype(str).str.strip().str.lower().tolist()
+                    if correo_input in correos_est:
+                        autorizado = True
+                        rol_asignado = "Estudiante / Asistente"
 
-            # --- 3️⃣ Si sigue sin estar autorizado pero tiene correo institucional de estudiante → registrar ---
-            if not autorizado and correo.endswith("@correo.itm.edu.co"):
-                if "Estudiantes" in hojas:
-                    ws_est = sh.worksheet("Estudiantes")
-                    ws_est.append_row([correo, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-                    autorizado = True
-                    rol_final = "Estudiante / Asistente"
-                    st.success("✅ Registro automático como estudiante completado.")
+            # --------------------------------------------------------
+            # 7️⃣ Resultado
+            # --------------------------------------------------------
+            if autorizado:
+                st.success(f"✅ Bienvenido, acceso concedido como **{rol_asignado}**")
+                st.session_state["logueado"] = True
+                st.session_state["rol"] = rol_asignado
+                st.session_state["correo"] = correo_input
+                st.rerun()
+            else:
+                st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
 
         except Exception as e:
-            st.error(f"⚠️ Error al validar el correo: {e}")
-            st.stop()
+            st.warning(f"⚠️ Error al validar el correo: {e}")
 
-        # --- Resultado final ---
-        if autorizado:
-            st.session_state["logueado"] = True
-            st.session_state["rol"] = rol_final
-            st.session_state["correo"] = correo
-            st.success(f"✅ Bienvenido, acceso concedido como **{rol_final}**")
-            st.stop()
-        else:
-            st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
 
 # ======================================================
 # 🔹 APP MAIN y menú lateral habilitado después del login
