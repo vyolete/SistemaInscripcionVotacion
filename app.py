@@ -615,6 +615,15 @@ def login_general():
 
     correo_input = st.text_input("📧 Ingresa tu correo institucional:")
     rol_seleccion = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
+    if st.button("Ingresar"):
+    if correo.endswith("@correo.itm.edu.co"):
+        st.session_state["correo_actual"] = correo
+        st.session_state["rol"] = "Docente" if rol == "Docente" else "Estudiante"
+        st.session_state["logueado"] = True
+        st.success("Inicio de sesión exitoso.")
+        st.rerun()
+    else:
+        st.error("❌ Usa tu correo institucional @correo.itm.edu.co")
 
     def find_sheet_by_keywords(hojas, keywords):
         for h in hojas:
@@ -809,85 +818,37 @@ from streamlit_option_menu import option_menu
 def main():
     st.set_page_config(page_title="Concurso Analítica Financiera ITM", layout="wide")
 
-    # ======================================================
-    # 🔹 VARIABLES DE SESIÓN
-    # ======================================================
-    if "usuario_autenticado" not in st.session_state:
-        st.session_state["usuario_autenticado"] = False
+    # --- Variables de sesión ---
+    if "logueado" not in st.session_state:
+        st.session_state["logueado"] = False
     if "rol" not in st.session_state:
         st.session_state["rol"] = "Invitado"
     if "correo_actual" not in st.session_state:
         st.session_state["correo_actual"] = ""
-    if "logueado" not in st.session_state:
-        st.session_state["logueado"] = False
 
-    # ======================================================
-    # 🔹 ESTILOS GLOBALES (AZUL INSTITUCIONAL ITM)
-    # ======================================================
+    # --- Título principal (solo decorativo, visible en ambas vistas) ---
     st.markdown("""
         <style>
-        /* Fondo general */
-        .stApp {
-            background-color: #f9fafc;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        /* Título principal */
-        .titulo {
-            color: #1B396A;
-            font-weight: 700;
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Barra lateral azul institucional */
-        section[data-testid="stSidebar"] {
-            background-color: #1B396A !important;
-        }
-        section[data-testid="stSidebar"] * {
-            color: white !important;
-            font-family: 'Segoe UI', sans-serif !important;
-        }
-
-        /* Botones principales */
-        div.stButton > button {
-            background-color: #1B396A;
-            color: white;
-            border-radius: 10px;
-            border: none;
-            padding: 0.6em 1em;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease-in-out;
-        }
-        div.stButton > button:hover {
-            background-color: #27406d;
-            transform: scale(1.02);
-        }
-
-        /* Separadores en sidebar */
-        hr {
-            border-color: rgba(255,255,255,0.2);
-        }
+        .stApp { background-color: #f9fafc; font-family: 'Segoe UI'; }
+        section[data-testid="stSidebar"] { background-color: #1B396A; }
+        section[data-testid="stSidebar"] * { color: white !important; }
         </style>
+        <h2 style='text-align:center; color:#1B396A;'>
+        🏫 Concurso de Analítica Financiera ITM
+        </h2>
     """, unsafe_allow_html=True)
 
-    # ======================================================
-    # 🔹 TÍTULO PRINCIPAL
-    # ======================================================
-    st.markdown("<div class='titulo'>🏫 Concurso de Analítica Financiera ITM</div>", unsafe_allow_html=True)
-
-    # ======================================================
-    # 🔹 LOGIN / ACCESO
-    # ======================================================
+    # --- Si no está logueado, mostrar login (sin menú lateral) ---
     if not st.session_state["logueado"]:
-        login_general()  # Llama tu función de login
-        return  # detiene ejecución si no hay sesión activa
+        login_general()  # << Tu función de login
+        return
 
-    # ======================================================
-    # 🔹 MENÚ LATERAL PRINCIPAL
-    # ======================================================
+    # --- Si está logueado, mostrar menú lateral y módulos ---
+    mostrar_menu_principal()
+
+
+def mostrar_menu_principal():
+    """Muestra el menú lateral y carga el módulo seleccionado"""
     with st.sidebar:
         st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=150)
         st.markdown("---")
@@ -896,20 +857,14 @@ def main():
         st.markdown("---")
 
         seleccion = option_menu(
-            "",
-            ["Inicio", "Inscripción", "Dashboard", "Votación", "Resultados", "Eventos"],
-            icons=["house", "clipboard2-data", "bar-chart", "check2-square", "trophy", "calendar-event"],
-            menu_icon="cast",
+            "Menú Principal",
+            ["Inicio", "Inscripción", "Votación", "Resultados"],
+            icons=["house", "pencil", "check2-square", "trophy"],
             default_index=0,
             styles={
                 "container": {"padding": "5px", "background-color": "#1B396A"},
                 "icon": {"color": "white", "font-size": "18px"},
-                "nav-link": {
-                    "color": "white",
-                    "font-size": "16px",
-                    "text-align": "left",
-                    "margin": "0px",
-                },
+                "nav-link": {"color": "white", "font-size": "16px"},
                 "nav-link-selected": {"background-color": "#27406d"},
             },
         )
@@ -917,31 +872,21 @@ def main():
         st.markdown("---")
         if st.button("🚪 Cerrar sesión"):
             st.session_state["logueado"] = False
-            st.session_state["usuario_autenticado"] = False
             st.session_state["correo_actual"] = ""
             st.session_state["rol"] = "Invitado"
             st.success("Sesión cerrada correctamente.")
             st.rerun()
 
-    # ======================================================
-    # 🔹 RUTEO DE MÓDULOS SEGÚN SELECCIÓN
-    # ======================================================
+    # --- Ruteo de módulos ---
     if seleccion == "Inicio":
         modulo_home()
     elif seleccion == "Inscripción":
         modulo_inscripcion()
-    elif seleccion == "Dashboard":
-        modulo_dashboard()
     elif seleccion == "Votación":
         modulo_votacion()
     elif seleccion == "Resultados":
         modulo_resultados()
-    elif seleccion == "Eventos":
-        modulo_eventos()
 
 
-# ======================================================
-# 🔹 EJECUCIÓN PRINCIPAL
-# ======================================================
 if __name__ == "__main__":
     main()
