@@ -124,6 +124,37 @@ ul.nav.nav-pills li a.active {
         width: 90px;
     }
 }
+/* ======================================================
+   🔧 FIX: Fondo negro del menú corregido (streamlit-option-menu)
+   ====================================================== */
+
+/* Fuerza el fondo azul institucional en el contenedor del menú */
+div[data-testid="stSidebar"] div.menu, 
+div[data-testid="stSidebar"] .container-xxl.d-flex.flex-column.flex-shrink-0.p-3 {
+    background: linear-gradient(180deg, #1B396A 0%, #244A8F 100%) !important;
+    color: #FFFFFF !important;
+    border-radius: 12px !important;
+    padding: 10px 12px !important;
+}
+
+/* Corrige el texto dentro del menú */
+div[data-testid="stSidebar"] div.menu * {
+    color: #FFFFFF !important;
+}
+
+/* Reforzamos el contraste del elemento activo */
+ul.nav.nav-pills li a.active {
+    background-color: #FFFFFF !important;
+    color: #1B396A !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(255,255,255,0.3);
+}
+
+/* Asegura que no quede fondo oscuro detrás del menú */
+div[data-testid="stSidebarContent"] {
+    background: transparent !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
