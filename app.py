@@ -26,84 +26,86 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+
 /* ======================================================
-   🌐 CONFIGURACIÓN GLOBAL
+   🌐 GLOBAL
    ====================================================== */
-html, body, [class*="css"]  {
+html, body, [class*="css"] {
     font-family: 'Segoe UI', Roboto, sans-serif !important;
     color: #1B396A !important;
-}
-.stApp {
     background-color: #F8FAFD !important;
 }
 
 /* ======================================================
-   🎨 SIDEBAR (MENÚ LATERAL)
+   🎨 SIDEBAR GENERAL
    ====================================================== */
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
     color: #FFFFFF !important;
-    padding-top: 15px !important;
+    padding: 15px 10px !important;
+    overflow-y: auto !important;
 }
 [data-testid="stSidebar"] * {
-    font-family: 'Segoe UI', sans-serif !important;
     color: #FFFFFF !important;
+    font-family: 'Segoe UI', sans-serif !important;
 }
 
 /* LOGO Y TÍTULO */
-.sidebar-logo {
-    text-align: center;
+.sidebar-header {
+    text-align: center !important;
+    margin-bottom: 10px !important;
+}
+.sidebar-header img {
+    width: 100px;
     margin-bottom: 8px;
 }
-.sidebar-logo img {
-    width: 110px;
-    margin-bottom: 6px;
-}
-.sidebar-title {
-    font-size: 16px;
+.sidebar-header h1 {
+    font-size: 15px;
+    color: #EAF3FF !important;
     font-weight: 600;
-    color: #EAF3FF;
-    text-align: center;
-}
-
-/* BLOQUE DE USUARIO */
-.user-box {
-    background-color: rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 10px 12px;
-    margin: 10px;
-}
-.user-box b {
-    color: #A8D1FF;
-}
-.user-box p, .user-box a {
-    color: #FFFFFF !important;
-    font-size: 13px !important;
-    margin: 3px 0 !important;
-    text-decoration: none !important;
-}
-.user-box a:hover {
-    text-decoration: underline !important;
 }
 
 /* ======================================================
-   🧭 MENÚ PRINCIPAL (option_menu)
+   🧍‍♂️ BLOQUE USUARIO
    ====================================================== */
-ul.nav.nav-pills {
+.user-card {
+    background-color: rgba(255,255,255,0.08) !important;
+    border-radius: 10px !important;
+    padding: 10px 12px !important;
+    margin: 12px 0 !important;
+}
+.user-card p, .user-card a, .user-card span {
+    color: #FFFFFF !important;
+    font-size: 13px !important;
+    line-height: 1.4em !important;
+}
+.user-card a {
+    text-decoration: none !important;
+}
+.user-card a:hover {
+    text-decoration: underline !important;
+}
+.user-card b {
+    color: #A8D1FF !important;
+}
+
+/* ======================================================
+   🧭 MENÚ PRINCIPAL (streamlit_option_menu)
+   ====================================================== */
+div[data-testid="stSidebarNav"] ul.nav.nav-pills {
     background: transparent !important;
-    margin: 8px 0 !important;
-    padding: 0 !important;
+    margin-top: 8px !important;
 }
 ul.nav.nav-pills li a {
-    display: block !important;
     background-color: rgba(255,255,255,0.1) !important;
     color: #E6EAF0 !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
     font-size: 14px !important;
-    margin: 5px 10px !important;
-    padding: 10px 15px !important;
+    padding: 10px 14px !important;
+    margin: 4px 8px !important;
     transition: all 0.3s ease !important;
+    border: none !important;
 }
 ul.nav.nav-pills li a:hover {
     background-color: rgba(255,255,255,0.25) !important;
@@ -113,21 +115,7 @@ ul.nav.nav-pills li a.active {
     background-color: #FFFFFF !important;
     color: #1B396A !important;
     font-weight: 700 !important;
-    box-shadow: 0 2px 5px rgba(255,255,255,0.3);
-}
-
-/* ======================================================
-   🏠 CONTENIDO PRINCIPAL
-   ====================================================== */
-main, [data-testid="stAppViewContainer"] {
-    color: #1B396A !important;
-}
-h1, h2, h3, h4 {
-    color: #1B396A !important;
-    font-weight: 700 !important;
-}
-p, label, span, div {
-    color: #1B396A !important;
+    box-shadow: 0 2px 6px rgba(255,255,255,0.3);
 }
 
 /* ======================================================
@@ -141,8 +129,8 @@ p, label, span, div {
     font-size: 14px !important;
     padding: 0.5em 1.2em !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 4px rgba(27, 57, 106, 0.3);
     border: none !important;
+    box-shadow: 0 2px 4px rgba(27, 57, 106, 0.3);
 }
 .stButton>button:hover {
     background-color: #244A8F !important;
@@ -150,7 +138,7 @@ p, label, span, div {
 }
 
 /* ======================================================
-   🧾 INPUTS Y SELECTS
+   🧾 INPUTS Y TEXTOS
    ====================================================== */
 input, textarea, select {
     border: 1.5px solid #C7D3E1 !important;
@@ -167,37 +155,43 @@ input:focus, textarea:focus {
 }
 
 /* ======================================================
+   🏠 TITULOS Y TEXTOS PRINCIPALES
+   ====================================================== */
+h1, h2, h3, h4, h5, h6 {
+    color: #1B396A !important;
+    font-weight: 700 !important;
+}
+p, label, span, div {
+    color: #1B396A !important;
+}
+
+/* ======================================================
    📱 RESPONSIVO
    ====================================================== */
 @media (max-width: 768px) {
     [data-testid="stSidebar"] {
-        padding: 5px !important;
+        padding: 8px !important;
     }
-    .sidebar-logo img {
-        width: 90px;
+    .sidebar-header img {
+        width: 80px !important;
     }
 }
+
 </style>
 """, unsafe_allow_html=True)
 
-
 with st.sidebar:
     st.markdown("""
-    <div class="sidebar-logo">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Logo_ITM_Medell%C3%ADn.png" alt="Logo ITM">
-        <div class="sidebar-title">Concurso Analítica Financiera</div>
-        <hr>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if "correo" in st.session_state and "rol" in st.session_state:
-        st.markdown(f"""
-        <div class="user-info">
-            <p><b>Usuario:</b><br> <a href="mailto:{st.session_state['correo']}">{st.session_state['correo']}</a></p>
-            <p><b>Rol:</b> {st.session_state['rol']}</p>
+        <div class="sidebar-header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Logo_ITM.png">
+            <h1>Concurso Analítica Financiera</h1>
         </div>
-        """, unsafe_allow_html=True)
-
+        <div class="user-card">
+            <p><b>Usuario:</b> {correo}</p>
+            <p><b>Rol:</b> {rol}</p>
+        </div>
+    """.format(correo=st.session_state.get("correo", "Invitado"),
+               rol=st.session_state.get("rol", "Sin rol")), unsafe_allow_html=True)
 
 # ======================================================
 # 🔹 UTILIDADES: Conexión y operaciones con Google Sheets
