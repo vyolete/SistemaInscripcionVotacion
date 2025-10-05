@@ -15,48 +15,71 @@ from google.oauth2.service_account import Credentials
 
 
 # ======================================================
-# 🔹 ESTILOS PERSONALIZADOS (mantener tal cual)
+# 🔹 CONFIGURACIÓN Y ESTILOS PERSONALIZADOS ITM
 # ======================================================
-st.set_page_config(page_title="Concurso Analítica Financiera", page_icon="📊", layout="wide")
+import streamlit as st
+
+st.set_page_config(
+    page_title="Concurso Analítica Financiera ITM",
+    page_icon="📊",
+    layout="wide"
+)
+
+# === CSS personalizado ===
 st.markdown("""
     <style>
-    /* Fondo principal */
+    /* Fondo general */
     .stApp {
-        background-color: #FFFFFF;
-        font-family: 'Segoe UI', sans-serif;
+        background-color: #FFFFFF !important;
+        font-family: 'Segoe UI', sans-serif !important;
     }
 
-    /* Sidebar azul */
-    section[data-testid="stSidebar"] {
+    /* Sidebar azul institucional */
+    [data-testid="stSidebar"] {
         background-color: #1B396A !important;
+        color: white !important;
     }
-    section[data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] * {
         color: white !important;
     }
 
-    /* Botones visibles */
-    .stButton>button, button, .stButton>button span {
+    /* Logo y título centrado */
+    .sidebar-logo {
+        text-align: center;
+        padding: 15px 0;
+    }
+    .sidebar-logo img {
+        width: 160px;
+        margin-bottom: 10px;
+    }
+    .sidebar-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    /* Botones principales */
+    .stButton>button {
         background-color: #1B396A !important;
         color: white !important;
-        border-radius: 6px;
-        font-weight: bold;
-        padding: 0.5em 1.2em;
-        font-size: 14px;
+        border-radius: 6px !important;
+        font-weight: bold !important;
+        padding: 0.6em 1.4em !important;
+        font-size: 15px !important;
         transition: 0.3s ease;
+        border: none !important;
     }
     .stButton>button:hover {
         background-color: #27406d !important;
-    }
-        /* Forzar color visible en botones y su texto interno */
-    .stButton>button * {
-        color: white !important;
-        font-weight: 600 !important;
-        font-size: 15px !important;
+        transform: scale(1.02);
     }
 
-    /* Títulos */
+    /* Títulos y textos */
     h1, h2, h3, h4, h5, h6, label, p, span, div {
         color: #1B396A !important;
+        font-family: 'Segoe UI', sans-serif !important;
     }
 
     /* Expander personalizado */
@@ -78,28 +101,62 @@ st.markdown("""
         border-left: 3px solid #1B396A !important;
         padding: 12px 15px !important;
     }
+
+    /* Option Menu personalizado */
+    ul.nav.nav-pills {
+        background-color: transparent !important;
+        padding: 0;
+    }
+    ul.nav.nav-pills li a {
+        background-color: transparent !important;
+        color: white !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        margin: 2px 0 !important;
+        padding: 10px 16px !important;
+        transition: background-color 0.3s ease !important;
+    }
+    ul.nav.nav-pills li a:hover {
+        background-color: rgba(255,255,255,0.15) !important;
+    }
+    ul.nav.nav-pills li a.active {
+        background-color: rgba(255,255,255,0.25) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    /* Compatibilidad móvil */
     @media (max-width: 768px) {
-    /* Mostrar un aviso flotante al seleccionar Estudiante */
-    .menu-flotante {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: #1B396A;
-        color: white;
-        font-weight: 600;
-        padding: 12px 18px;
-        border-radius: 30px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        z-index: 9999;
-        animation: fadeIn 0.5s ease-in-out;
+        .menu-flotante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #1B396A;
+            color: white;
+            font-weight: 600;
+            padding: 12px 18px;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 9999;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
     }
-    @keyframes fadeIn {
-        from {opacity: 0;}
-        to {opacity: 1;}
-    }
-}
     </style>
 """, unsafe_allow_html=True)
+
+# === Encabezado del sidebar (logo y título) ===
+with st.sidebar:
+    st.markdown("""
+    <div class="sidebar-logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Logo_ITM_Medell%C3%ADn.png" alt="Logo ITM">
+        <div class="sidebar-title">Concurso ITM</div>
+        <hr style="border:1px solid rgba(255,255,255,0.3);">
+    </div>
+    """, unsafe_allow_html=True)
 
 # ======================================================
 # 🔹 UTILIDADES: Conexión y operaciones con Google Sheets
