@@ -690,45 +690,32 @@ def login_general():
         except Exception as e:
             st.error(f"⚠️ Error al validar o registrar usuario: {e}")
 
-
-
 # ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
 # ======================================================
 def main():
-    st.set_page_config(page_title="Concurso Analítica Financiera ITM", layout="wide")
-
-    # --- Inicializar variables de sesión ---
+    # Variables de sesión
     if "logueado" not in st.session_state:
         st.session_state["logueado"] = False
-    if "rol" not in st.session_state:
-        st.session_state["rol"] = "Invitado"
     if "correo_actual" not in st.session_state:
         st.session_state["correo_actual"] = ""
+    if "rol" not in st.session_state:
+        st.session_state["rol"] = "Invitado"
 
-    # --- Título general ---
+    # --- Título institucional ---
     st.markdown("""
-        <style>
-        .titulo {
-            color: #1B396A;
-            font-weight: 700;
-            text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-        }
-        </style>
-        <div class="titulo">🏫 Concurso de Analítica Financiera ITM</div>
+        <div style='text-align:center; color:#1B396A; font-weight:700; font-size:1.8rem; margin-bottom:1rem;'>
+            🏫 Concurso de Analítica Financiera ITM
+        </div>
     """, unsafe_allow_html=True)
 
-    # ======================================================
-    # 🔹 LOGIN (solo si no hay sesión)
-    # ======================================================
+    # --- Si no ha iniciado sesión, mostrar login limpio ---
     if not st.session_state["logueado"]:
         login_general()
-        return  # detiene ejecución si aún no está logueado
+        return
 
     # ======================================================
-    # 🔹 MENÚ LATERAL (solo si hay sesión)
+    # 🔹 MENÚ LATERAL — SOLO SI ESTÁ LOGUEADO
     # ======================================================
     with st.sidebar:
         st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=150)
@@ -737,19 +724,11 @@ def main():
         st.markdown(f"🧩 **Rol:** {st.session_state['rol']}")
         st.markdown("---")
 
-        # --- Menú dinámico según rol ---
-        if st.session_state["rol"] == "Docente":
-            opciones_menu = ["Inicio", "Inscripción", "Votación", "Resultados", "Dashboard", "Eventos"]
-            iconos_menu = ["house", "clipboard2-data", "check2-square", "trophy", "bar-chart", "calendar-event"]
-        else:  # Estudiantes / Invitados
-            opciones_menu = ["Inicio", "Inscripción", "Votación", "Resultados"]
-            iconos_menu = ["house", "clipboard2-data", "check2-square", "trophy"]
-
+        # Menú institucional con opción visual limpia
         seleccion = option_menu(
-            "Menú Principal",
-            opciones_menu,
-            icons=iconos_menu,
-            menu_icon="cast",
+            menu_title="Menú Principal",
+            options=["Inicio", "Inscripción", "Dashboard", "Votación", "Resultados", "Eventos"],
+            icons=["house", "clipboard2-data", "bar-chart", "check2-square", "trophy", "calendar-event"],
             default_index=0,
             styles={
                 "container": {"padding": "5px", "background-color": "#1B396A"},
@@ -760,33 +739,52 @@ def main():
                     "text-align": "left",
                     "margin": "0px",
                 },
-                "nav-link-selected": {"background-color": "#27406d"},
+                "nav-link-selected": {"background-color": "#27406D"},
             },
         )
 
         st.markdown("---")
         if st.button("🚪 Cerrar sesión"):
-            for key in ["logueado", "correo_actual", "rol"]:
-                st.session_state[key] = None
             st.session_state["logueado"] = False
+            st.session_state["correo_actual"] = ""
+            st.session_state["rol"] = "Invitado"
             st.success("Sesión cerrada correctamente.")
             st.rerun()
 
     # ======================================================
-    # 🔹 RUTEO DE MÓDULOS SEGÚN SELECCIÓN
+    # 🔹 RUTEO DE MÓDULOS
     # ======================================================
     if seleccion == "Inicio":
         modulo_home()
     elif seleccion == "Inscripción":
         modulo_inscripcion()
+    elif seleccion == "Dashboard" and st.session_state["rol"] == "Docente":
+        modulo_dashboard()
     elif seleccion == "Votación":
         modulo_votacion()
     elif seleccion == "Resultados":
         modulo_resultados()
-    elif seleccion == "Dashboard" and st.session_state["rol"] == "Docente":
-        modulo_dashboard()
-    elif seleccion == "Eventos" and st.session_state["rol"] == "Docente":
+    elif seleccion == "Eventos":
         modulo_eventos()
+
+
+# ======================================================
+# 🔹 LOGIN SIMPLE TEMPORAL
+# ======================================================
+def login_general():
+    st.markdown("<h3 style='color:#1B396A;'>🔐 Acceso a la Plataforma</h3>", unsafe_allow_html=True)
+    correo = st.text_input("📧 Correo institucional:")
+    rol = st.radio("Selecciona tu rol:", ["Estudiante", "Docente"], horizontal=True)
+
+    if st.button("Ingresar"):
+        if correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co"):
+            st.session_state["correo_actual"] = correo
+            st.session_state["rol"] = rol
+            st.session_state["logueado"] = True
+            st.success("✅ Inicio de sesión exitoso.")
+            st.rerun()
+        else:
+            st.error("🚫 Usa un correo institucional @correo.itm.edu.co o @itm.edu.co.")
 
 
 # ======================================================
@@ -794,5 +792,4 @@ def main():
 # ======================================================
 if __name__ == "__main__":
     main()
-
 
