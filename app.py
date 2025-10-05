@@ -18,17 +18,10 @@ from google.oauth2.service_account import Credentials
 # 🔹 CONFIGURACIÓN Y ESTILOS PERSONALIZADOS ITM
 # ======================================================
 
-st.set_page_config(
-    page_title="Concurso Analítica Financiera ITM",
-    page_icon="📊",
-    layout="wide"
-)
-
 st.markdown("""
 <style>
-[data-testid="stSidebarNav"] {display: none;}
 /* ======================================================
-   🌐 GLOBAL
+   🎨 CONFIGURACIÓN GLOBAL ITM
    ====================================================== */
 html, body, [class*="css"] {
     font-family: 'Segoe UI', Roboto, sans-serif !important;
@@ -37,85 +30,25 @@ html, body, [class*="css"] {
 }
 
 /* ======================================================
-   🎨 SIDEBAR GENERAL
+   🧭 MENÚ LATERAL
    ====================================================== */
+/* 🔸 Ocultar completamente el sidebar cuando NO se ha iniciado sesión */
 [data-testid="stSidebar"] {
+    display: none;
+}
+
+/* 🔹 Mostrarlo solo si hay sesión activa (Streamlit lo renderiza después) */
+.logged-in [data-testid="stSidebar"] {
+    display: block !important;
     background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
     color: #FFFFFF !important;
     padding: 15px 10px !important;
-    overflow-y: auto !important;
 }
-[data-testid="stSidebar"] * {
+
+/* Elementos dentro del sidebar */
+.logged-in [data-testid="stSidebar"] * {
     color: #FFFFFF !important;
     font-family: 'Segoe UI', sans-serif !important;
-}
-
-/* LOGO Y TÍTULO */
-.sidebar-header {
-    text-align: center !important;
-    margin-bottom: 10px !important;
-}
-.sidebar-header img {
-    width: 100px;
-    margin-bottom: 8px;
-}
-.sidebar-header h1 {
-    font-size: 15px;
-    color: #EAF3FF !important;
-    font-weight: 600;
-}
-
-/* ======================================================
-   🧍‍♂️ BLOQUE USUARIO
-   ====================================================== */
-.user-card {
-    background-color: rgba(255,255,255,0.08) !important;
-    border-radius: 10px !important;
-    padding: 10px 12px !important;
-    margin: 12px 0 !important;
-}
-.user-card p, .user-card a, .user-card span {
-    color: #FFFFFF !important;
-    font-size: 13px !important;
-    line-height: 1.4em !important;
-}
-.user-card a {
-    text-decoration: none !important;
-}
-.user-card a:hover {
-    text-decoration: underline !important;
-}
-.user-card b {
-    color: #A8D1FF !important;
-}
-
-/* ======================================================
-   🧭 MENÚ PRINCIPAL (streamlit_option_menu)
-   ====================================================== */
-div[data-testid="stSidebarNav"] ul.nav.nav-pills {
-    background: transparent !important;
-    margin-top: 8px !important;
-}
-ul.nav.nav-pills li a {
-    background-color: rgba(255,255,255,0.1) !important;
-    color: #E6EAF0 !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    padding: 10px 14px !important;
-    margin: 4px 8px !important;
-    transition: all 0.3s ease !important;
-    border: none !important;
-}
-ul.nav.nav-pills li a:hover {
-    background-color: rgba(255,255,255,0.25) !important;
-    color: #FFFFFF !important;
-}
-ul.nav.nav-pills li a.active {
-    background-color: #FFFFFF !important;
-    color: #1B396A !important;
-    font-weight: 700 !important;
-    box-shadow: 0 2px 6px rgba(255,255,255,0.3);
 }
 
 /* ======================================================
@@ -138,7 +71,7 @@ ul.nav.nav-pills li a.active {
 }
 
 /* ======================================================
-   🧾 INPUTS Y TEXTOS
+   🧾 INPUTS
    ====================================================== */
 input, textarea, select {
     border: 1.5px solid #C7D3E1 !important;
@@ -155,7 +88,7 @@ input:focus, textarea:focus {
 }
 
 /* ======================================================
-   🏠 TITULOS Y TEXTOS PRINCIPALES
+   🏠 TITULOS
    ====================================================== */
 h1, h2, h3, h4, h5, h6 {
     color: #1B396A !important;
@@ -164,42 +97,8 @@ h1, h2, h3, h4, h5, h6 {
 p, label, span, div {
     color: #1B396A !important;
 }
-
-/* ======================================================
-   📱 RESPONSIVO
-   ====================================================== */
-@media (max-width: 768px) {
-    [data-testid="stSidebar"] {
-        padding: 8px !important;
-    }
-    .sidebar-header img {
-        width: 80px !important;
-    }
-}
-
 </style>
 """, unsafe_allow_html=True)
-
-with st.sidebar:
-    st.markdown("<h2 style='color:white;'>🎓 Concurso ITM</h2>", unsafe_allow_html=True)
-    selected = option_menu(
-        "",
-        ["Inicio", "Inscripción", "Votación", "Resultados"],
-        icons=["house", "pencil", "vote", "trophy"],
-        default_index=0,
-        styles={
-            "container": {"padding": "5px", "background-color": "#1B396A"},
-            "icon": {"color": "white", "font-size": "18px"},
-            "nav-link": {
-                "color": "white",
-                "font-size": "16px",
-                "text-align": "left",
-                "margin": "0px",
-            },
-            "nav-link-selected": {"background-color": "#27406d"},
-        },
-    )
-
 
 # ======================================================
 # 🔹 UTILIDADES: Conexión y operaciones con Google Sheets
