@@ -538,7 +538,7 @@ def login_general():
 
         # conectar a Google Sheets
         try:
-            creds = Credentials.from_service_account_info(st.secrets["gcp"])
+            creds = Credentials.from_service_account_info(st.secrets["gcp"],scopes=["https://www.googleapis.com/auth/spreadsheets"])
             client = gspread.authorize(creds)
             sheet = client.open_by_key(st.secrets["spreadsheet"]["id"])
             hojas = [ws.title for ws in sheet.worksheets()]
