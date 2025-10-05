@@ -29,7 +29,7 @@ st.markdown("""
     <style>
     /* -------------------- GENERAL -------------------- */
     .stApp {
-        background-color: #F8FAFC !important;
+        background-color: #F7FAFC !important;
         font-family: 'Segoe UI', Roboto, sans-serif !important;
         color: #1B396A !important;
     }
@@ -37,155 +37,139 @@ st.markdown("""
     /* -------------------- SIDEBAR -------------------- */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
-        color: white !important;
+        color: #FFFFFF !important;
+        padding-top: 10px !important;
     }
 
     [data-testid="stSidebar"] * {
-        color: white !important;
+        color: #FFFFFF !important;
         font-family: 'Segoe UI', sans-serif !important;
     }
 
+    /* Logo y título */
     .sidebar-logo {
         text-align: center;
-        padding: 15px 0 5px 0;
+        padding: 5px 0 10px 0;
     }
     .sidebar-logo img {
-        width: 140px;
-        margin-bottom: 8px;
+        width: 120px;
+        margin-bottom: 6px;
         filter: brightness(1.2);
     }
     .sidebar-title {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 700;
         color: #ffffff;
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 8px;
+        line-height: 1.2;
     }
     hr {
         border: 0;
-        border-top: 1px solid rgba(255,255,255,0.3);
-        margin: 0 10px 15px 10px;
+        border-top: 1px solid rgba(255,255,255,0.25);
+        margin: 5px 10px 10px 10px;
     }
 
-    /* -------------------- BOTONES -------------------- */
-    .stButton>button {
-        background-color: #1B396A !important;
+    /* -------------------- SECCIÓN USUARIO -------------------- */
+    .user-info {
+        font-size: 13px;
+        line-height: 1.3;
+        margin: 0 15px 10px 15px;
+        background-color: rgba(255, 255, 255, 0.08);
+        padding: 10px;
+        border-radius: 8px;
+    }
+    .user-info b {
+        color: #A8D1FF !important;
+    }
+    .user-info a {
         color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        font-size: 15px !important;
-        padding: 0.6em 1.3em !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 2px 6px rgba(27, 57, 106, 0.3);
+        text-decoration: underline;
+        font-weight: 600;
     }
-
-    .stButton>button:hover {
-        background-color: #244A8F !important;
-        transform: scale(1.04);
-        box-shadow: 0 3px 8px rgba(27, 57, 106, 0.5);
-    }
-
-    .stButton>button * {
-        color: #FFFFFF !important;
-        font-weight: 600 !important;
-    }
-
-    /* -------------------- TITULOS Y TEXTOS -------------------- */
-    h1, h2, h3, h4, h5, h6 {
-        color: #1B396A !important;
-        font-weight: 700 !important;
-    }
-
-    label, p, span, div, input, textarea {
-        color: #1B396A !important;
-        font-size: 15px !important;
-    }
-
-    /* -------------------- INPUTS Y CAMPOS -------------------- */
-    input[type="text"], input[type="email"], textarea, select {
-        border: 1.5px solid #C7D3E1 !important;
-        border-radius: 6px !important;
-        padding: 8px 10px !important;
-        background-color: #FFFFFF !important;
-        color: #1B396A !important;
-        transition: all 0.2s ease-in-out !important;
-    }
-    input:focus, textarea:focus, select:focus {
-        border-color: #1B396A !important;
-        box-shadow: 0 0 4px rgba(27, 57, 106, 0.4) !important;
-        outline: none !important;
-    }
-
-    /* -------------------- EXPANDERS -------------------- */
-    div[data-testid="stExpander"] > details > summary {
-        font-weight: 700 !important;
-        font-size: 15px !important;
-        color: #1B396A !important;
-        background-color: #E8EEF6 !important;
-        border: 1px solid #C7D3E1 !important;
-        border-radius: 6px !important;
-        padding: 10px 14px !important;
-        cursor: pointer;
-    }
-    div[data-testid="stExpander"] > details > summary:hover {
-        background-color: #DDE7F3 !important;
-    }
-    div[data-testid="stExpander"] div[data-testid="stExpanderContent"] {
-        background-color: #FFFFFF !important;
-        border-left: 3px solid #1B396A !important;
-        padding: 12px 15px !important;
-    }
-
-    /* -------------------- OPTION MENU -------------------- */
-    ul.nav.nav-pills {
-        background-color: transparent !important;
-        padding: 0;
+    .user-info p {
         margin: 0;
+        color: #FFFFFF !important;
+    }
+
+    /* -------------------- MENÚ LATERAL (option_menu) -------------------- */
+    ul.nav.nav-pills {
+        background: transparent !important;
+        margin: 10px 0 !important;
     }
     ul.nav.nav-pills li a {
-        background-color: transparent !important;
+        display: block !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
         color: #E4E8F0 !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
-        margin: 4px 0 !important;
-        padding: 10px 16px !important;
-        transition: background-color 0.3s ease, color 0.3s ease !important;
+        font-size: 14px !important;
+        margin: 3px 10px !important;
+        padding: 10px 14px !important;
+        transition: all 0.3s ease !important;
     }
     ul.nav.nav-pills li a:hover {
-        background-color: rgba(255,255,255,0.15) !important;
+        background-color: rgba(255,255,255,0.25) !important;
         color: #FFFFFF !important;
     }
     ul.nav.nav-pills li a.active {
         background-color: #FFFFFF !important;
         color: #1B396A !important;
         font-weight: 700 !important;
+        box-shadow: 0 2px 5px rgba(255,255,255,0.2);
     }
 
-    /* -------------------- COMPATIBILIDAD MÓVIL -------------------- */
+    /* -------------------- BOTONES -------------------- */
+    .stButton>button {
+        background-color: #1B396A !important;
+        color: #FFFFFF !important;
+        border-radius: 6px !important;
+        border: none !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        padding: 0.5em 1.2em !important;
+        transition: all 0.2s ease-in-out !important;
+        box-shadow: 0 2px 4px rgba(27, 57, 106, 0.3);
+    }
+    .stButton>button:hover {
+        background-color: #244A8F !important;
+        transform: scale(1.04);
+    }
+
+    /* -------------------- TITULOS -------------------- */
+    h1, h2, h3, h4, h5 {
+        color: #1B396A !important;
+        font-weight: 700 !important;
+    }
+
+    /* -------------------- CAMPOS -------------------- */
+    input, textarea, select {
+        border: 1.5px solid #C7D3E1 !important;
+        border-radius: 6px !important;
+        padding: 8px 10px !important;
+        background-color: #FFFFFF !important;
+        color: #1B396A !important;
+        font-size: 15px !important;
+    }
+    input:focus, textarea:focus {
+        border-color: #1B396A !important;
+        box-shadow: 0 0 4px rgba(27, 57, 106, 0.4);
+        outline: none !important;
+    }
+
+    /* -------------------- RESPONSIVO -------------------- */
     @media (max-width: 768px) {
-        .menu-flotante {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #1B396A;
-            color: white;
-            font-weight: 600;
-            padding: 12px 18px;
-            border-radius: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 9999;
-            animation: fadeIn 0.5s ease-in-out;
+        [data-testid="stSidebar"] {
+            padding: 5px !important;
         }
-        @keyframes fadeIn {
-            from {opacity: 0;}
-            to {opacity: 1;}
+        .sidebar-logo img {
+            width: 100px;
         }
     }
     </style>
 """, unsafe_allow_html=True)
 
-# === Sidebar con logo y título ITM ===
+
 with st.sidebar:
     st.markdown("""
     <div class="sidebar-logo">
@@ -194,6 +178,14 @@ with st.sidebar:
         <hr>
     </div>
     """, unsafe_allow_html=True)
+
+    if "correo" in st.session_state and "rol" in st.session_state:
+        st.markdown(f"""
+        <div class="user-info">
+            <p><b>Usuario:</b><br> <a href="mailto:{st.session_state['correo']}">{st.session_state['correo']}</a></p>
+            <p><b>Rol:</b> {st.session_state['rol']}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # ======================================================
