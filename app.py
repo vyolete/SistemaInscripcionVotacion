@@ -22,75 +22,103 @@ from google.oauth2.service_account import Credentials
 # ======================================================
 # 🔹 ESTILOS INSTITUCIONALES ITM
 # ======================================================
+# ======================================================
+# 🔹 ESTILOS INSTITUCIONALES ITM (versión corregida)
+# ======================================================
 st.markdown("""
 <style>
-/* === Fondo general === */
+/* ===== GENERAL ===== */
+html, body, [class*="css"] {
+    font-family: 'Segoe UI', sans-serif !important;
+    background-color: #ffffff !important;
+    color: #1B396A !important;
+}
+
+/* ===== FONDO PRINCIPAL (panel derecho) ===== */
 [data-testid="stAppViewContainer"] {
-    background-color: #ffffff !important; /* Fondo blanco del área principal */
-    color: #1A1A1A;
+    background-color: #FFFFFF !important;
+    padding: 1rem;
 }
 
-/* === Lateral izquierdo (sidebar) === */
+/* ===== SIDEBAR ===== */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #003366 0%, #004080 100%);
-    color: white !important;
-    padding: 1rem 0.8rem;
+    background: linear-gradient(180deg, #1B396A 0%, #244A8F 100%) !important;
+    color: #FFFFFF !important;
+    padding: 20px 15px;
+    border-right: 2px solid #EAF3FF;
 }
 
+/* ===== TEXTO DEL SIDEBAR ===== */
 [data-testid="stSidebar"] * {
-    color: white !important;
-    font-family: 'Segoe UI', sans-serif;
+    color: #FFFFFF !important;
 }
 
-[data-testid="stSidebar"] a {
-    text-decoration: none !important;
-}
-
-/* === Menú principal === */
-.css-1v3fvcr, .css-1d391kg {
-    background-color: rgba(255,255,255,0.1) !important;
-    border-radius: 12px;
-}
-
-.css-1v3fvcr:hover, .css-1d391kg:hover {
-    background-color: rgba(255,255,255,0.2) !important;
-}
-
-/* === Botones del menú === */
-div[data-testid="stSidebarNav"] button {
-    background-color: #003366 !important;
-    color: white !important;
-    border-radius: 8px;
-}
-
-/* === Logo ITM en el lateral === */
+/* ===== LOGO ITM ===== */
 .sidebar-logo {
-    width: 120px;
-    margin: 10px auto;
+    width: 130px;
     display: block;
+    margin: 0 auto 15px auto;
 }
 
-/* === Encabezados del contenido === */
-h1, h2, h3, h4 {
-    color: #002D72;
-    font-weight: 700;
-    font-family: 'Segoe UI', sans-serif;
+/* ===== BLOQUE USUARIO ===== */
+.user-card {
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 10px 15px;
+    text-align: left;
+    margin-bottom: 1rem;
+}
+.user-card p {
+    margin: 4px 0;
+    font-size: 13px;
 }
 
-/* === Enlaces y texto === */
-a {
-    color: #002D72 !important;
+/* ===== MENÚ PRINCIPAL ===== */
+ul.nav.nav-pills {
+    background: transparent !important;
+    margin-top: 10px !important;
+}
+ul.nav.nav-pills li a {
+    background-color: rgba(255,255,255,0.1) !important;
+    border-radius: 10px !important;
+    color: #E6EAF0 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 10px 14px !important;
+    margin: 5px 6px !important;
+    transition: all 0.3s ease !important;
+}
+ul.nav.nav-pills li a:hover {
+    background-color: rgba(255,255,255,0.25) !important;
+    color: #FFFFFF !important;
+}
+ul.nav.nav-pills li a.active {
+    background-color: #FFFFFF !important;
+    color: #1B396A !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(255,255,255,0.3);
 }
 
-.st-emotion-cache-6qob1r {
-    background-color: #003366 !important;
+/* ===== BOTONES ===== */
+.stButton>button {
+    background-color: #1B396A !important;
+    color: #FFFFFF !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 0.5em 1.2em !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(27,57,106,0.3);
+}
+.stButton>button:hover {
+    background-color: #244A8F !important;
+    transform: scale(1.04);
 }
 
-/* === Responsivo (pantalla móvil) === */
+/* ===== RESPONSIVO ===== */
 @media (max-width: 768px) {
     [data-testid="stSidebar"] {
-        background-color: #003366 !important;
-        padding: 0.5rem;
+        padding: 10px !important;
     }
     .sidebar-logo {
         width: 90px;
@@ -557,7 +585,7 @@ def main():
     if not st.session_state["logueado"]:
         with st.container():
             st.markdown("<div style='text-align:center; margin-top:30px;'>", unsafe_allow_html=True)
-            st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=160)
+            st.image("https://media1.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp", width=160)
             st.markdown("<h3 style='color:#1B396A;'>🔐 Acceso al Sistema</h3>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
