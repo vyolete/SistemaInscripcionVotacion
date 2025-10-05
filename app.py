@@ -21,22 +21,76 @@ from google.oauth2.service_account import Credentials
 st.markdown("""
 <style>
 /* ======================================================
-   🎨 CONFIGURACIÓN GLOBAL ITM
+   🎨 ESTILOS INSTITUCIONALES ITM
    ====================================================== */
-html, body, [class*="css"] {
-    font-family: 'Segoe UI', Roboto, sans-serif !important;
-    color: #1B396A !important;
-    background-color: #F8FAFD !important;
+
+/* Fondo general del cuerpo (área principal) */
+[data-testid="stAppViewContainer"] {
+    background-color: #FFFFFF !important;
+}
+
+/* Fondo azul institucional en el sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
+    color: #FFFFFF !important;
+    padding: 1.5rem 1rem !important;
+    border-right: 3px solid #163564 !important;
+}
+
+/* Texto del sidebar */
+[data-testid="stSidebar"] * {
+    color: #FFFFFF !important;
+    font-family: 'Segoe UI', sans-serif !important;
 }
 
 /* ======================================================
-   🧭 MENÚ LATERAL
+   🧭 MENÚ PRINCIPAL (option_menu)
    ====================================================== */
+ul.nav.nav-pills {
+    background: transparent !important;
+    padding: 0 !important;
+    margin-top: 10px !important;
+}
 
-/* Elementos dentro del sidebar */
-.logged-in [data-testid="stSidebar"] * {
+ul.nav.nav-pills li a {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: #E6EAF0 !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    padding: 10px 14px !important;
+    margin: 6px 8px !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+
+ul.nav.nav-pills li a:hover {
+    background-color: rgba(255, 255, 255, 0.3) !important;
     color: #FFFFFF !important;
-    font-family: 'Segoe UI', sans-serif !important;
+}
+
+ul.nav.nav-pills li a.active {
+    background-color: #FFFFFF !important;
+    color: #1B396A !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 6px rgba(255,255,255,0.25);
+}
+
+/* ======================================================
+   🧍‍♂️ BLOQUE USUARIO
+   ====================================================== */
+.user-card {
+    background-color: rgba(255,255,255,0.1) !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
+    margin: 12px 0 !important;
+}
+.user-card p, .user-card a, .user-card span {
+    color: #FFFFFF !important;
+    font-size: 13px !important;
+}
+.user-card b {
+    color: #A8D1FF !important;
 }
 
 /* ======================================================
@@ -59,7 +113,7 @@ html, body, [class*="css"] {
 }
 
 /* ======================================================
-   🧾 INPUTS
+   🧾 INPUTS Y CAMPOS DE TEXTO
    ====================================================== */
 input, textarea, select {
     border: 1.5px solid #C7D3E1 !important;
@@ -76,7 +130,7 @@ input:focus, textarea:focus {
 }
 
 /* ======================================================
-   🏠 TITULOS
+   🏠 TITULOS Y TEXTOS
    ====================================================== */
 h1, h2, h3, h4, h5, h6 {
     color: #1B396A !important;
@@ -85,8 +139,18 @@ h1, h2, h3, h4, h5, h6 {
 p, label, span, div {
     color: #1B396A !important;
 }
+
+/* ======================================================
+   📱 RESPONSIVO
+   ====================================================== */
+@media (max-width: 768px) {
+    [data-testid="stSidebar"] {
+        padding: 10px !important;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
+
 
 # ======================================================
 # 🔹 UTILIDADES: Conexión y operaciones con Google Sheets
