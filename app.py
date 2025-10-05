@@ -489,79 +489,121 @@ def modulo_votacion():
                 del st.session_state["equipo_voto"]
             st.rerun()
 
+
 # ======================================================
-# 🔹 LOGIN GENERAL (Docente / Estudiante) - integrado en app
+# 🔐 MÓDULO DE LOGIN INSTITUCIONAL
 # ======================================================
 def login_general():
-    st.header("🔐 Acceso al Sistema")
-    rol = st.selectbox("Seleccione su rol:", ["Docente", "Estudiante"])
-    df_docentes = cargar_docentes(st.secrets)
-    df_estudiantes = cargar_hoja_por_nombre(st.secrets, "Estudiantes") if "Estudiantes" in [ws['properties']['title'] for ws in gspread.authorize(Credentials.from_service_account_info(st.secrets["gcp"], scopes=['https://www.googleapis.com/auth/spreadsheets'])).open_by_key(st.secrets["spreadsheet"]["id"]).worksheets()] else pd.DataFrame()
+    st.markdown("""
+        <style>
+            /* Fondo institucional */
+            [data-testid="stAppViewContainer"] {
+                background: linear-gradient(180deg, #ffffff 0%, #E9EFFA 100%);
+            }
+            /* Título */
+            .titulo-login {
+                text-align: center;
+                color: #1B396A;
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 10px;
+            }
+            /* Subtítulo */
+            .subtitulo-login {
+                text-align: center;
+                color: #3A3A3A;
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            /* Inputs */
+            input {
+                border-radius: 8px !important;
+                border: 1px solid #CBD5E0 !important;
+            }
+            /* Botón */
+            div.stButton > button {
+                width: 100%;
+                background-color: #1B396A !important;
+                color: white !important;
+                border-radius: 10px !important;
+                font-weight: 600 !important;
+                padding: 0.6rem 1rem !important;
+                transition: background-color 0.3s ease;
+            }
+            div.stButton > button:hover {
+                background-color: #244D8B !important;
+            }
+            /* Caja del login */
+            .login-box {
+                background-color: #ffffff;
+                border-radius: 15px;
+                padding: 2.5rem;
+                box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+                width: 380px;
+                margin: 0 auto;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
-    if "correo_usuario" not in st.session_state:
-        st.session_state["correo_usuario"] = None
-        st.session_state["rol_usuario"] = None
-        st.session_state["rol_seleccionado"] = False
+    st.markdown("<div class='titulo-login'>Acceso al Sistema</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitulo-login'>Concurso de Analítica Financiera — ITM</div>", unsafe_allow_html=True)
 
-    opcion = st.radio("Seleccione una opción:", ["Iniciar sesión", "Registrarse"], horizontal=True)
+    # Contenedor principal centrado
+    with st.container():
+        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
 
-    if opcion == "Iniciar sesión":
-        correo = st.text_input("Correo institucional:", key="login_correo")
-        contrasena = st.text_input("Contraseña:", type="password", key="login_contra")
-        if st.button("Iniciar sesión"):
-            if not correo or not contrasena:
-                st.warning("⚠️ Por favor ingrese sus credenciales completas.")
+        # --- Selección de Rol ---
+        rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True, index=0)
+
+        # --- Correo institucional ---
+        correo = st.text_input("📧 Correo institucional", placeholder="ejemplo@correo.itm.edu.co")
+
+        # --- Botón de inicio ---
+        if st.button("Ingresar ▶️"):
+            if not correo:
+                st.error("❌ Por favor ingresa tu correo institucional.")
+                st.stop()
+
+            try:
+                # Credenciales de servicio
+                creds = service_account.Credentials.from_service_account_info(
+                    st.secrets["gcp"],
+                    scopes=["https://www.googleapis.com/auth/spreadsheets"]
+                )
+                gc = gspread.authorize(creds)
+                sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+                hojas = [ws.title for ws in sh.worksheets()]
+            except Exception as e:
+                st.error(f"⚠️ Error al conectar con Google Sheets: {e}")
+                st.stop()
+
+            # --- Verificar si el correo pertenece a docentes o estudiantes ---
+            autorizado = False
+
+            if "Docente" in rol and "Docentes" in hojas:
+                df_docentes = cargar_hoja_por_nombre(st.secrets, "Docentes")
+                if "Correo" in df_docentes.columns:
+                    correos_doc = df_docentes["Correo"].astype(str).str.strip().tolist()
+                    if correo.strip().lower() in [c.lower() for c in correos_doc]:
+                        autorizado = True
+            elif "Estudiante" in rol and "Estudiantes" in hojas:
+                df_estudiantes = cargar_hoja_por_nombre(st.secrets, "Estudiantes")
+                if "Correo" in df_estudiantes.columns:
+                    correos_est = df_estudiantes["Correo"].astype(str).str.strip().tolist()
+                    if correo.strip().lower() in [c.lower() for c in correos_est]:
+                        autorizado = True
+
+            if autorizado:
+                st.success(f"✅ Bienvenido, acceso concedido como **{rol}**")
+                st.session_state["logueado"] = True
+                st.session_state["rol"] = rol
+                st.session_state["correo"] = correo.strip().lower()
+                st.rerun()
             else:
-                # verificar en la hoja correspondiente
-                hoja = df_docentes if rol == "Docente" else df_estudiantes
-                if hoja is None or hoja.empty:
-                    st.error("❌ No se encontraron registros para este rol. Regístrate primero.")
-                else:
-                    # normalizar columnas posibles
-                    cols = [c.lower() for c in hoja.columns]
-                    # asumimos columna 'Correo' y 'Contraseña' o 'Contraseña' puede llamarse 'Contraseña' u 'Password'
-                    correo_col = [c for c in hoja.columns if c.lower().startswith("correo")]
-                    contra_col = [c for c in hoja.columns if "contra" in c.lower() or "password" in c.lower()]
-                    if not correo_col or not contra_col:
-                        st.error("❌ La hoja de usuarios no tiene las columnas esperadas ('Correo' y 'Contraseña').")
-                        return
-                    correo_col = correo_col[0]
-                    contra_col = contra_col[0]
-                    usuarios = hoja[(hoja[correo_col].astype(str).str.strip() == correo.strip()) & (hoja[contra_col].astype(str).str.strip() == contrasena.strip())]
-                    if not usuarios.empty:
-                        st.session_state["correo_usuario"] = correo.strip()
-                        st.session_state["rol_usuario"] = rol
-                        st.session_state["rol_seleccionado"] = True
-                        st.success(f"✅ Bienvenido/a {usuarios.iloc[0].get('Nombre', correo)} ({rol})")
-                    else:
-                        st.error("❌ Credenciales incorrectas o usuario no registrado.")
+                st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
 
-    elif opcion == "Registrarse":
-        nombre = st.text_input("Nombre completo:", key="reg_nombre")
-        correo = st.text_input("Correo institucional:", key="reg_correo")
-        institucion = st.text_input("Institución:", key="reg_inst")
-        if st.button("Registrar"):
-            if not nombre or not correo or not institucion:
-                st.warning("⚠️ Complete todos los campos.")
-            else:
-                hoja_nombre = "Docentes" if rol == "Docente" else "Estudiantes"
-                df_hoja = cargar_hoja_por_nombre(st.secrets, hoja_nombre) if hoja_nombre in [ws.title for ws in gspread.authorize(Credentials.from_service_account_info(st.secrets["gcp"], scopes=['https://www.googleapis.com/auth/spreadsheets'])).open_by_key(st.secrets["spreadsheet"]["id"]).worksheets()] else pd.DataFrame()
-                if not df_hoja.empty and correo.strip() in df_hoja.iloc[:, df_hoja.columns.str.lower().tolist().index([c for c in df_hoja.columns if c.lower().startswith("correo")][0])].astype(str).str.strip().tolist():
-                    st.info("ℹ️ Este correo ya está registrado.")
-                else:
-                    contrasena = generar_codigo_docente() if rol == "Docente" else ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-                    # Intentamos guardar: mantener consistencia de columnas: Nombre, Correo, Institución, Contraseña
-                    try:
-                        guardar_fila_en_hoja(st.secrets, hoja_nombre, [str(datetime.now()), nombre, correo, institucion, contrasena])
-                        mensaje = f"""
-                        <h3>📘 Bienvenido al Concurso Analítica Financiera</h3>
-                        <p>Hola <b>{nombre}</b>, tu registro fue exitoso como <b>{rol}</b>.</p>
-                        <p>Tu contraseña temporal es: <b>{contrasena}</b></p>
-                        """
-                        enviar_correo_gmail(correo, f"Registro exitoso - Concurso ITM ({rol})", mensaje)
-                        st.success("✅ Registro completado. Revisa tu correo para la contraseña.")
-                    except Exception as e:
-                        st.error(f"❌ Error al registrar: {e}")
+        st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ======================================================
 # 🔹 APP MAIN y menú lateral habilitado después del login
