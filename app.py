@@ -558,9 +558,9 @@ def login_general():
     def es_correo_itm(correo):
         return correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
 
-    def buscar_correo(archivo, hoja, correo):
+    def buscar_correo(hoja, correo):
         try:
-            ws = client.open(archivo).worksheet(hoja)
+            dataframe = conectar_google_sheets(st.secrets)
             correos = [c.strip().lower() for c in ws.col_values(1)[1:]]  # omitir encabezado
             return correo.lower() in correos
         except Exception as e:
@@ -585,7 +585,7 @@ def login_general():
                 st.stop()
 
             # 2️⃣ Si está autorizado, validar si ya está registrado
-            if not buscar_correo("Docentes", "Docentes", email):
+            if not buscar_correo("Docentes", email):
                 st.info("Correo autorizado pero no registrado.")
                 codigo = st.text_input("Ingrese el código de validación enviado a su correo")
                 if st.button("Registrar nuevo docente"):
