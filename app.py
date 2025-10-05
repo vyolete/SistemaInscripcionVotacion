@@ -24,7 +24,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# === CSS Personalizado ===
 st.markdown("""
 <style>
 /* ======================================================
@@ -34,8 +33,6 @@ html, body, [class*="css"]  {
     font-family: 'Segoe UI', Roboto, sans-serif !important;
     color: #1B396A !important;
 }
-
-/* Fondo general */
 .stApp {
     background-color: #F8FAFD !important;
 }
@@ -46,79 +43,66 @@ html, body, [class*="css"]  {
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #1B396A 0%, #10294E 100%) !important;
     color: #FFFFFF !important;
-    padding-top: 10px !important;
+    padding-top: 15px !important;
 }
 [data-testid="stSidebar"] * {
-    color: #FFFFFF !important;
     font-family: 'Segoe UI', sans-serif !important;
+    color: #FFFFFF !important;
 }
 
-/* Logo y título */
+/* LOGO Y TÍTULO */
 .sidebar-logo {
     text-align: center;
-    padding: 5px 0 8px 0;
+    margin-bottom: 8px;
 }
 .sidebar-logo img {
-    width: 120px;
-    margin-bottom: 5px;
-    filter: brightness(1.1);
+    width: 110px;
+    margin-bottom: 6px;
 }
 .sidebar-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: #ffffff;
-    text-align: center;
-    margin-bottom: 5px;
-    line-height: 1.2;
-}
-
-/* Separadores */
-hr {
-    border: 0;
-    border-top: 1px solid rgba(255,255,255,0.25);
-    margin: 8px 10px 10px 10px;
-}
-
-/* ======================================================
-   👤 INFO DE USUARIO (Correo y Rol)
-   ====================================================== */
-.user-info {
-    font-size: 13px;
-    line-height: 1.3;
-    margin: 0 12px 8px 12px;
-    background-color: rgba(255, 255, 255, 0.08);
-    padding: 10px;
-    border-radius: 8px;
-}
-.user-info b {
-    color: #A8D1FF !important;
-}
-.user-info a {
-    color: #FFFFFF !important;
-    text-decoration: underline;
+    font-size: 16px;
     font-weight: 600;
+    color: #EAF3FF;
+    text-align: center;
 }
-.user-info p {
-    margin: 0;
+
+/* BLOQUE DE USUARIO */
+.user-box {
+    background-color: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 10px;
+}
+.user-box b {
+    color: #A8D1FF;
+}
+.user-box p, .user-box a {
     color: #FFFFFF !important;
+    font-size: 13px !important;
+    margin: 3px 0 !important;
+    text-decoration: none !important;
+}
+.user-box a:hover {
+    text-decoration: underline !important;
 }
 
 /* ======================================================
-   🧭 MENÚ LATERAL (option_menu)
+   🧭 MENÚ PRINCIPAL (option_menu)
    ====================================================== */
 ul.nav.nav-pills {
     background: transparent !important;
-    margin: 10px 0 !important;
+    margin: 8px 0 !important;
+    padding: 0 !important;
 }
 ul.nav.nav-pills li a {
     display: block !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: #E4E8F0 !important;
+    background-color: rgba(255,255,255,0.1) !important;
+    color: #E6EAF0 !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
     font-size: 14px !important;
-    margin: 3px 10px !important;
-    padding: 10px 14px !important;
+    margin: 5px 10px !important;
+    padding: 10px 15px !important;
     transition: all 0.3s ease !important;
 }
 ul.nav.nav-pills li a:hover {
@@ -133,18 +117,17 @@ ul.nav.nav-pills li a.active {
 }
 
 /* ======================================================
-   🏠 SECCIÓN PRINCIPAL (HOME Y CONTENIDO)
+   🏠 CONTENIDO PRINCIPAL
    ====================================================== */
 main, [data-testid="stAppViewContainer"] {
     color: #1B396A !important;
 }
-h1, h2, h3, h4, h5 {
+h1, h2, h3, h4 {
     color: #1B396A !important;
     font-weight: 700 !important;
 }
 p, label, span, div {
     color: #1B396A !important;
-    font-size: 15px;
 }
 
 /* ======================================================
@@ -153,13 +136,13 @@ p, label, span, div {
 .stButton>button {
     background-color: #1B396A !important;
     color: #FFFFFF !important;
-    border-radius: 6px !important;
-    border: none !important;
+    border-radius: 8px !important;
     font-weight: 600 !important;
     font-size: 14px !important;
     padding: 0.5em 1.2em !important;
-    transition: all 0.2s ease-in-out !important;
+    transition: all 0.2s ease !important;
     box-shadow: 0 2px 4px rgba(27, 57, 106, 0.3);
+    border: none !important;
 }
 .stButton>button:hover {
     background-color: #244A8F !important;
@@ -167,7 +150,7 @@ p, label, span, div {
 }
 
 /* ======================================================
-   🧾 CAMPOS (input, select, textarea)
+   🧾 INPUTS Y SELECTS
    ====================================================== */
 input, textarea, select {
     border: 1.5px solid #C7D3E1 !important;
@@ -191,12 +174,11 @@ input:focus, textarea:focus {
         padding: 5px !important;
     }
     .sidebar-logo img {
-        width: 95px;
+        width: 90px;
     }
 }
 </style>
 """, unsafe_allow_html=True)
-
 
 
 with st.sidebar:
