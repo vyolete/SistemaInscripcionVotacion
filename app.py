@@ -60,7 +60,7 @@ input::placeholder, textarea::placeholder {
 /* ===== BOTONES ===== */
 .stButton>button {
     background-color: #1B396A !important;
-    color: #FFFFFF !important;
+    color: #FFFFFF !important;        /* 🔹 Color de texto blanco forzado */
     border-radius: 8px !important;
     font-weight: 600 !important;
     font-size: 14px !important;
@@ -70,7 +70,9 @@ input::placeholder, textarea::placeholder {
 }
 .stButton>button:hover {
     background-color: #244A8F !important;
+    color: #FFFFFF !important;        /* 🔹 Reforzado también en hover */
     transform: scale(1.04);
+
 }
 
 /* ===== SIDEBAR ===== */
