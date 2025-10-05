@@ -580,7 +580,7 @@ def login_general():
                 st.stop()
 
             # 1️⃣ Validar si está autorizado
-            if not buscar_correo("Correos Autorizados", "Correos_Admitidos", email):
+            if not buscar_correo("Correos Autorizados", email):
                 st.error("❌ Este correo no está autorizado. Solicite acceso al coordinador académico.")
                 st.stop()
 
