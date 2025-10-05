@@ -616,11 +616,16 @@ def modulo_votacion():
 def login_general():
     st.markdown("<h2 class='titulo' style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
 
-    correo_input = st.text_input("📧 Ingresa tu correo institucional:")
-    rol_seleccion = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
+    correo_input = st.text_input("📧 Ingresa tu correo institucional:", key="correo_login")
+    rol_seleccion = st.radio(
+        "Selecciona tu rol:",
+        ["Estudiante / Asistente", "Docente"],
+        horizontal=True,
+        key="rol_login"
+    )
 
     # --- Acción al presionar el botón ---
-    if st.button("Ingresar"):
+    if st.button("Ingresar", key="btn_login"):
         correo = correo_input.strip().lower()
 
         if correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co"):
@@ -632,12 +637,14 @@ def login_general():
         else:
             st.error("❌ Usa tu correo institucional @correo.itm.edu.co o @itm.edu.co")
 
+    # --- Función auxiliar para buscar hoja ---
     def find_sheet_by_keywords(hojas, keywords):
         for h in hojas:
             for kw in keywords:
                 if kw.lower() in h.lower():
                     return h
         return None
+
 
     def find_column_name_containing(df, key):
         for c in df.columns:
