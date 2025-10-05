@@ -182,16 +182,25 @@ p, label, span, div {
 
 with st.sidebar:
     st.markdown("""
-        <div class="sidebar-header">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Logo_ITM.png">
-            <h1>Concurso Analítica Financiera</h1>
+        <div style="text-align:center; padding: 10px 0;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Logo_ITM.png" width="90">
+            <h2 style="font-size:16px; color:#FFFFFF; margin-top:8px;">Concurso Analítica Financiera</h2>
         </div>
-        <div class="user-card">
+        <div style="
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+        ">
             <p><b>Usuario:</b> {correo}</p>
             <p><b>Rol:</b> {rol}</p>
         </div>
-    """.format(correo=st.session_state.get("correo", "Invitado"),
-               rol=st.session_state.get("rol", "Sin rol")), unsafe_allow_html=True)
+    """.format(
+        correo=st.session_state.get("correo", "Invitado"),
+        rol=st.session_state.get("rol", "Sin rol")
+    ), unsafe_allow_html=True)
 
 # ======================================================
 # 🔹 UTILIDADES: Conexión y operaciones con Google Sheets
