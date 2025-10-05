@@ -803,10 +803,15 @@ def login_general():
 # ======================================================
 # 🔹 FUNCIÓN PRINCIPAL
 # ======================================================
+import streamlit as st
+from streamlit_option_menu import option_menu
+
 def main():
     st.set_page_config(page_title="Concurso Analítica Financiera ITM", layout="wide")
-    
-    # --- Inicializar variables de sesión ---
+
+    # ======================================================
+    # 🔹 VARIABLES DE SESIÓN
+    # ======================================================
     if "usuario_autenticado" not in st.session_state:
         st.session_state["usuario_autenticado"] = False
     if "rol" not in st.session_state:
@@ -816,30 +821,72 @@ def main():
     if "logueado" not in st.session_state:
         st.session_state["logueado"] = False
 
-    # --- Título institucional ---
+    # ======================================================
+    # 🔹 ESTILOS GLOBALES (AZUL INSTITUCIONAL ITM)
+    # ======================================================
     st.markdown("""
         <style>
-        .main > div {
-            padding-top: 1rem;
+        /* Fondo general */
+        .stApp {
+            background-color: #f9fafc;
+            font-family: 'Segoe UI', sans-serif;
         }
+
+        /* Título principal */
         .titulo {
             color: #1B396A;
             font-weight: 700;
             text-align: center;
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Barra lateral azul institucional */
+        section[data-testid="stSidebar"] {
+            background-color: #1B396A !important;
+        }
+        section[data-testid="stSidebar"] * {
+            color: white !important;
+            font-family: 'Segoe UI', sans-serif !important;
+        }
+
+        /* Botones principales */
+        div.stButton > button {
+            background-color: #1B396A;
+            color: white;
+            border-radius: 10px;
+            border: none;
+            padding: 0.6em 1em;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease-in-out;
+        }
+        div.stButton > button:hover {
+            background-color: #27406d;
+            transform: scale(1.02);
+        }
+
+        /* Separadores en sidebar */
+        hr {
+            border-color: rgba(255,255,255,0.2);
         }
         </style>
-        <div class="titulo">🏫 Concurso de Analítica Financiera ITM</div>
     """, unsafe_allow_html=True)
 
-    # --- Mostrar login si no hay sesión activa ---
-    if not st.session_state["logueado"]:
-        login_general()
-        return  # detener aquí si no está logueado
+    # ======================================================
+    # 🔹 TÍTULO PRINCIPAL
+    # ======================================================
+    st.markdown("<div class='titulo'>🏫 Concurso de Analítica Financiera ITM</div>", unsafe_allow_html=True)
 
     # ======================================================
-    # 🔹 MENÚ LATERAL PRINCIPAL (solo si hay sesión activa)
+    # 🔹 LOGIN / ACCESO
+    # ======================================================
+    if not st.session_state["logueado"]:
+        login_general()  # Llama tu función de login
+        return  # detiene ejecución si no hay sesión activa
+
+    # ======================================================
+    # 🔹 MENÚ LATERAL PRINCIPAL
     # ======================================================
     with st.sidebar:
         st.image("https://upload.wikimedia.org/wikipedia/commons/1/1f/ITM_logo.png", width=150)
@@ -849,11 +896,22 @@ def main():
         st.markdown("---")
 
         seleccion = option_menu(
-            "Menú Principal",
+            "",
             ["Inicio", "Inscripción", "Dashboard", "Votación", "Resultados", "Eventos"],
             icons=["house", "clipboard2-data", "bar-chart", "check2-square", "trophy", "calendar-event"],
             menu_icon="cast",
             default_index=0,
+            styles={
+                "container": {"padding": "5px", "background-color": "#1B396A"},
+                "icon": {"color": "white", "font-size": "18px"},
+                "nav-link": {
+                    "color": "white",
+                    "font-size": "16px",
+                    "text-align": "left",
+                    "margin": "0px",
+                },
+                "nav-link-selected": {"background-color": "#27406d"},
+            },
         )
 
         st.markdown("---")
@@ -883,8 +941,7 @@ def main():
 
 
 # ======================================================
-# 🔹 FUNCIÓN PRINCIPAL DE EJECUCIÓN
+# 🔹 EJECUCIÓN PRINCIPAL
 # ======================================================
 if __name__ == "__main__":
     main()
-
