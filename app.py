@@ -543,6 +543,8 @@ def login_general():
     # ======================================================
     credentials = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"])
     client = gspread.authorize(credentials)
+    st.warning("ya se conecta a google sheets Cambio de Sergio para probar el Log, linea 547")
+
 
     # ======================================================
     # 🔹 INTERFAZ
@@ -570,6 +572,7 @@ def login_general():
     # 🔹 DOCENTE
     # ======================================================
     if rol == "Docente":
+        st.warning("Cambio de Sergio para probar el Log, linea 574")
         if st.button("Ingresar como Docente"):
             if not email:
                 st.warning("Ingrese su correo institucional.")
