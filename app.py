@@ -585,11 +585,9 @@ def modulo_votacion():
 
 
 # ======================================================
-# 🔐 MÓDULO DE LOGIN INSTITUCIONAL
+# 🔐 MÓDULO DE LOGIN REGISTRO DE USUARIOS
 # =====================================================
-# ======================================================
-# 🔹 LOGIN Y REGISTRO DE USUARIOS
-# ======================================================
+
 def login_general():
     st.markdown("<h2 class='titulo' style='color:#1B396A;'>🔐 Acceso al Sistema del Concurso ITM</h2>", unsafe_allow_html=True)
     
@@ -670,21 +668,64 @@ def main():
         st.markdown(f"🧩 **Rol:** {st.session_state['rol']}")
         st.markdown("---")
 
-        # 🔸 Menú según rol
+        # 🔹 MENÚ SEGÚN ROL (versión institucional azul)
         if st.session_state["rol"] == "Docente":
-            opciones = ["Inicio", "Inscripción","Votación", "Dashboard", "Resultados", "Eventos"]
-            iconos = ["house", "clipboard2-data", "bar-chart", "trophy", "calendar-event"]
+            opciones = ["Inicio", "Inscripción", "Votación", "Dashboard", "Resultados", "Eventos"]
+            iconos = ["house", "clipboard2-data", "check2-square", "bar-chart", "trophy", "calendar-event"]
         else:  # Estudiante / Asistente
             opciones = ["Inicio", "Inscripción", "Votación", "Resultados", "Eventos"]
             iconos = ["house", "clipboard2-data", "check2-square", "trophy", "calendar-event"]
-
+        
         seleccion = option_menu(
-            "Menú Principal",
+            "📘 Menú Principal",
             opciones,
             icons=iconos,
             menu_icon="cast",
             default_index=0,
+            styles={
+                # Fondo azul institucional ITM
+                "container": {
+                    "background-color": "#1B396A",
+                    "padding": "10px",
+                    "border-radius": "8px",
+                },
+                # Iconos
+                "icon": {
+                    "color": "#FFFFFF",
+                    "font-size": "18px",
+                },
+                # Enlaces del menú
+                "nav-link": {
+                    "color": "#E6EAF0",
+                    "font-size": "16px",
+                    "text-align": "left",
+                    "margin": "5px 0",
+                    "border-radius": "6px",
+                    "transition": "all 0.3s ease",
+                },
+                # Hover
+                "nav-link:hover": {
+                    "background-color": "#244A8F",
+                    "color": "#FFFFFF",
+                },
+                # Opción seleccionada
+                "nav-link-selected": {
+                    "background-color": "#FFFFFF",
+                    "color": "#1B396A",
+                    "font-weight": "700",
+                    "border-left": "4px solid #1B396A",
+                    "box-shadow": "0 2px 6px rgba(0,0,0,0.15)",
+                },
+                # Título del menú
+                "menu-title": {
+                    "font-size": "18px",
+                    "font-weight": "700",
+                    "color": "#FFFFFF",
+                    "margin-bottom": "10px",
+                },
+            },
         )
+
 
         st.markdown("---")
         if st.button("🚪 Cerrar sesión"):
