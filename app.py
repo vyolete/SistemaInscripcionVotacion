@@ -560,77 +560,77 @@ def login_general():
 
         # --- Botón de inicio ---
         if st.button("Ingresar ▶️"):
-            if not correo:
-                st.error("❌ Por favor ingresa tu correo institucional.")
-                st.stop()
+if st.button("Ingresar"):
+    if not correo:
+        st.error("❌ Por favor ingresa tu correo institucional.")
+        st.stop()
 
-            try:
-                # Credenciales de servicio
-                creds = service_account.Credentials.from_service_account_info(
-                    st.secrets["gcp"],
-                    scopes=["https://www.googleapis.com/auth/spreadsheets"]
-                )
-                gc = gspread.authorize(creds)
-                sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-                hojas = [ws.title for ws in sh.worksheets()]
-            except Exception as e:
-                st.error(f"⚠️ Error al conectar con Google Sheets: {e}")
-                st.stop()
+    correo = correo.strip().lower()
+    dominio_valido = correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
 
-   
-            # ======================================================
-            # 🔹 Validación del correo según rol y hoja correspondiente
-            # ======================================================
-            
-            autorizado = False
-            correo_input = correo.strip().lower()
-            
-            # Cargar las hojas existentes
-            gc = gspread.authorize(service_account.Credentials.from_service_account_info(
-                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            ))
-            spreadsheet = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-            hojas = [ws.title for ws in spreadsheet.worksheets()]
-            
-            # Cargar hoja de correos autorizados
-            df_aut = cargar_hoja_por_nombre(st.secrets, "Correos Autorizados")
-            df_aut["Correo"] = df_aut["Correo"].astype(str).str.strip().str.lower()
-            
-            # Validar si el correo está autorizado
-            if correo_input in df_aut["Correo"].values:
-            
-                # Si el usuario seleccionó DOCENTE
-                if "Docente" in rol:
-                    if "Docentes" in hojas:
-                        df_docentes = cargar_hoja_por_nombre(st.secrets, "Docentes")
-                    else:
-                        df_docentes = pd.DataFrame(columns=["Correo", "Fecha registro"])
-                    
-                    if correo_input not in df_docentes["Correo"].astype(str).str.lower().values:
-                        # Agregar nuevo docente
-                        ws = spreadsheet.worksheet("Docentes")
-                        ws.append_row([correo_input, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-                    autorizado = True
-            
-                # Si el usuario seleccionó ESTUDIANTE
-                elif "Estudiante" in rol:
-                    if "Estudiantes" in hojas:
-                        df_estudiantes = cargar_hoja_por_nombre(st.secrets, "Estudiantes")
-                    else:
-                        df_estudiantes = pd.DataFrame(columns=["Correo", "Fecha registro"])
-                    
-                    if correo_input not in df_estudiantes["Correo"].astype(str).str.lower().values:
-                        # Agregar nuevo estudiante
-                        ws = spreadsheet.worksheet("Estudiantes")
-                        ws.append_row([correo_input, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-                    autorizado = True
-            
-            if autorizado:
-                st.session_state["logueado"] = True
-                st.session_state["rol"] = rol
-                st.session_state["correo"] = correo.strip().lower()
-                st.success(f"✅ Bienvenido, acceso concedido como **{rol}**")
-                st.stop()  # 👈 Detiene la ejecución aquí sin reiniciar
+    if not dominio_valido:
+        st.error("❌ Solo se permiten correos institucionales del ITM.")
+        st.stop()
+
+    autorizado = False
+    rol_final = rol  # rol seleccionado por el usuario
+
+    try:
+        # --- Leer lista de hojas ---
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp"],
+            scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
+        gc = gspread.authorize(creds)
+        sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+        hojas = [ws.title for ws in sh.worksheets()]
+
+        # --- 1️⃣ Validar si está en "Correos Autorizados" ---
+        if "Correos Autorizados" in hojas:
+            df_autorizados = pd.DataFrame(sh.worksheet("Correos Autorizados").get_all_records())
+            if not df_autorizados.empty:
+                col_correo_auto = next((c for c in df_autorizados.columns if "correo" in c.lower()), None)
+                if col_correo_auto:
+                    lista_autorizados = df_autorizados[col_correo_auto].astype(str).str.strip().str.lower().tolist()
+                    if correo in lista_autorizados:
+                        autorizado = True
+                        rol_final = "Docente"  # Forzar rol docente
+                        st.info("👨‍🏫 Acceso concedido como **Docente autorizado**.")
+        
+        # --- 2️⃣ Si no está autorizado, validar estudiante ---
+        if not autorizado and "Estudiantes" in hojas:
+            df_estudiantes = pd.DataFrame(sh.worksheet("Estudiantes").get_all_records())
+            if not df_estudiantes.empty:
+                col_correo_est = next((c for c in df_estudiantes.columns if "correo" in c.lower()), None)
+                if col_correo_est:
+                    lista_est = df_estudiantes[col_correo_est].astype(str).str.strip().str.lower().tolist()
+                    if correo in lista_est:
+                        autorizado = True
+                        rol_final = "Estudiante / Asistente"
+
+        # --- 3️⃣ Si sigue sin estar autorizado pero tiene correo institucional de estudiante → registrar ---
+        if not autorizado and correo.endswith("@correo.itm.edu.co"):
+            if "Estudiantes" in hojas:
+                ws_est = sh.worksheet("Estudiantes")
+                ws_est.append_row([correo, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                autorizado = True
+                rol_final = "Estudiante / Asistente"
+                st.success("✅ Registro automático como estudiante completado.")
+
+    except Exception as e:
+        st.error(f"⚠️ Error al validar el correo: {e}")
+        st.stop()
+
+    # --- Resultado final ---
+    if autorizado:
+        st.session_state["logueado"] = True
+        st.session_state["rol"] = rol_final
+        st.session_state["correo"] = correo
+        st.success(f"✅ Bienvenido, acceso concedido como **{rol_final}**")
+        st.stop()
+    else:
+        st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
+
 
 
 
