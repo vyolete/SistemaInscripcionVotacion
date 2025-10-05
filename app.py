@@ -494,146 +494,83 @@ def modulo_votacion():
 # 🔐 MÓDULO DE LOGIN INSTITUCIONAL
 # ======================================================
 def login_general():
-    st.markdown("""
-        <style>
-            /* Fondo institucional */
-            [data-testid="stAppViewContainer"] {
-                background: linear-gradient(180deg, #ffffff 0%, #E9EFFA 100%);
-            }
-            /* Título */
-            .titulo-login {
-                text-align: center;
-                color: #1B396A;
-                font-size: 28px;
-                font-weight: 700;
-                margin-bottom: 10px;
-            }
-            /* Subtítulo */
-            .subtitulo-login {
-                text-align: center;
-                color: #3A3A3A;
-                font-size: 16px;
-                margin-bottom: 30px;
-            }
-            /* Inputs */
-            input {
-                border-radius: 8px !important;
-                border: 1px solid #CBD5E0 !important;
-            }
-            /* Botón */
-            div.stButton > button {
-                width: 100%;
-                background-color: #1B396A !important;
-                color: white !important;
-                border-radius: 10px !important;
-                font-weight: 600 !important;
-                padding: 0.6rem 1rem !important;
-                transition: background-color 0.3s ease;
-            }
-            div.stButton > button:hover {
-                background-color: #244D8B !important;
-            }
-            /* Caja del login */
-            .login-box {
-                background-color: #ffffff;
-                border-radius: 15px;
-                padding: 2.5rem;
-                box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-                width: 380px;
-                margin: 0 auto;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+    st.header("🔐 Acceso al Sistema")
+    st.markdown("Concurso de Analítica Financiera — ITM")
 
-    st.markdown("<div class='titulo-login'>Acceso al Sistema</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitulo-login'>Concurso de Analítica Financiera — ITM</div>", unsafe_allow_html=True)
+    rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True)
+    correo = st.text_input("📧 Correo institucional")
 
-    # Contenedor principal centrado
-    with st.container():
-        st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+    # 👇 AQUÍ comienza el bloque bien indentado
+    if st.button("Ingresar"):
+        if not correo:
+            st.error("❌ Por favor ingresa tu correo institucional.")
+            st.stop()
 
-        # --- Selección de Rol ---
-        rol = st.radio("Selecciona tu rol:", ["Estudiante / Asistente", "Docente"], horizontal=True, index=0)
+        correo = correo.strip().lower()
+        dominio_valido = correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
 
-        # --- Correo institucional ---
-        correo = st.text_input("📧 Correo institucional", placeholder="ejemplo@correo.itm.edu.co")
+        if not dominio_valido:
+            st.error("❌ Solo se permiten correos institucionales del ITM.")
+            st.stop()
 
-        # --- Botón de inicio ---
-        if st.button("Ingresar ▶️"):
-if st.button("Ingresar"):
-    if not correo:
-        st.error("❌ Por favor ingresa tu correo institucional.")
-        st.stop()
+        autorizado = False
+        rol_final = rol  # rol seleccionado por el usuario
 
-    correo = correo.strip().lower()
-    dominio_valido = correo.endswith("@correo.itm.edu.co") or correo.endswith("@itm.edu.co")
+        try:
+            # --- Leer lista de hojas ---
+            creds = Credentials.from_service_account_info(
+                st.secrets["gcp"],
+                scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            )
+            gc = gspread.authorize(creds)
+            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+            hojas = [ws.title for ws in sh.worksheets()]
 
-    if not dominio_valido:
-        st.error("❌ Solo se permiten correos institucionales del ITM.")
-        st.stop()
+            # --- 1️⃣ Validar si está en "Correos Autorizados" ---
+            if "Correos Autorizados" in hojas:
+                df_autorizados = pd.DataFrame(sh.worksheet("Correos Autorizados").get_all_records())
+                if not df_autorizados.empty:
+                    col_correo_auto = next((c for c in df_autorizados.columns if "correo" in c.lower()), None)
+                    if col_correo_auto:
+                        lista_autorizados = df_autorizados[col_correo_auto].astype(str).str.strip().str.lower().tolist()
+                        if correo in lista_autorizados:
+                            autorizado = True
+                            rol_final = "Docente"  # Forzar rol docente
+                            st.info("👨‍🏫 Acceso concedido como **Docente autorizado**.")
 
-    autorizado = False
-    rol_final = rol  # rol seleccionado por el usuario
+            # --- 2️⃣ Si no está autorizado, validar estudiante ---
+            if not autorizado and "Estudiantes" in hojas:
+                df_estudiantes = pd.DataFrame(sh.worksheet("Estudiantes").get_all_records())
+                if not df_estudiantes.empty:
+                    col_correo_est = next((c for c in df_estudiantes.columns if "correo" in c.lower()), None)
+                    if col_correo_est:
+                        lista_est = df_estudiantes[col_correo_est].astype(str).str.strip().str.lower().tolist()
+                        if correo in lista_est:
+                            autorizado = True
+                            rol_final = "Estudiante / Asistente"
 
-    try:
-        # --- Leer lista de hojas ---
-        creds = Credentials.from_service_account_info(
-            st.secrets["gcp"],
-            scopes=["https://www.googleapis.com/auth/spreadsheets"]
-        )
-        gc = gspread.authorize(creds)
-        sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-        hojas = [ws.title for ws in sh.worksheets()]
+            # --- 3️⃣ Si sigue sin estar autorizado pero tiene correo institucional de estudiante → registrar ---
+            if not autorizado and correo.endswith("@correo.itm.edu.co"):
+                if "Estudiantes" in hojas:
+                    ws_est = sh.worksheet("Estudiantes")
+                    ws_est.append_row([correo, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                    autorizado = True
+                    rol_final = "Estudiante / Asistente"
+                    st.success("✅ Registro automático como estudiante completado.")
 
-        # --- 1️⃣ Validar si está en "Correos Autorizados" ---
-        if "Correos Autorizados" in hojas:
-            df_autorizados = pd.DataFrame(sh.worksheet("Correos Autorizados").get_all_records())
-            if not df_autorizados.empty:
-                col_correo_auto = next((c for c in df_autorizados.columns if "correo" in c.lower()), None)
-                if col_correo_auto:
-                    lista_autorizados = df_autorizados[col_correo_auto].astype(str).str.strip().str.lower().tolist()
-                    if correo in lista_autorizados:
-                        autorizado = True
-                        rol_final = "Docente"  # Forzar rol docente
-                        st.info("👨‍🏫 Acceso concedido como **Docente autorizado**.")
-        
-        # --- 2️⃣ Si no está autorizado, validar estudiante ---
-        if not autorizado and "Estudiantes" in hojas:
-            df_estudiantes = pd.DataFrame(sh.worksheet("Estudiantes").get_all_records())
-            if not df_estudiantes.empty:
-                col_correo_est = next((c for c in df_estudiantes.columns if "correo" in c.lower()), None)
-                if col_correo_est:
-                    lista_est = df_estudiantes[col_correo_est].astype(str).str.strip().str.lower().tolist()
-                    if correo in lista_est:
-                        autorizado = True
-                        rol_final = "Estudiante / Asistente"
+        except Exception as e:
+            st.error(f"⚠️ Error al validar el correo: {e}")
+            st.stop()
 
-        # --- 3️⃣ Si sigue sin estar autorizado pero tiene correo institucional de estudiante → registrar ---
-        if not autorizado and correo.endswith("@correo.itm.edu.co"):
-            if "Estudiantes" in hojas:
-                ws_est = sh.worksheet("Estudiantes")
-                ws_est.append_row([correo, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
-                autorizado = True
-                rol_final = "Estudiante / Asistente"
-                st.success("✅ Registro automático como estudiante completado.")
-
-    except Exception as e:
-        st.error(f"⚠️ Error al validar el correo: {e}")
-        st.stop()
-
-    # --- Resultado final ---
-    if autorizado:
-        st.session_state["logueado"] = True
-        st.session_state["rol"] = rol_final
-        st.session_state["correo"] = correo
-        st.success(f"✅ Bienvenido, acceso concedido como **{rol_final}**")
-        st.stop()
-    else:
-        st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
-
-
-
-
+        # --- Resultado final ---
+        if autorizado:
+            st.session_state["logueado"] = True
+            st.session_state["rol"] = rol_final
+            st.session_state["correo"] = correo
+            st.success(f"✅ Bienvenido, acceso concedido como **{rol_final}**")
+            st.stop()
+        else:
+            st.error("❌ Correo no autorizado o no registrado. Verifica tus datos o contacta al comité organizador.")
 
 # ======================================================
 # 🔹 APP MAIN y menú lateral habilitado después del login
