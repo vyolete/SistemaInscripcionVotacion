@@ -17,19 +17,18 @@ import random
 from google.oauth2 import service_account
 from streamlit_option_menu import option_menu
 
-# ======================================================
-# CONFIGURACIÓN GENERAL
-# ======================================================
-st.set_page_config(page_title="Concurso ITM - Analítica Financiera", page_icon="📊", layout="wide")
-
-# Variables de sesión
-if "usuario_autenticado" not in st.session_state:
-    st.session_state["usuario_autenticado"] = False
-if "correo_actual" not in st.session_state:
-    st.session_state["correo_actual"] = ""
-if "rol" not in st.session_state:
-    st.session_state["rol"] = None
-
+def conectar_hoja(nombre_hoja):
+    # Autenticación con la sección [gcp] de secrets
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    client = gspread.authorize(credentials)
+    
+    # Abrir la hoja por ID
+    spreadsheet_id = st.secrets["spreadsheet"]["id"]
+    sh = client.open_by_key(spreadsheet_id)
+    return sh.worksheet(nombre_hoja)
 
 # ======================================================
 # FUNCIONES AUXILIARES
