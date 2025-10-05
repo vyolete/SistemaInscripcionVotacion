@@ -125,7 +125,7 @@ def conectar_google_sheets(secrets):
 
     client = gspread.authorize(creds)
     sh = client.open_by_key(secrets["spreadsheet"]["id"])
-    worksheet = sh.sheet1
+    worksheet = sh.worksheet("Inscripción a un evento (respuestas)")
     data = worksheet.get_all_records()
 
     return pd.DataFrame(data)
