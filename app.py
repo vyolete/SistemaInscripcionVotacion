@@ -17,24 +17,17 @@ from google.oauth2.service_account import Credentials
 # ======================================================
 # 🔹 CONFIGURACIÓN Y ESTILOS INSTITUCIONALES ITM
 # ======================================================
-
-
-# ======================================================
-# 🔹 ESTILOS INSTITUCIONALES ITM
-# ======================================================
-# ======================================================
-# 🔹 ESTILOS INSTITUCIONALES ITM (versión corregida)
-# ======================================================
 st.markdown("""
 <style>
-/* ===== GENERAL ===== */
+/* ===== FUENTES ===== */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 html, body, [class*="css"] {
-    font-family: 'Segoe UI', sans-serif !important;
+    font-family: 'Montserrat', sans-serif !important;
     background-color: #ffffff !important;
     color: #1B396A !important;
 }
 
-/* ===== FONDO PRINCIPAL (panel derecho) ===== */
+/* ===== CONTENEDOR PRINCIPAL ===== */
 [data-testid="stAppViewContainer"] {
     background-color: #FFFFFF !important;
     padding: 1rem;
@@ -53,7 +46,7 @@ html, body, [class*="css"] {
     color: #FFFFFF !important;
 }
 
-/* ===== LOGO ITM ===== */
+/* ===== LOGO ===== */
 .sidebar-logo {
     width: 130px;
     display: block;
@@ -115,6 +108,15 @@ ul.nav.nav-pills li a.active {
     transform: scale(1.04);
 }
 
+/* ===== LOGIN ===== */
+.titulo {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1B396A;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
 /* ===== RESPONSIVO ===== */
 @media (max-width: 768px) {
     [data-testid="stSidebar"] {
@@ -124,65 +126,9 @@ ul.nav.nav-pills li a.active {
         width: 90px;
     }
 }
-/* ======================================================
-   🔧 FIX: Fondo negro del menú corregido (streamlit-option-menu)
-   ====================================================== */
-
-/* Fuerza el fondo azul institucional en el contenedor del menú */
-div[data-testid="stSidebar"] div.menu, 
-div[data-testid="stSidebar"] .container-xxl.d-flex.flex-column.flex-shrink-0.p-3 {
-    background: linear-gradient(180deg, #1B396A 0%, #244A8F 100%) !important;
-    color: #FFFFFF !important;
-    border-radius: 12px !important;
-    padding: 10px 12px !important;
-}
-
-/* Corrige el texto dentro del menú */
-div[data-testid="stSidebar"] div.menu * {
-    color: #FFFFFF !important;
-}
-
-/* Reforzamos el contraste del elemento activo */
-ul.nav.nav-pills li a.active {
-    background-color: #FFFFFF !important;
-    color: #1B396A !important;
-    font-weight: 700 !important;
-    box-shadow: 0 2px 6px rgba(255,255,255,0.3);
-}
-
-/* Asegura que no quede fondo oscuro detrás del menú */
-div[data-testid="stSidebarContent"] {
-    background: transparent !important;
-}
-with st.sidebar:
-    seleccion = option_menu(
-        menu_title="Menú principal",
-        options=["Inicio", "Inscripción", "Votación", "Resultados"],
-        icons=["house", "file-earmark-text", "box-arrow-in-right", "trophy"],
-        menu_icon="cast",
-        default_index=0,
-        styles={
-            "container": {"background-color": "#1B396A"},
-            "icon": {"color": "white", "font-size": "18px"},
-            "nav-link": {
-                "color": "white",
-                "font-size": "16px",
-                "text-align": "left",
-                "margin": "5px 0",
-                "--hover-color": "#27406d",
-            },
-            "nav-link-selected": {
-                "background-color": "white",
-                "color": "#1B396A",
-                "font-weight": "700",
-                "border-left": "4px solid #1B396A",
-            },
-        },
-    )
-
-
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # ======================================================
