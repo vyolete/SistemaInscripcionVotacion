@@ -110,10 +110,11 @@ def conectar_google_sheets(secrets):
       - st.secrets["gcp"]: credenciales service account
       - st.secrets["spreadsheet"]["id"]: id del spreadsheet
     """
-    creds = Credentials.from_service_account_info(
+    creds = service_account.Credentials.from_service_account_info(
         secrets["gcp"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
+
     client = gspread.authorize(creds)
     sh = client.open_by_key(secrets["spreadsheet"]["id"])
     worksheet = sh.sheet1
@@ -121,15 +122,20 @@ def conectar_google_sheets(secrets):
     return pd.DataFrame(data)
 
 def cargar_hoja_por_nombre(secrets, nombre_hoja):
-    creds = Credentials.from_service_account_info(
-        secrets["gcp"],
-        scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    )
-    client = gspread.authorize(creds)
-    sh = client.open_by_key(secrets["spreadsheet"]["id"])
-    worksheet = sh.worksheet(nombre_hoja)
-    data = worksheet.get_all_records()
-    return pd.DataFrame(data)
+    try:
+        # Autenticación con la cuenta de servicio
+        creds = service_account.Credentials.from_service_account_info(
+            secrets["gcp"],
+            scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
+        gc = gspread.authorize(creds)
+        sh = gc.open_by_key(secrets["spreadsheet"]["id"])
+        ws = sh.worksheet(nombre_hoja)
+        df = pd.DataFrame(ws.get_all_records())
+        return df
+    except Exception as e:
+        st.error(f"⚠️ Error al cargar la hoja '{nombre_hoja}': {e}")
+        return pd.DataFrame()
 
 def guardar_fila_en_hoja(secrets, nombre_hoja, fila):
     creds = Credentials.from_service_account_info(
