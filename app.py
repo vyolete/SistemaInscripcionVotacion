@@ -11,19 +11,6 @@ from streamlit_option_menu import option_menu
 from email.mime.text import MIMEText
 from googleapiclient.discovery import build
 
-import streamlit as st
-   import pandas as pd
-   import gspread
-   import random
-   import string
-   import base64
-   from google.oauth2 import service_account
-   from datetime import datetime
-   import altair as alt
-   from streamlit_option_menu import option_menu
-   from email.mime.text import MIMEText
-   from googleapiclient.discovery import build
-
 
    # ======================================================
    # 🔹 ESTILOS PERSONALIZADOS
