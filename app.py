@@ -547,17 +547,20 @@ def modulo_votacion():
 
 # ================= Dashboard en tiempo real =================
 
+import streamlit as st
+import pandas as pd
+import gspread
+from google.oauth2 import service_account
+import time
 
 def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10):
     """
-    Muestra los resultados en tiempo real de manera visual y avanzada.
+    Muestra los resultados en tiempo real de manera visual y atractiva.
     :param peso_docente: Peso de los votos de docentes (0-1)
     :param peso_estudiante: Peso de los votos de estudiantes (0-1)
     :param refresh_interval: Intervalo en segundos para actualizar
     """
     st.title("🏆 Resultados del Concurso - Visual Avanzada")
-
-    # Logo de la institución
     st.image("https://media2.giphy.com/media/ytTn0YJ83NlJI2lSNr/giphy.webp", width=300)
 
     # Conectar a Google Sheets
@@ -578,119 +581,85 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
         return
 
     # Asegurar que los criterios sean numéricos
-    for c in ["Criterio 1", "Criterio 2", "Criterio 3"]:
+    criterios = ["Criterio 1", "Criterio 2", "Criterio 3"]
+    for c in criterios:
         data_votos[c] = pd.to_numeric(data_votos[c], errors="coerce").fillna(0)
 
-    # Calcular puntaje ponderado por rol
+    # Calcular puntaje ponderado
     def calcular_total(row):
-        total = row["Criterio 1"] + row["Criterio 2"] + row["Criterio 3"]
-        if row["Rol Votante"] == "Docente":
-            return total * peso_docente
-        else:
-            return total * peso_estudiante
+        total = sum([row[c] for c in criterios])
+        return total * (peso_docente if row["Rol Votante"] == "Docente" else peso_estudiante)
 
     data_votos["Puntaje Ponderado"] = data_votos.apply(calcular_total, axis=1)
 
-    # Agrupar por equipo
+    # Agrupar por equipo y calcular promedio por criterio
     resultados = data_votos.groupby("Id_equipo").agg(
         Puntaje_Total=pd.NamedAgg(column="Puntaje Ponderado", aggfunc="sum")
     ).sort_values("Puntaje_Total", ascending=False).reset_index()
 
-    # Promedio de criterios por equipo
-    criterios = data_votos.groupby("Id_equipo")[["Criterio 1", "Criterio 2", "Criterio 3"]].mean().reset_index()
-    resultados = resultados.merge(criterios, on="Id_equipo")
+    promedio_criterios = data_votos.groupby("Id_equipo")[criterios].mean().reset_index()
+    resultados = resultados.merge(promedio_criterios, on="Id_equipo")
 
-    # Mostrar top 20 como tarjetas visuales
-    top_n = 20
-    st.subheader(f"🔝 Top {top_n} Equipos")
+    # ------------------- Top 3 Equipos -------------------
+    st.subheader("🏅 Top 3 Equipos")
+    top3 = resultados.head(3)
+    col1, col2, col3 = st.columns(3)
+    top_cols = [col1, col2, col3]
+    colores = ["#FFD700", "#C0C0C0", "#CD7F32"]
+    emojis = ["🥇", "🥈", "🥉"]
 
-    for idx, row in resultados.head(top_n).iterrows():
-        color = "#FFFFFF"
-        emoji = ""
-        if idx == 0:
-            color = "#FFD700"  # Oro
-            emoji = "🥇"
-        elif idx == 1:
-            color = "#C0C0C0"  # Plata
-            emoji = "🥈"
-        elif idx == 2:
-            color = "#CD7F32"  # Bronce
-            emoji = "🥉"
-
-        with st.container():
+    for idx, (col, (_, row)) in enumerate(zip(top_cols, top3.iterrows())):
+        with col:
             st.markdown(f"""
                 <div style="
-                    background-color:{color};
+                    background-color:{colores[idx]};
                     padding:15px;
-                    border-radius:10px;
+                    border-radius:12px;
+                    text-align:center;
+                    box-shadow: 2px 2px 8px rgba(0,0,0,0.25);
                     margin-bottom:10px;
-                    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
                 ">
-                    <h3 style='margin:0'>{emoji} {row['Id_equipo']}</h3>
-                    <p style='margin:0'>Puntaje Total: <b>{row['Puntaje_Total']:.2f}</b></p>
-                    <p style='margin:0'>C1: {row['Criterio 1']:.1f} | C2: {row['Criterio 2']:.1f} | C3: {row['Criterio 3']:.1f}</p>
+                    <h3>{emojis[idx]} {row['Id_equipo']}</h3>
+                    <p>Puntaje Total: <b>{row['Puntaje_Total']:.2f}</b></p>
+                    <p>C1:{row['Criterio 1']:.1f} | C2:{row['Criterio 2']:.1f} | C3:{row['Criterio 3']:.1f}</p>
                 </div>
             """, unsafe_allow_html=True)
-            st.progress(min(row['Puntaje_Total']/15, 1.0))  # Normaliza la barra
+            st.progress(min(row['Puntaje_Total']/15, 1.0))
 
+    # ------------------- Top 20 Equipos -------------------
+    st.subheader("🔝 Top 20 Equipos")
+    top20 = resultados.head(20)
+    for idx, row in top20.iterrows():
+        color = "#FFFFFF"
+        emoji = ""
+        if idx == 0: color, emoji = "#FFD700", "🥇"
+        elif idx == 1: color, emoji = "#C0C0C0", "🥈"
+        elif idx == 2: color, emoji = "#CD7F32", "🥉"
+        st.markdown(f"""
+            <div style="
+                background-color:{color};
+                padding:10px;
+                border-radius:8px;
+                margin-bottom:5px;
+                box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            ">
+                <h4 style='margin:0'>{emoji} {row['Id_equipo']}</h4>
+                <p style='margin:0'>Puntaje: <b>{row['Puntaje_Total']:.2f}</b></p>
+                <p style='margin:0;font-size:0.8em;'>C1:{row['Criterio 1']:.1f} | C2:{row['Criterio 2']:.1f} | C3:{row['Criterio 3']:.1f}</p>
+            </div>
+        """, unsafe_allow_html=True)
+        st.progress(min(row['Puntaje_Total']/15, 1.0))
 
-            st.subheader("📊 Puntajes de todos los equipos (scroll horizontal)")
-
-            # Crear contenedor con scroll horizontal
-            container = st.container()
-            with container:
-                # Usamos columnas dinámicas para todos los equipos
-                num_cols = len(resultados)
-                cols = st.columns(num_cols, gap="small")
-
-                for idx, (col, (_, row)) in enumerate(zip(cols, resultados.iterrows())):
-                    # Colores top 3
-                    color = "#FFFFFF"
-                    emoji = ""
-                    if idx == 0:
-                        color = "#FFD700"
-                        emoji = "🥇"
-                    elif idx == 1:
-                        color = "#C0C0C0"
-                        emoji = "🥈"
-                    elif idx == 2:
-                        color = "#CD7F32"
-                        emoji = "🥉"
-
-                    with col:
-                        st.markdown(f"""
-                            <div style="
-                                background-color:{color};
-                                padding:10px;
-                                border-radius:8px;
-                                text-align:center;
-                                box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-                                margin-bottom:5px;
-                            ">
-                                <h4 style='margin:0'>{emoji} {row['Id_equipo']}</h4>
-                                <p style='margin:0'><b>Puntaje:</b> {row['Puntaje_Total']:.2f}</p>
-                                <p style='margin:0;font-size:0.8em;'>C1:{row['Criterio 1']:.1f} | C2:{row['Criterio 2']:.1f} | C3:{row['Criterio 3']:.1f}</p>
-                            </div>
-                        """, unsafe_allow_html=True)
-
-                        # Barra animada proporcional al puntaje (normalizado)
-                        st.progress(min(row['Puntaje_Total']/15, 1.0))
-
-
+    # ------------------- Animaciones y actualización -------------------
+    if len(resultados) >= 30:
+        st.balloons()
 
     st.markdown("---")
     st.info(f"⏱ La tabla se actualizará automáticamente cada {refresh_interval} segundos.")
 
-    # Animación ligera para top 3
-    if len(resultados) >= 30:
-        st.balloons()
-
     # Actualización automática
     time.sleep(refresh_interval)
     st.rerun()
-
-
-
 
 def modulo_eventos():
     st.markdown("<h2 style='color:#1B396A; text-align:center;'>📅 Próximo Evento</h2>", unsafe_allow_html=True)
