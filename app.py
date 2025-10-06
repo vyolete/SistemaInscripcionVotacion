@@ -574,38 +574,7 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
 
     # 3. Colocamos la imagen en la segunda columna (más estrecha)
     with col2:
-     # Agregamos un poco de espacio vertical (vacío) para alinear la imagen mejor con el texto
-
-     # La imagen se cargará desde la URL y se ajustará a la columna
      st.image(URL_IMAGEN)
-
-    # 4. El contenido posterior (como el cuerpo de tu informe) continúa debajo de las columnas
-    st.markdown("---")
-    st.write("A continuación, se presentan los resultados finales...")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    st.title("🏆 Resultados Concurso Analítica Financiera")
-    st.image("https://media4.giphy.com/media/fQmjWedKFvchti5QRB/giphy.webp", width=300)
 
     # Conectar a Google Sheets
     try:
