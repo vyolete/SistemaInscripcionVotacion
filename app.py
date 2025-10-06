@@ -190,8 +190,9 @@ if st.session_state.get("validando_docente", False):
         codigo_input = st.text_input("🔐 Ingresa tu código de validación:")
 
         if st.button("Validar código"):
-            correo = st.session_state["correo_docente"]
+            df_docentes = st.session_state["df_docentes"]
             codigo_real = df_docentes.loc[df_docentes["Correo"] == correo, "Codigo"].values[0]
+
 
             if str(codigo_input).strip() == str(codigo_real).strip():
                 st.session_state["rol_seleccionado"] = True
