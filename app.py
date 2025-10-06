@@ -535,13 +535,8 @@ def modulo_votacion():
 
                     except Exception as e:
                         st.error(f"⚠️ Error al registrar el voto: {e}")
-
         except Exception as e:
-
-
-
-
-
+            st.error(f"⚠️ Error al cargar datos de votaciones: {e}")
 
 def modulo_resultados():
     st.markdown("""
