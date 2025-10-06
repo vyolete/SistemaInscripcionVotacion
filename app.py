@@ -438,7 +438,7 @@ def modulo_votacion():
         # Detectar rol desde sesión
         if st.session_state.get("rol") == "Docente":
             rol = "Docente"
-            correo = st.session_state.get("correo")  # correo obtenido en login
+            correo = st.session_state.get("correo_voto")  # correo obtenido en login
             st.info(f"👨‍🏫 Sesión docente detectada: {correo}")
         else:
             rol = "Estudiante / Asistente"
