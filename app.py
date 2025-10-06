@@ -559,7 +559,7 @@ def cargar_votaciones(secrets):
     return df
 
 # ================= Módulo de Resultados Avanzado =================
-def modulo_resultados_avanzado():
+def modulo_resultados():
     st.title("🏆 Resultados del Concurso en Tiempo Real")
 
     # ================= Pesos por criterio (fijos por ahora) =================
