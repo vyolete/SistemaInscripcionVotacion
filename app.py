@@ -344,14 +344,13 @@ def modulo_inscripcion():
 
     # 1. Mensaje de advertencia para usuarios de móvil/Safari
     st.warning(
-        "⚠️ **¿Estás en un dispositivo móvil o iPad/iPhone (Safari)?** "
-        "Si el formulario no carga, haz clic en el botón de abajo para abrirlo directamente."
+        "⚠️ **Si el formulario no carga, haz clic en el botón de abajo para abrirlo directamente** "
     )
 
     # 2. Botón de enlace directo visible (la opción más segura)
     st.page_link(
         URL_FORMULARIO,
-        label="➡️ Abrir Formulario en Nueva Pestaña (Recomendado para Móviles)",
+        label="➡️ Abrir Formulario en Nueva Pestaña",
         icon="🚀"
     )
 
