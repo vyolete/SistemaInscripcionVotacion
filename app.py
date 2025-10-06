@@ -212,7 +212,7 @@ def modulo_home():
         # Form para correo
         with st.form("form_correo"):
             correo_input = st.text_input("📧 Ingresa tu correo institucional para validar:", value=st.session_state.get("correo_docente", ""))
-            submit_correo = st.form_submit_button("Validar correo")
+            submit_correo = st.form_submit_button("Validar correo",use_container_width=True)
             if submit_correo:
                 try:
                     df_docentes = cargar_docentes(st.secrets)  # usa tu función existente
