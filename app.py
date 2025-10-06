@@ -249,9 +249,6 @@ def modulo_home():
                 st.rerun()
 
     # Flujo de validación de docente (correo -> código)
-    # ======================================================
-    # 🔹 VALIDACIÓN DE DOCENTE (correo + código)
-    # ======================================================
     if st.session_state["validando_docente"]:
         # Encabezado con mejor formato
         st.markdown("""
@@ -438,7 +435,7 @@ def modulo_votacion():
         # Detectar rol desde sesión
         if st.session_state.get("rol") == "Docente":
             rol = "Docente"
-            correo = st.session_state.get("correo_voto")  # correo guardado en login
+            correo = st.session_state.get("correo_input")  # correo guardado en login
             st.info(f"👨‍🏫 Sesión docente detectada: {correo}")
         else:
             rol = "Estudiante / Asistente"
@@ -461,7 +458,7 @@ def modulo_votacion():
                 # Guardar estado
                 st.session_state.validado_voto = True
                 st.session_state.rol_voto = rol
-                st.session_state.correo_voto = correo
+                st.session_state.correo_input = correo
                 st.session_state.equipo_voto = equipo_id
                 st.success("✅ Validación exitosa. Puedes realizar la votación.")
 
@@ -471,7 +468,7 @@ def modulo_votacion():
     # ================= Formulario de votación =================
     else:
         rol = st.session_state.rol_voto
-        correo = st.session_state.correo_voto
+        correo = st.session_state.correo_input
         equipo_id = st.session_state.equipo_voto
 
         st.markdown("<hr>", unsafe_allow_html=True)
