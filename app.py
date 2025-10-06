@@ -251,8 +251,6 @@ def modulo_home():
             else:
                 st.error("❌ Tu correo no está autorizado como docente.")
                 st.info("Puedes volver al inicio si ingresaste un correo incorrecto.")
-                # Mostrar botón adicional debajo
-                st.button("⬅️ Regresar al inicio", on_click=reset_role, use_container_width=True)
 
         # Si el correo fue validado correctamente
         if st.session_state.get("correo_valido", False):
@@ -266,8 +264,6 @@ def modulo_home():
             col1, col2 = st.columns([1, 1])
             with col1:
                 validar_codigo = st.button("Verificar código ✅", use_container_width=True)
-            with col2:
-                volver_inicio2 = st.button("⬅️ Volver al inicio", use_container_width=True)
 
             if volver_inicio2:
                 reset_role()
