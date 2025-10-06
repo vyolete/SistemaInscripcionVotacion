@@ -337,19 +337,33 @@ def modulo_home():
             reset_role()
 
 
-# Para probar localmente llamar a module_home()
-# module_home()
-
-
 def modulo_inscripcion():
     st.header("📝 Formulario de Inscripción")
-    st.markdown("Completa el formulario a través del siguiente módulo:")
-    st.markdown(
-        """
-        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfJaqrVwZHRbbDB8UIl4Jne9F9KMjVPMjZMM9IrD2LVWaFAwQ/viewform?embedded=true" 
-        width="640" height="1177" frameborder="0" marginheight="0" marginwidth="0">Cargando…</iframe>
-        """,
-        unsafe_allow_html=True
+
+    URL_FORMULARIO = "https://forms.gle/hzBPg4THxcD64ygK9"
+
+    # 1. Mensaje de advertencia para usuarios de móvil/Safari
+    st.warning(
+        "⚠️ **¿Estás en un dispositivo móvil o iPad/iPhone (Safari)?** "
+        "Si el formulario no carga, haz clic en el botón de abajo para abrirlo directamente."
+    )
+
+    # 2. Botón de enlace directo visible (la opción más segura)
+    st.page_link(
+        URL_FORMULARIO,
+        label="➡️ Abrir Formulario en Nueva Pestaña (Recomendado para Móviles)",
+        icon="🚀"
+    )
+
+    st.markdown("---")
+
+    st.markdown("Completa el formulario incrustado a continuación (funciona mejor en PC):")
+
+    # 3. El iframe para usuarios de PC que prefieran no cambiar de pestaña
+    st.components.v1.iframe(
+        URL_FORMULARIO, # Usamos la variable para ser consistente
+        height=800,
+        width="100%"
     )
 
 
