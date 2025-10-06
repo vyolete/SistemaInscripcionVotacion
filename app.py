@@ -359,7 +359,7 @@ def modulo_dashboard():
         return
 
     # Verificar que existan columnas necesarias
-    required_cols = ['Docente', 'Participantes', 'ID Equipo', 'Equipo']
+    required_cols = ['Docente', 'Participantes', '"Id_equipo"', 'Equipo']
     for col in required_cols:
         if col not in df.columns:
             st.error(f"❌ La columna '{col}' no existe en el DataFrame.")
@@ -379,7 +379,7 @@ def modulo_dashboard():
     with col1:
         st.metric("📝 Inscripciones", len(df_filtrado))
     with col2:
-        st.metric("👥 Equipos", df_filtrado['ID Equipo'].nunique())
+        st.metric("👥 Equipos", df_filtrado['"Id_equipo"'].nunique())
     with col3:
         st.metric("🎓 Estudiantes", df_filtrado['Cantidad de Estudiantes'].sum())
 
@@ -401,7 +401,7 @@ def modulo_dashboard():
 
     # Detalle de inscripciones
     with st.expander("📋 Ver detalle de inscripciones", expanded=False):
-        st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
+        st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', '"Id_equipo"']])
 
 def modulo_votacion():
     st.header("🗳 Votación de Equipos")
