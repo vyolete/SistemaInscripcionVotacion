@@ -141,7 +141,8 @@ def reset_role():
     for k in ["rol", "rol_seleccionado", "validando_docente", "correo_docente", "correo_valido", "codigo_validado", "df_docentes"]:
         if k in st.session_state:
             del st.session_state[k]
-    st.experimental_rerun()
+    st.rerun()
+
 
 def render_student_ui():
     st.header("🎓 Panel - Estudiante")
@@ -157,7 +158,7 @@ def render_student_ui():
     else:
         st.write("FAQs, contacto o tutoriales.")
 
-    if st.button("🔁 Cambiar rol / Cerrar sesión"):
+    if st.button( "Cerrar sesión"):
         reset_role()
 
 def render_docente_ui():
