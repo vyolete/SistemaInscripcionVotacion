@@ -77,33 +77,35 @@ st.markdown("""
 # ======================================================
 # 🔹 UTILIDADES
 # ======================================================
-def conectar_google_sheets(secrets):
+
+def conectar_google_sheets(secrets, hoja_nombre=None):
+    """
+    Conecta a Google Sheets y devuelve un DataFrame.
+
+    :param secrets: credenciales de GCP desde st.secrets
+    :param hoja_nombre: nombre de la hoja específica a leer (opcional)
+    :return: pd.DataFrame con los datos de la hoja
+    """
     credentials = service_account.Credentials.from_service_account_info(
         secrets["gcp"],
         scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
     gc = gspread.authorize(credentials)
     sh = gc.open_by_key(secrets["spreadsheet"]["id"])
-    worksheet = sh.sheet1
+
+    if hoja_nombre:
+        worksheet = sh.worksheet(hoja_nombre)
+    else:
+        worksheet = sh.sheet1  # por defecto la primera hoja
+
     data = worksheet.get_all_records()
     return pd.DataFrame(data)
-
 
 def contar_participantes(participantes_str):
     if not participantes_str:
         return 0
     estudiantes = [p.strip() for p in participantes_str.split(',') if p.strip()]
     return len(estudiantes)
-
-
-def preparar_dataframe(df):
-    df = df.rename(columns={
-        "Nombre del Equipo": "Equipo",
-        "Inscripción Participantes": "Participantes",
-        "Docente": "Docente",
-        "Id_equipo": "ID Equipo"
-    })
-    return df
 
 
 def cargar_docentes(secrets):
@@ -413,149 +415,139 @@ def modulo_dashboard():
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'Id_equipo']])
 
 
-import streamlit as st
-import pandas as pd
-import gspread
-from google.oauth2 import service_account
-from datetime import datetime
-import time
-
 def modulo_votacion():
     st.header("🗳 Votación de Equipos")
 
-    # ================= Parámetros QR =================
+    # Obtener parámetros de URL (QR)
     params = st.query_params
     equipo_qr = params.get("equipo", [None])[0]
 
-    # ================= Inicializar session_state =================
-    if "voto_info" not in st.session_state:
-        st.session_state.voto_info = {
-            "validado": False,
-            "rol": st.session_state.get("rol", "Estudiante / Asistente"),
-            "correo": st.session_state.get("correo", "") if st.session_state.get("rol") == "Docente" else "",
-            "equipo": equipo_qr or ""
-        }
-
-    voto_info = st.session_state.voto_info
-
+    # Mensaje si ingreso directo desde QR
     if equipo_qr:
         st.info(f"📲 Ingreso directo: estás votando por el equipo **{equipo_qr}**")
 
-    # ================= FORMULARIO DE VALIDACIÓN =================
-    if not voto_info["validado"]:
-        with st.form("form_validacion"):
-            # Docente logueado no necesita correo
-            if voto_info["rol"] != "Docente":
-                correo_input = st.text_input("📧 Ingresa tu correo institucional:")
-            else:
-                correo_input = voto_info["correo"]
+    # Inicializar estado de validación si no existe
+    if "validado_voto" not in st.session_state:
+        st.session_state.validado_voto = False
 
-            equipo_input = st.text_input(
-                "🏷️ Código del equipo a evaluar:",
-                value=voto_info["equipo"]
-            )
+    # ================= VALIDACIÓN INICIAL =================
+    if not st.session_state.validado_voto:
+        # Determinar rol
+        rol = st.session_state.get("rol", "Estudiante / Asistente")
 
-            submit = st.form_submit_button("Continuar ▶️")
+        # Solo estudiantes necesitan ingresar correo
+        if rol == "Estudiante / Asistente":
+            correo = st.text_input("📧 Correo institucional:")
+        else:
+            correo = st.session_state.get("correo", "")
 
-            if submit:
-                if voto_info["rol"] != "Docente" and not correo_input:
-                    st.error("❌ Debes ingresar tu correo.")
-                elif not equipo_input:
-                    st.error("❌ Debes ingresar el código del equipo.")
-                else:
-                    try:
-                        # Conectar y preparar datos de inscripciones
-                        df_insc = preparar_dataframe(conectar_google_sheets(st.secrets))
-                        if equipo_input not in df_insc["Id_equipo"].astype(str).tolist():
-                            st.error("❌ El código del equipo no existe.")
-                        else:
-                            # Validación de docente
-                            if voto_info["rol"] == "Docente":
-                                df_docentes = cargar_docentes(st.secrets)
-                                if correo_input not in df_docentes["Correo"].values:
-                                    st.error("❌ Tu correo no está autorizado como jurado docente.")
-                                    return
+        equipo_id = st.text_input("🏷️ Código del equipo a evaluar:", value=equipo_qr or "")
 
-                            # Guardar info en session_state
-                            st.session_state.voto_info.update({
-                                "validado": True,
-                                "correo": correo_input,
-                                "equipo": equipo_input
-                            })
-                            st.success("✅ Validación exitosa. Puedes realizar la votación.")
-                    except Exception as e:
-                        st.error(f"⚠️ Error al validar: {e}")
+        if st.button("Continuar ▶️"):
+            if rol == "Estudiante / Asistente" and not correo:
+                st.error("❌ Debes ingresar tu correo para votar.")
+                return
+            if not equipo_id:
+                st.error("❌ Debes ingresar el código del equipo.")
+                return
+
+            try:
+                # Cargar inscripciones desde la hoja correcta
+                df_insc = cargar_respuestas_formulario(st.secrets)
+
+                if equipo_id not in df_insc["Id_equipo (Respuestas de formulario 1)"].astype(str).tolist():
+                    st.error("❌ El código del equipo no existe.")
+                    return
+
+                # Validación docente si corresponde
+                if rol == "Docente":
+                    df_docentes = conectar_google_sheets(st.secrets, hoja_nombre="Docentes")
+                    if correo not in df_docentes["Correo"].values:
+                        st.error("❌ Tu correo no está autorizado como jurado docente.")
+                        return
+
+                # Guardar estado de validación
+                st.session_state.validado_voto = True
+                st.session_state.rol_voto = rol
+                st.session_state.correo_voto = correo
+                st.session_state.equipo_voto = equipo_id
+                st.success("✅ Validación exitosa. Puedes realizar la votación.")
+
+            except Exception as e:
+                st.error(f"⚠️ Error al validar: {e}")
 
     # ================= FORMULARIO DE VOTACIÓN =================
     else:
-        correo = voto_info["correo"]
-        equipo_id = voto_info["equipo"]
-        rol = voto_info["rol"]
+        rol = st.session_state.rol_voto
+        correo = st.session_state.correo_voto
+        equipo_id = st.session_state.equipo_voto
 
         st.markdown("<hr>", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color:#1B396A;'>📋 Evaluación del Proyecto ({rol})</h4>", unsafe_allow_html=True)
 
         try:
-            # Conectar hoja de votaciones
-            credentials = service_account.Credentials.from_service_account_info(
-                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
-            )
-            gc = gspread.authorize(credentials)
-            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
-            ws_votos = sh.worksheet("Votaciones")
+            # Conectar a hoja de votaciones
+            ws_votos = conectar_google_sheets(st.secrets, hoja_nombre="Votaciones")
 
-            votos = pd.DataFrame(ws_votos.get_all_records())
-            ya_voto = not votos[(votos["Correo"] == correo) & (votos["Id_equipo"] == equipo_id)].empty if not votos.empty else False
+            # Convertir a DataFrame
+            df_votos = pd.DataFrame(ws_votos)
+
+            # Verificar si ya votó
+            ya_voto = not df_votos[
+                (df_votos["Correo"] == correo) & (df_votos["ID Equipo"] == equipo_id)
+            ].empty if not df_votos.empty else False
 
             if ya_voto:
                 st.warning(f"⚠️ Ya registraste un voto para el equipo **{equipo_id}**.")
                 if st.button("🔄 Votar por otro equipo"):
-                    st.session_state.voto_info.update({
-                        "validado": False,
-                        "equipo": ""
-                    })
-
+                    st.session_state.validado_voto = False
+                    st.session_state.pop("equipo_voto", None)
+                    st.experimental_rerun()
             else:
-                with st.form("form_votacion"):
-                    # Formularios según rol
-                    if rol == "Docente":
-                        col1, col2, col3 = st.columns(3)
-                        with col1: rigor = st.slider("Rigor técnico", 1, 5, 3)
-                        with col2: viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
-                        with col3: innovacion = st.slider("Innovación", 1, 5, 3)
-                        puntaje_total = rigor + viabilidad + innovacion
-                    else:
-                        col1, col2, col3 = st.columns(3)
-                        with col1: creatividad = st.slider("Creatividad", 1, 5, 3)
-                        with col2: claridad = st.slider("Claridad de la presentación", 1, 5, 3)
-                        with col3: impacto = st.slider("Impacto percibido", 1, 5, 3)
-                        puntaje_total = creatividad + claridad + impacto
+                # Formularios según rol
+                col1, col2, col3 = st.columns(3)
+                if rol == "Docente":
+                    with col1: rigor = st.slider("Rigor técnico", 1, 5, 3)
+                    with col2: viabilidad = st.slider("Viabilidad financiera", 1, 5, 3)
+                    with col3: innovacion = st.slider("Innovación", 1, 5, 3)
+                    puntaje_total = rigor + viabilidad + innovacion
+                else:
+                    with col1: creatividad = st.slider("Creatividad", 1, 5, 3)
+                    with col2: claridad = st.slider("Claridad de la presentación", 1, 5, 3)
+                    with col3: impacto = st.slider("Impacto percibido", 1, 5, 3)
+                    puntaje_total = creatividad + claridad + impacto
 
-                    st.markdown(f"<div class='score-box'>🧮 Puntaje total: <b>{puntaje_total}</b></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='score-box'>🧮 Puntaje total: <b>{puntaje_total}</b></div>", unsafe_allow_html=True)
 
-                    submit_voto = st.form_submit_button("✅ Enviar voto")
+                # Botón de envío
+                if st.button("✅ Enviar voto"):
+                    with st.spinner("🎯 Enviando tu voto..."):
+                        import time
+                        time.sleep(1.5)  # simulación visual
+                        try:
+                            credentials = service_account.Credentials.from_service_account_info(
+                                st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+                            )
+                            gc = gspread.authorize(credentials)
+                            sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+                            ws = sh.worksheet("Votaciones")
 
-                    if submit_voto:
-                        with st.spinner("🎯 Enviando tu voto..."):
-                            time.sleep(1.5)
-                            try:
-                                registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
-                                ws_votos.append_row(registro)
-                                st.success("✅ ¡Tu voto ha sido registrado!")
-                                st.balloons()
-                                # Reiniciar para votar otro equipo
-                                st.session_state.voto_info.update({
-                                    "validado": False,
-                                    "equipo": ""
-                                })
-                            except Exception as e:
-                                st.error(f"⚠️ Error al registrar el voto: {e}")
+                            registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
+                            ws.append_row(registro)
+                            st.success("✅ ¡Tu voto ha sido registrado!")
+                            st.balloons()
+
+                            # Reset para nuevo voto
+                            if st.button("🔄 Votar por otro equipo"):
+                                st.session_state.validado_voto = False
+                                st.session_state.pop("equipo_voto", None)
+                                st.experimental_rerun()
+
+                        except Exception as e:
+                            st.error(f"⚠️ Error al registrar el voto: {e}")
 
         except Exception as e:
             st.error(f"⚠️ Error al cargar datos de votaciones: {e}")
-
-
-
 
 
 def modulo_resultados():
