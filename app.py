@@ -561,7 +561,7 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
     :param refresh_interval: Intervalo en segundos para actualizar
     """
     st.title("🏆 Resultados del Concurso - Visual Avanzada")
-    st.image("https://media2.giphy.com/media/ytTn0YJ83NlJI2lSNr/giphy.webp", width=300)
+    st.image("https://media4.giphy.com/media/fQmjWedKFvchti5QRB/giphy.webp", width=300)
 
     # Conectar a Google Sheets
     try:
