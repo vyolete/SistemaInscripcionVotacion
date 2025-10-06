@@ -104,8 +104,6 @@ def preparar_dataframe(df):
     return df
 
 def cargar_docentes(secrets):
-    import traceback
-    try:
         credentials = service_account.Credentials.from_service_account_info(
             secrets["gcp"],
             scopes=["https://www.googleapis.com/auth/spreadsheets"]
@@ -113,20 +111,12 @@ def cargar_docentes(secrets):
         gc = gspread.authorize(credentials)
         sh = gc.open_by_key(secrets["spreadsheet"]["id"])
 
-        # Muestra las hojas disponibles
-        st.write("📄 Hojas disponibles:", [ws.title for ws in sh.worksheets()])
-
         # Intenta abrir la hoja Docentes
         ws_docentes = sh.worksheet("Docentes")
         data = ws_docentes.get_all_records()
 
-        st.write("✅ Registros cargados:", len(data))
+        
         return pd.DataFrame(data)
-
-    except Exception as e:
-        st.error("⚠️ Error al cargar la hoja 'Docentes':")
-        st.code(traceback.format_exc())
-        return pd.DataFrame()
 
 
 
