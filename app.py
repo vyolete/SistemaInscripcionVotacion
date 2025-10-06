@@ -329,14 +329,14 @@ def conectar_hoja_dashboard(secrets):
     df_resp = pd.DataFrame(respuestas)
 
     # Limpiar nombres de columna y renombrar para consistencia
-     df_resp.columns =  df_resp.columns.str.strip()
-     df_resp.rename(columns={
+    df_resp.columns =  df_resp.columns.str.strip()
+    df_resp.rename(columns={
         'Inscripción Participantes': 'Participantes',
         'Id_equipo (Respuestas de formulario 1)': 'ID Equipo',
         'Nombre del Equipo': 'Equipo'
     }, inplace=True)
 
-        return  df_resp
+       return  df_resp
 
 def modulo_dashboard():
     st.header("📊 Dashboard de Inscripciones")
