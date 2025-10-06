@@ -414,7 +414,6 @@ def modulo_dashboard():
     # Detalle de inscripciones
     with st.expander("📋 Ver detalle de inscripciones", expanded=False):
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'Id_equipo']])
-
 import streamlit as st
 import pandas as pd
 import gspread
@@ -435,16 +434,16 @@ def modulo_votacion():
 
     # ================= Validación inicial =================
     if not st.session_state.validado_voto:
+
         # Detectar rol desde sesión
         if st.session_state.get("rol") == "Docente":
             rol = "Docente"
-            correo = st.session_state.get("correo_voto")  # correo obtenido en login
+            correo = st.session_state.get("correo_voto")  # correo guardado en login
             st.info(f"👨‍🏫 Sesión docente detectada: {correo}")
         else:
             rol = "Estudiante / Asistente"
             correo = st.text_input("📧 Ingresa tu correo institucional:")
 
-        # ID del equipo (siempre)
         equipo_id = st.text_input("🏷️ Código del equipo a evaluar:", value=equipo_qr or "")
 
         if st.button("Continuar ▶️"):
@@ -455,13 +454,9 @@ def modulo_votacion():
             try:
                 # Cargar inscripciones desde "Respuestas de formulario 1"
                 df_insc = cargar_respuestas_formulario(st.secrets)
-                if equipo_id not in df_insc["Id_equipo"].astype(str).tolist():
+                if equipo_id not in df_insc["ID Equipo"].astype(str).tolist():
                     st.error("❌ El código del equipo no existe.")
                     return
-
-                # Solo validar estudiantes (si quieres reglas adicionales)
-                if rol != "Docente":
-                    pass  # aquí podrías agregar validaciones de correo para estudiantes
 
                 # Guardar estado
                 st.session_state.validado_voto = True
@@ -491,10 +486,10 @@ def modulo_votacion():
             sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
             ws_votos = sh.worksheet("Votaciones")
 
-            # Revisar si ya votó
+            # Revisar si ya votó este correo por este equipo
             votos = pd.DataFrame(ws_votos.get_all_records())
             ya_voto = not votos[
-                (votos["Correo"] == correo) & (votos["Id_equipo"] == equipo_id)
+                (votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)
             ].empty if not votos.empty else False
 
             if ya_voto:
@@ -522,9 +517,10 @@ def modulo_votacion():
 
                 st.markdown(f"<div class='score-box'>🧮 Puntaje total: <b>{puntaje_total}</b></div>", unsafe_allow_html=True)
 
+                # Enviar voto
                 if st.button("✅ Enviar voto"):
                     with st.spinner("🎯 Enviando tu voto..."):
-                        time.sleep(1.8)  # Animación
+                        time.sleep(1.8)
                         try:
                             registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
                             ws_votos.append_row(registro)
@@ -542,8 +538,6 @@ def modulo_votacion():
 
         except Exception as e:
             st.error(f"⚠️ Error al cargar datos de votaciones: {e}")
-
-
 
 def modulo_resultados():
     st.markdown("""
