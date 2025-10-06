@@ -190,9 +190,9 @@ def modulo_home():
                     st.session_state["rol"] = "Docente"
                     st.session_state["validando_docente"] = False
                     st.session_state["codigo_validado"] = True
-                    # Limpiar input de código
-                    st.rerun()
+                    # Limpiar input de código 
                     st.success("✅ Acceso autorizado. Bienvenido docente. Revisa los items del menú 👨‍🏫")
+                    st.rerun()
                     
                 else:
                     st.error("❌ Código incorrecto. Intenta nuevamente.")
@@ -434,7 +434,7 @@ def modulo_eventos():
 # 🔹 MAIN APP
 # ======================================================
 def main():
-    st.set_page_config(page_title="Concurso Analítica Financiera", page_icon="📊", layout="wide")
+    st.set_page_config(page_title="🏫 Portal del Concurso ITM Analítica Financiera", page_icon="📊", layout="wide")
 
     st.markdown("""
     <div style="height:10px; margin-bottom:15px;
