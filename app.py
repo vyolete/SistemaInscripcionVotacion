@@ -344,37 +344,12 @@ def modulo_inscripcion():
         unsafe_allow_html=True
     )
 
-def conectar_hoja_dashboard(secrets):
-    """
-    Conecta directamente a la hoja 'Respuestas de formulario 1' del Google Sheet.
-    Retorna un DataFrame limpio.
-    """
-    try:
-        worksheet = sh.worksheet("Respuestas de formulario 1")
-    except gspread.WorksheetNotFound:
-        st.error("❌ No se encontró la hoja 'Respuestas de formulario 1'.")
-        st.stop()
-
-    # Obtener datos y convertir a DataFrame
-    respuestas = worksheet.get_all_records()
-    df_resp = pd.DataFrame(respuestas)
-
-    # Limpiar nombres de columna y renombrar para consistencia
-    df_resp.columns =  df_resp.columns.str.strip()
-    df_resp.rename(columns={
-        'Inscripción Participantes': 'Participantes',
-        'Id_equipo (Respuestas de formulario 1)': 'ID Equipo',
-        'Nombre del Equipo': 'Equipo'
-    }, inplace=True)
-
-    return  df_resp
-
 def modulo_dashboard():
     st.header("📊 Dashboard de Inscripciones")
 
     # Cargar solo la hoja necesaria
     try:
-        df = conectar_hoja_dashboard(st.secrets)
+        df = cargar_respuestas_formulario(st.secrets)
     except Exception as e:
         st.error(f"❌ Error al cargar la hoja: {e}")
         st.stop()
@@ -427,80 +402,6 @@ def modulo_dashboard():
     # Detalle de inscripciones
     with st.expander("📋 Ver detalle de inscripciones", expanded=False):
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
-
-def modulo_dashboard():
-    st.header("📊 Dashboard de Inscripciones")
-
-    # Conectar con Google Sheets
-    try:
-        df = conectar_google_sheets(st.secrets)
-    except Exception as e:
-        st.error(f"❌ Error al conectar con Google Sheets: {e}")
-        st.stop()
-
-    if df.empty:
-        st.warning("⚠️ No hay inscripciones registradas todavía.")
-        return
-
-    # Limpiar nombres de columnas de espacios invisibles
-    df.columns = df.columns.str.strip()
-
-    # Renombrar columnas para que coincidan con tu código
-    df.rename(columns={
-        'Inscripción Participantes': 'Participantes',
-        'Id_equipo (Respuestas de formulario 1)': 'ID Equipo',
-        'Nombre del Equipo': 'Equipo'
-    }, inplace=True)
-
-    # Preparar DataFrame (tu función existente)
-    df = preparar_dataframe(df)
-
-    # Verificar que existan las columnas necesarias
-    required_cols = ['Docente', 'Participantes', 'ID Equipo', 'Equipo']
-    for col in required_cols:
-        if col not in df.columns:
-            st.error(f"❌ La columna '{col}' no existe en el DataFrame.")
-            st.write("Columnas disponibles:", df.columns.tolist())
-            st.stop()
-
-    # Selector de docente en sidebar
-    docentes = df['Docente'].unique()
-    docente_sel = st.sidebar.selectbox("📌 Filtrar por docente", ["Todos"] + list(docentes))
-    df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
-
-    # Calcular cantidad de estudiantes
-    df_filtrado['Cantidad de Estudiantes'] = df_filtrado['Participantes'].apply(contar_participantes)
-
-    # Métricas principales
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("📝 Inscripciones", len(df_filtrado))
-    with col2:
-        st.metric("👥 Equipos", df_filtrado['ID Equipo'].nunique())
-    with col3:
-        st.metric("🎓 Estudiantes", df_filtrado['Cantidad de Estudiantes'].sum())
-
-    # Gráfico de inscripciones por docente
-    st.subheader("📈 Inscripciones por Docente")
-    resumen = df_filtrado.groupby("Docente")['Cantidad de Estudiantes'].sum().reset_index()
-    chart = (
-        alt.Chart(resumen)
-        .mark_bar(size=35, cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
-        .encode(
-            x=alt.X('Docente:N', sort='-y', title="Docente"),
-            y=alt.Y('Cantidad de Estudiantes:Q', title="Estudiantes"),
-            color=alt.value('#1B396A'),
-            tooltip=['Docente', 'Cantidad de Estudiantes']
-        )
-        .properties(height=350)
-    )
-    st.altair_chart(chart, use_container_width=True)
-
-    # Detalle de inscripciones
-    with st.expander("📋 Ver detalle de inscripciones", expanded=False):
-        st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
-
-
 
 def modulo_votacion():
     st.header("🗳 Votación de Equipos")
