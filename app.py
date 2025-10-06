@@ -176,7 +176,7 @@ def render_docente_ui():
     if st.button("🔁 Cambiar rol / Cerrar sesión"):
         reset_role()
 
-def module_home():
+def modulo_home():
     init_session_state()
 
     # Cabecera
