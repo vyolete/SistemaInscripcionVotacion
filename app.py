@@ -547,12 +547,6 @@ def modulo_votacion():
 
 # ================= Dashboard en tiempo real =================
 
-import streamlit as st
-import pandas as pd
-import gspread
-from google.oauth2 import service_account
-import time
-
 def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10):
     """
     Muestra los resultados en tiempo real de manera visual y atractiva.
@@ -560,21 +554,7 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
     :param peso_estudiante: Peso de los votos de estudiantes (0-1)
     :param refresh_interval: Intervalo en segundos para actualizar
     """
-
-    # La URL de tu GIF/WebP
-    URL_IMAGEN = "https://media4.giphy.com/media/fQmjWedKFvchti5QRB/giphy.webp"
-
-    # 1. Creamos dos columnas. Ajusta los números [3, 1] según el ancho que deseas
-    # [Ancho Título, Ancho Imagen]
-    col1, col2 = st.columns([3, 1])
-
-    # 2. Colocamos el título en la primera columna (más ancha)
-    with col1:
-     st.title("🏆 Resultados Concurso Analítica Financiera")
-
-    # 3. Colocamos la imagen en la segunda columna (más estrecha)
-    with col2:
-     st.image(URL_IMAGEN)
+    st.title("🏆 Resultados Concurso Analítica Financiera")
 
     # Conectar a Google Sheets
     try:
