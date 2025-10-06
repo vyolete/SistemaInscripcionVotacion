@@ -253,6 +253,7 @@ def modulo_home():
                 st.info("Puedes volver al inicio si ingresaste un correo incorrecto.")
 
         # Si el correo fue validado correctamente
+        volver_inicio2= False
         if st.session_state.get("correo_valido", False):
             if "codigo_validado" not in st.session_state:
                 st.session_state["codigo_validado"] = False
