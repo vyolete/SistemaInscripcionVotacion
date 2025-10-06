@@ -558,7 +558,7 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
     st.title("🏆 Resultados del Concurso - Visual Avanzada")
 
     # Logo de la institución
-    st.image("https://via.placeholder.com/300x100?text=LOGO+INSTITUCION", width=300)
+    st.image("https://media2.giphy.com/media/ytTn0YJ83NlJI2lSNr/giphy.webp", width=300)
 
     # Conectar a Google Sheets
     try:
@@ -633,11 +633,56 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
             """, unsafe_allow_html=True)
             st.progress(min(row['Puntaje_Total']/15, 1.0))  # Normaliza la barra
 
+
+            st.subheader("📊 Puntajes de todos los equipos (scroll horizontal)")
+
+            # Crear contenedor con scroll horizontal
+            container = st.container()
+            with container:
+                # Usamos columnas dinámicas para todos los equipos
+                num_cols = len(resultados)
+                cols = st.columns(num_cols, gap="small")
+
+                for idx, (col, (_, row)) in enumerate(zip(cols, resultados.iterrows())):
+                    # Colores top 3
+                    color = "#FFFFFF"
+                    emoji = ""
+                    if idx == 0:
+                        color = "#FFD700"
+                        emoji = "🥇"
+                    elif idx == 1:
+                        color = "#C0C0C0"
+                        emoji = "🥈"
+                    elif idx == 2:
+                        color = "#CD7F32"
+                        emoji = "🥉"
+
+                    with col:
+                        st.markdown(f"""
+                            <div style="
+                                background-color:{color};
+                                padding:10px;
+                                border-radius:8px;
+                                text-align:center;
+                                box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+                                margin-bottom:5px;
+                            ">
+                                <h4 style='margin:0'>{emoji} {row['Id_equipo']}</h4>
+                                <p style='margin:0'><b>Puntaje:</b> {row['Puntaje_Total']:.2f}</p>
+                                <p style='margin:0;font-size:0.8em;'>C1:{row['Criterio 1']:.1f} | C2:{row['Criterio 2']:.1f} | C3:{row['Criterio 3']:.1f}</p>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+                        # Barra animada proporcional al puntaje (normalizado)
+                        st.progress(min(row['Puntaje_Total']/15, 1.0))
+
+
+
     st.markdown("---")
     st.info(f"⏱ La tabla se actualizará automáticamente cada {refresh_interval} segundos.")
 
     # Animación ligera para top 3
-    if len(resultados) >= 3:
+    if len(resultados) >= 30:
         st.balloons()
 
     # Actualización automática
