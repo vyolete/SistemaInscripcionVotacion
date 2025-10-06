@@ -336,7 +336,7 @@ def conectar_hoja_dashboard(secrets):
         'Nombre del Equipo': 'Equipo'
     }, inplace=True)
 
-       return  df_resp
+    return  df_resp
 
 def modulo_dashboard():
     st.header("📊 Dashboard de Inscripciones")
