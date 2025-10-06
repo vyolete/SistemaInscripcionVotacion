@@ -316,6 +316,8 @@ def modulo_inscripcion():
 
 def modulo_dashboard():
     st.header("📊 Dashboard de Inscripciones")
+
+    # Conectar con Google Sheets
     try:
         df = conectar_google_sheets(st.secrets)
     except Exception as e:
@@ -326,12 +328,36 @@ def modulo_dashboard():
         st.warning("⚠️ No hay inscripciones registradas todavía.")
         return
 
+    # Limpiar nombres de columnas de espacios invisibles
+    df.columns = df.columns.str.strip()
+
+    # Renombrar columnas para que coincidan con tu código
+    df.rename(columns={
+        'Inscripción Participantes': 'Participantes',
+        'Id_equipo (Respuestas de formulario 1)': 'ID Equipo',
+        'Nombre del Equipo': 'Equipo'
+    }, inplace=True)
+
+    # Preparar DataFrame (tu función existente)
     df = preparar_dataframe(df)
+
+    # Verificar que existan las columnas necesarias
+    required_cols = ['Docente', 'Participantes', 'ID Equipo', 'Equipo']
+    for col in required_cols:
+        if col not in df.columns:
+            st.error(f"❌ La columna '{col}' no existe en el DataFrame.")
+            st.write("Columnas disponibles:", df.columns.tolist())
+            st.stop()
+
+    # Selector de docente en sidebar
     docentes = df['Docente'].unique()
     docente_sel = st.sidebar.selectbox("📌 Filtrar por docente", ["Todos"] + list(docentes))
     df_filtrado = df if docente_sel == "Todos" else df[df['Docente'] == docente_sel]
+
+    # Calcular cantidad de estudiantes
     df_filtrado['Cantidad de Estudiantes'] = df_filtrado['Participantes'].apply(contar_participantes)
 
+    # Métricas principales
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("📝 Inscripciones", len(df_filtrado))
@@ -340,6 +366,7 @@ def modulo_dashboard():
     with col3:
         st.metric("🎓 Estudiantes", df_filtrado['Cantidad de Estudiantes'].sum())
 
+    # Gráfico de inscripciones por docente
     st.subheader("📈 Inscripciones por Docente")
     resumen = df_filtrado.groupby("Docente")['Cantidad de Estudiantes'].sum().reset_index()
     chart = (
@@ -354,8 +381,11 @@ def modulo_dashboard():
         .properties(height=350)
     )
     st.altair_chart(chart, use_container_width=True)
+
+    # Detalle de inscripciones
     with st.expander("📋 Ver detalle de inscripciones", expanded=False):
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'ID Equipo']])
+
 
 
 def modulo_votacion():
