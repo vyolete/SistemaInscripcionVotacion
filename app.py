@@ -365,9 +365,16 @@ def modulo_eventos():
 
     col1, col2 = st.columns([1, 2])
 
-    with col1:
-        st.image("https://imgur.com/a/UrDYzdd.jpg", use_container_width=True)
 
+    with col1:
+        st.markdown(
+            """
+            <a href="https://ibb.co/fYBV6nqY">
+                <img src="https://i.ibb.co/4Z9wvYKZ/carlosnaranjo.jpg" alt="carlosnaranjo" border="0" style="width:100%; border-radius:10px;">
+            </a>
+            """,
+            unsafe_allow_html=True
+        )
     with col2:
         st.markdown("""
         <div style="color:#1B396A; font-family:'Segoe UI', sans-serif;">
