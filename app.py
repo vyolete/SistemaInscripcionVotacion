@@ -455,7 +455,7 @@ def modulo_votacion():
                 # Cargar inscripciones desde la hoja correcta
                 df_insc = cargar_respuestas_formulario(st.secrets)
 
-                if equipo_id not in df_insc["ID Equipo"].astype(str).tolist():
+                if equipo_id not in df_insc["Id_equipo"].astype(str).tolist():
                     st.error("❌ El código del equipo no existe.")
                     return
 
@@ -494,7 +494,7 @@ def modulo_votacion():
 
             # Verificar si ya votó
             ya_voto = not df_votos[
-                (df_votos["Correo"] == correo) & (df_votos["ID Equipo"] == equipo_id)
+                (df_votos["Correo"] == correo) & (df_votos["Id_equipo"] == equipo_id)
             ].empty if not df_votos.empty else False
 
             if ya_voto:
