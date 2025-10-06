@@ -195,7 +195,7 @@ def modulo_home():
                     
                 else:
                     st.error("❌ Código incorrecto. Intenta nuevamente.")
-                st.rerun()
+            st.rerun()
 
                 
 
