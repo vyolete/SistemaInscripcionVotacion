@@ -115,13 +115,43 @@ def cargar_docentes(secrets):
         data = ws_docentes.get_all_records()
         return pd.DataFrame(data)
 
+def cargar_respuestas_formulario(secrets):
+    """
+    Carga la hoja 'Respuestas de formulario 1' del Google Sheet
+    y devuelve un DataFrame listo para usar en el dashboard.
+    """
+    # Credenciales
+    credentials = service_account.Credentials.from_service_account_info(
+        secrets["gcp"],
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    gc = gspread.authorize(credentials)
 
+    # Abrir el spreadsheet por ID
+    sh = gc.open_by_key(secrets["spreadsheet"]["id"])
 
+    # Abrir hoja específica
+    ws = sh.worksheet("Respuestas de formulario 1")
+
+    # Obtener todos los registros y convertir a DataFrame
+    data = ws.get_all_records()
+    df = pd.DataFrame(data)
+
+    # Limpiar nombres de columna
+    df.columns = df.columns.str.strip()
+
+    # Renombrar columnas para que coincidan con el dashboard
+    df.rename(columns={
+        'Inscripción Participantes': 'Participantes',
+        'Id_equipo (Respuestas de formulario 1)': 'ID Equipo',
+        'Nombre del Equipo': 'Equipo'
+    }, inplace=True)
+
+    return df
 # ======================================================
 # 🔹 MÓDULOS
 # ======================================================
 
-import streamlit as st
 
 def init_session_state():
     defaults = {
