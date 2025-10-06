@@ -561,29 +561,29 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
     :param refresh_interval: Intervalo en segundos para actualizar
     """
 
-     # La URL de tu GIF/WebP
-     URL_IMAGEN = "https://media4.giphy.com/media/fQmjWedKFvchti5QRB/giphy.webp"
+    # La URL de tu GIF/WebP
+    URL_IMAGEN = "https://media4.giphy.com/media/fQmjWedKFvchti5QRB/giphy.webp"
 
-     # 1. Creamos dos columnas. Ajusta los números [3, 1] según el ancho que deseas
-     # [Ancho Título, Ancho Imagen]
-     col1, col2 = st.columns([3, 1])
+    # 1. Creamos dos columnas. Ajusta los números [3, 1] según el ancho que deseas
+    # [Ancho Título, Ancho Imagen]
+    col1, col2 = st.columns([3, 1])
 
-     # 2. Colocamos el título en la primera columna (más ancha)
-     with col1:
-         st.title("🏆 Resultados Concurso Analítica Financiera")
+    # 2. Colocamos el título en la primera columna (más ancha)
+    with col1:
+     st.title("🏆 Resultados Concurso Analítica Financiera")
 
-     # 3. Colocamos la imagen en la segunda columna (más estrecha)
-     with col2:
-         # Agregamos un poco de espacio vertical (vacío) para alinear la imagen mejor con el texto
-         st.write("")
-         st.write("")
+    # 3. Colocamos la imagen en la segunda columna (más estrecha)
+    with col2:
+     # Agregamos un poco de espacio vertical (vacío) para alinear la imagen mejor con el texto
+     st.write("")
+     st.write("")
 
-         # La imagen se cargará desde la URL y se ajustará a la columna
-         st.image(URL_IMAGEN)
+     # La imagen se cargará desde la URL y se ajustará a la columna
+     st.image(URL_IMAGEN)
 
-     # 4. El contenido posterior (como el cuerpo de tu informe) continúa debajo de las columnas
-     st.markdown("---")
-     st.write("A continuación, se presentan los resultados finales...")
+    # 4. El contenido posterior (como el cuerpo de tu informe) continúa debajo de las columnas
+    st.markdown("---")
+    st.write("A continuación, se presentan los resultados finales...")
 
 
 
