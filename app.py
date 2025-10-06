@@ -193,6 +193,7 @@ def modulo_home():
                     # Limpiar input de código
                     st.session_state["codigo_input"] = ""
                     st.success("✅ Acceso autorizado. Bienvenido docente. Revisa los items del menú 👨‍🏫")
+                    st.rerun()
                 else:
                     st.error("❌ Código incorrecto. Intenta nuevamente.")
 
