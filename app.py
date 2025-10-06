@@ -6,6 +6,7 @@ from google.oauth2 import service_account
 from datetime import datetime
 import altair as alt
 from streamlit_option_menu import option_menu
+import time
 
 # ======================================================
 # 🔹 ESTILOS PERSONALIZADOS
@@ -415,13 +416,6 @@ def modulo_dashboard():
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'Id_equipo']])
 
 
-import streamlit as st
-import pandas as pd
-import gspread
-from google.oauth2 import service_account
-from datetime import datetime
-import time
-
 def modulo_votacion():
     st.header("🗳 Votación de Equipos")
 
@@ -433,43 +427,37 @@ def modulo_votacion():
     if "validado_voto" not in st.session_state:
         st.session_state.validado_voto = False
 
-# ================= Validación inicial =================
+    # ================= Validación inicial =================
     if not st.session_state.validado_voto:
-        # Inicializar variables
-        correo = ""
-        rol = "Estudiante / Asistente"
-        # Determinar rol
-        if st.session_state.get("rol") == "Docente" and st.session_state.get("correo"):
-            # Si ya está logueado como docente
-            correo = st.session_state.get("correo")
+        # Detectar rol desde sesión
+        if st.session_state.get("rol") == "Docente":
             rol = "Docente"
+            correo = st.session_state.get("correo")  # correo obtenido en login
             st.info(f"👨‍🏫 Sesión docente detectada: {correo}")
         else:
+            rol = "Estudiante / Asistente"
             correo = st.text_input("📧 Ingresa tu correo institucional:")
 
+        # ID del equipo (siempre)
         equipo_id = st.text_input("🏷️ Código del equipo a evaluar:", value=equipo_qr or "")
 
         if st.button("Continuar ▶️"):
-            if not correo or not equipo_id:
+            if not equipo_id or (rol != "Docente" and not correo):
                 st.error("❌ Debes ingresar tu correo y el código del equipo.")
                 return
 
             try:
                 # Cargar inscripciones desde "Respuestas de formulario 1"
                 df_insc = cargar_respuestas_formulario(st.secrets)
-
                 if equipo_id not in df_insc["Id_equipo"].astype(str).tolist():
                     st.error("❌ El código del equipo no existe.")
                     return
 
-                # Validación si es docente estudiante usando QR (opcional)
-                if rol == "Docente" and st.session_state.get("rol") != "Docente":
-                    df_docentes = cargar_docentes(st.secrets)
-                    if correo not in df_docentes["Correo"].values:
-                        st.error("❌ Tu correo no está autorizado como jurado docente.")
-                        return
+                # Solo validar estudiantes (si quieres reglas adicionales)
+                if rol != "Docente":
+                    pass  # aquí podrías agregar validaciones de correo para estudiantes
 
-                # Guardar estado de sesión
+                # Guardar estado
                 st.session_state.validado_voto = True
                 st.session_state.rol_voto = rol
                 st.session_state.correo_voto = correo
@@ -509,6 +497,7 @@ def modulo_votacion():
                     st.session_state.validado_voto = False
                     if "equipo_voto" in st.session_state:
                         del st.session_state["equipo_voto"]
+                    st.experimental_rerun()
 
             else:
                 # Formularios según rol
@@ -535,18 +524,18 @@ def modulo_votacion():
                             ws_votos.append_row(registro)
                             st.success("✅ ¡Tu voto ha sido registrado!")
                             st.balloons()
-                            st.markdown("<br>", unsafe_allow_html=True)
+
                             if st.button("🔄 Votar por otro equipo"):
                                 st.session_state.validado_voto = False
                                 if "equipo_voto" in st.session_state:
                                     del st.session_state["equipo_voto"]
+                                st.experimental_rerun()
+
                         except Exception as e:
                             st.error(f"⚠️ Error al registrar el voto: {e}")
 
         except Exception as e:
             st.error(f"⚠️ Error al cargar datos de votaciones: {e}")
-
-
 
 
 
