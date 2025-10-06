@@ -411,13 +411,8 @@ def modulo_dashboard():
     # Detalle de inscripciones
     with st.expander("📋 Ver detalle de inscripciones", expanded=False):
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'Id_equipo']])
-import streamlit as st
-import pandas as pd
-import gspread
-from google.oauth2 import service_account
-from datetime import datetime
-import time
 
+        
 def modulo_votacion():
     st.header("🗳 Votación de Equipos")
 
@@ -497,7 +492,7 @@ def modulo_votacion():
                     st.session_state.validado_voto = False
                     if "equipo_voto" in st.session_state:
                         del st.session_state["equipo_voto"]
-                    st.experimental_rerun()
+                    st.rerun()
                 return  # Evitar que aparezca el formulario
 
             # Formularios según rol
@@ -531,7 +526,7 @@ def modulo_votacion():
                             st.session_state.validado_voto = False
                             if "equipo_voto" in st.session_state:
                                 del st.session_state["equipo_voto"]
-                            st.experimental_rerun()
+                            st.rerun()
 
                     except Exception as e:
                         st.error(f"⚠️ Error al registrar el voto: {e}")
