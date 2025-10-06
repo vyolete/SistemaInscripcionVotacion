@@ -415,6 +415,12 @@ def modulo_dashboard():
     with st.expander("📋 Ver detalle de inscripciones", expanded=False):
         st.dataframe(df_filtrado[['Equipo', 'Docente', 'Cantidad de Estudiantes', 'Id_equipo']])
 
+import streamlit as st
+import pandas as pd
+import gspread
+from google.oauth2 import service_account
+from datetime import datetime
+import time
 
 def modulo_votacion():
     st.header("🗳 Votación de Equipos")
@@ -449,7 +455,7 @@ def modulo_votacion():
             try:
                 # Cargar inscripciones desde "Respuestas de formulario 1"
                 df_insc = cargar_respuestas_formulario(st.secrets)
-                if equipo_id not in df_insc["Id_equipo"].astype(str).tolist():
+                if equipo_id not in df_insc["ID Equipo"].astype(str).tolist():
                     st.error("❌ El código del equipo no existe.")
                     return
 
@@ -488,7 +494,7 @@ def modulo_votacion():
             # Revisar si ya votó
             votos = pd.DataFrame(ws_votos.get_all_records())
             ya_voto = not votos[
-                (votos["Correo"] == correo) & (votos["Id_equipo"] == equipo_id)
+                (votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)
             ].empty if not votos.empty else False
 
             if ya_voto:
@@ -536,9 +542,6 @@ def modulo_votacion():
 
         except Exception as e:
             st.error(f"⚠️ Error al cargar datos de votaciones: {e}")
-
-
-
 
 
 
