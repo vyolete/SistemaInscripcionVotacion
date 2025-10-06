@@ -149,7 +149,7 @@ def cargar_respuestas_formulario(secrets):
     # Renombrar columnas para que coincidan con el dashboard
     df.rename(columns={
         'Inscripción Participantes': 'Participantes',
-        'Id_equipo (Respuestas de formulario 1)': 'ID Equipo',
+        'Id_equipo (Respuestas de formulario 1)': 'Id_equipo',
         'Nombre del Equipo': 'Equipo'
     }, inplace=True)
 
@@ -458,7 +458,7 @@ def modulo_votacion():
                 # Cargar inscripciones desde "Respuestas de formulario 1"
                 df_insc = cargar_respuestas_formulario(st.secrets)
 
-                if equipo_id not in df_insc["ID Equipo"].astype(str).tolist():
+                if equipo_id not in df_insc["Id_equipo"].astype(str).tolist():
                     st.error("❌ El código del equipo no existe.")
                     return
 
@@ -500,7 +500,7 @@ def modulo_votacion():
             # Revisar si ya votó
             votos = pd.DataFrame(ws_votos.get_all_records())
             ya_voto = not votos[
-                (votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)
+                (votos["Correo"] == correo) & (votos["Id_equipo"] == equipo_id)
             ].empty if not votos.empty else False
 
             if ya_voto:
