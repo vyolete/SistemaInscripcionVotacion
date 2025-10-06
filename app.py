@@ -575,6 +575,9 @@ def modulo_resultados():
             return
 
         # ================= Puntaje ponderado =================
+        # Convertir criterios a números
+        for c in ["Criterio 1", "Criterio 2", "Criterio 3"]:
+            df_votos[c] = pd.to_numeric(df_votos[c], errors="coerce").fillna(0)
         df_votos["Puntaje ponderado"] = (
             df_votos["Criterio 1"] * peso_c1 +
             df_votos["Criterio 2"] * peso_c2 +
