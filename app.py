@@ -121,83 +121,148 @@ def cargar_docentes(secrets):
 # 🔹 MÓDULOS
 # ======================================================
 
-def modulo_home():
-    col1, col2, col3 = st.columns([1,2,1])
+import streamlit as st
+
+def init_session_state():
+    defaults = {
+        "rol": None,
+        "rol_seleccionado": False,
+        "validando_docente": False,
+        "correo_docente": "",
+        "correo_valido": False,
+        "codigo_validado": False,
+        "df_docentes": None
+    }
+    for k, v in defaults.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+
+def reset_role():
+    for k in ["rol", "rol_seleccionado", "validando_docente", "correo_docente", "correo_valido", "codigo_validado", "df_docentes"]:
+        if k in st.session_state:
+            del st.session_state[k]
+    st.experimental_rerun()
+
+def render_student_ui():
+    st.header("🎓 Panel - Estudiante")
+    st.markdown("¡Bienvenido estudiante! Aquí tienes las opciones disponibles:")
+    opcion = st.radio("Selecciona una opción:", ["Mi inscripción", "Mi equipo", "Votaciones", "Ayuda"])
+    if opcion == "Mi inscripción":
+        st.write("Mostrar formulario/estado de inscripción del estudiante...")
+        # ejemplo: st.button("Inscribirme")
+    elif opcion == "Mi equipo":
+        st.write("Información del equipo, integrantes y código del equipo...")
+    elif opcion == "Votaciones":
+        st.write("Acceso a la sección de votación (si aplica).")
+    else:
+        st.write("FAQs, contacto o tutoriales.")
+
+    if st.button("🔁 Cambiar rol / Cerrar sesión"):
+        reset_role()
+
+def render_docente_ui():
+    st.header("👨‍🏫 Panel - Docente")
+    st.markdown("Bienvenido docente. Aquí están las herramientas del docente:")
+    opcion = st.radio("Selecciona una opción:", ["Validar inscripciones", "Reportes", "Mi perfil", "Ayuda"])
+    if opcion == "Validar inscripciones":
+        st.write("Lista de inscripciones pendientes para validar...")
+    elif opcion == "Reportes":
+        st.write("Descargar reportes y métricas del concurso...")
+    elif opcion == "Mi perfil":
+        st.write(f"Correo: {st.session_state.get('correo_docente')}")
+    else:
+        st.write("Soporte y documentación para docentes.")
+
+    if st.button("🔁 Cambiar rol / Cerrar sesión"):
+        reset_role()
+
+def module_home():
+    init_session_state()
+
+    # Cabecera
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image(
-            "https://media1.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp",
-            width=180
-        )
+        st.image("https://media1.giphy.com/media/ZBoap6UCvOEeQNGzHK/200.webp", width=180)
 
     st.markdown("<h1 style='text-align:center;'>🏆 Concurso Analítica Financiera ITM</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='text-align:center;'>¡Participa, aprende y gana!</h3>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-
     st.markdown("<h4 style='text-align:center;'>Selecciona tu rol para comenzar:</h4>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    # Si aún no se ha seleccionado rol y no estamos validando docente: mostrar botones principales
+    if not st.session_state["rol_seleccionado"] and not st.session_state["validando_docente"]:
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("🎓 Soy Estudiante", use_container_width=True):
+                st.session_state["rol"] = "Estudiante"
+                st.session_state["rol_seleccionado"] = True
+                st.success("✅ Rol seleccionado: Estudiante")
+                st.experimental_rerun()
+        with c2:
+            if st.button("👨‍🏫 Soy Docente", use_container_width=True):
+                st.session_state["validando_docente"] = True
+                st.experimental_rerun()
 
-    with col1:
-        if st.button("🎓 Soy Estudiante", use_container_width=True):
-            st.session_state["rol"] = "Estudiante"
-            st.session_state["rol_seleccionado"] = True
-            st.session_state["validando_docente"] = False
-            st.success("✅ Rol seleccionado: Estudiante")
-            st.toast("Menú habilitado para estudiantes 🎓")
-            st.rerun()
-
-    with col2:
-        if st.button("👨‍🏫 Soy Docente", use_container_width=True):
-            st.session_state["rol"] = "Docente"
-            st.session_state["rol_seleccionado"] = False
-            st.session_state["validando_docente"] = True
-            st.toast("Valida tu correo institucional 👨‍🏫")
-            st.rerun()
-
-    if st.session_state.get("validando_docente", False):
-        # Guardar correo en session_state
-        if "correo_docente" not in st.session_state:
-            st.session_state["correo_docente"] = ""
-    
-        correo_input = st.text_input(
-            "📧 Ingresa tu correo institucional para validar:",
-            value=st.session_state["correo_docente"]
-        )
-    
-        if st.button("Validar correo"):
-            df_docentes = cargar_docentes(st.secrets)
-            if correo_input in df_docentes["Correo"].values:
-                st.session_state["correo_docente"] = correo_input
-                st.session_state["correo_valido"] = True
-                st.session_state["df_docentes"] = df_docentes
-                st.success("✅ Correo verificado. Ingresa tu código de validación. 👨‍🏫")
-            else:
-                st.error("❌ Tu correo no está autorizado como docente.")
-    
-        if st.session_state.get("correo_valido", False):
-            if "codigo_validado" not in st.session_state:
-                st.session_state["codigo_validado"] = False
-    
-            codigo_input = st.text_input("🔐 Ingresa tu código de validación:")
-    
-            if st.button("Validar código") and not st.session_state["codigo_validado"]:
-                df_docentes = st.session_state["df_docentes"]
-                correo = st.session_state["correo_docente"]
-                codigo_real = df_docentes.loc[df_docentes["Correo"] == correo, "Codigo"].values[0]
-    
-                if str(codigo_input).strip() == str(codigo_real).strip():
-                    st.session_state["rol_seleccionado"] = True
-                    st.session_state["rol"] = "Docente"
-                    st.session_state["validando_docente"] = False
-                    st.session_state["codigo_validado"] = True
-                    # Limpiar input de código 
-                    st.success("✅ Acceso autorizado. Bienvenido docente. Revisa los items del menú 👨‍🏫")
-                    
+    # Flujo de validación de docente (correo -> código)
+    if st.session_state["validando_docente"]:
+        st.markdown("### Validación docente")
+        # Form para correo
+        with st.form("form_correo"):
+            correo_input = st.text_input("📧 Ingresa tu correo institucional para validar:", value=st.session_state.get("correo_docente", ""))
+            submit_correo = st.form_submit_button("Validar correo")
+            if submit_correo:
+                try:
+                    df_docentes = cargar_docentes(st.secrets)  # usa tu función existente
+                except Exception as e:
+                    st.error("Error cargando la lista de docentes. Revisa `cargar_docentes`.")
+                    st.exception(e)
+                    return
+                if correo_input and correo_input in df_docentes["Correo"].values:
+                    st.session_state["correo_docente"] = correo_input
+                    st.session_state["correo_valido"] = True
+                    st.session_state["df_docentes"] = df_docentes
+                    st.success("✅ Correo verificado. Ahora ingresa tu código de validación.")
+                    st.experimental_rerun()
                 else:
-                    st.error("❌ Código incorrecto. Intenta nuevamente.")
-            st.rerun()
+                    st.error("❌ Tu correo no está autorizado como docente.")
 
-                
+        # Form para código (solo si correo fue validado)
+        if st.session_state.get("correo_valido", False):
+            with st.form("form_codigo"):
+                codigo_input = st.text_input("🔐 Ingresa tu código de validación:")
+                submit_codigo = st.form_submit_button("Validar código")
+                if submit_codigo:
+                    df_docentes = st.session_state.get("df_docentes")
+                    correo = st.session_state.get("correo_docente", "")
+                    matches = df_docentes.loc[df_docentes["Correo"] == correo, "Codigo"]
+                    if not matches.empty:
+                        codigo_real = str(matches.values[0]).strip()
+                        if str(codigo_input).strip() == codigo_real:
+                            st.session_state["rol_seleccionado"] = True
+                            st.session_state["rol"] = "Docente"
+                            st.session_state["validando_docente"] = False
+                            st.session_state["codigo_validado"] = True
+                            st.success("✅ Acceso autorizado. Bienvenido docente.")
+                            st.experimental_rerun()
+                        else:
+                            st.error("❌ Código incorrecto. Intenta nuevamente.")
+                    else:
+                        st.error("❌ No se encontró el código para este correo. Reinicia el flujo.")
+                        reset_role()
+
+    # Si ya se seleccionó un rol, mostrar la vista correspondiente
+    if st.session_state.get("rol_seleccionado", False):
+        if st.session_state.get("rol") == "Estudiante":
+            render_student_ui()
+        elif st.session_state.get("rol") == "Docente":
+            render_docente_ui()
+        else:
+            st.warning("Rol desconocido. Reiniciando selección.")
+            reset_role()
+
+# Para probar localmente llamar a module_home()
+# module_home()
+     
 
 
 def modulo_inscripcion():
