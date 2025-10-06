@@ -560,7 +560,6 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
     :param peso_estudiante: Peso de los votos de estudiantes (0-1)
     :param refresh_interval: Intervalo en segundos para actualizar
     """
-     import streamlit as st
 
      # La URL de tu GIF/WebP
      URL_IMAGEN = "https://media4.giphy.com/media/fQmjWedKFvchti5QRB/giphy.webp"
