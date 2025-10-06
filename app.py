@@ -197,11 +197,13 @@ def modulo_home():
                 st.session_state["rol"] = "Estudiante"
                 st.session_state["rol_seleccionado"] = True
                 st.success("✅ Rol seleccionado: Estudiante")
-                st.experimental_rerun()
+                st.st.rerun()
+
         with c2:
             if st.button("👨‍🏫 Soy Docente", use_container_width=True):
                 st.session_state["validando_docente"] = True
-                st.experimental_rerun()
+                st.rerun()
+
 
     # Flujo de validación de docente (correo -> código)
     if st.session_state["validando_docente"]:
@@ -222,7 +224,8 @@ def modulo_home():
                     st.session_state["correo_valido"] = True
                     st.session_state["df_docentes"] = df_docentes
                     st.success("✅ Correo verificado. Ahora ingresa tu código de validación.")
-                    st.experimental_rerun()
+                    st.rerun()
+
                 else:
                     st.error("❌ Tu correo no está autorizado como docente.")
 
@@ -243,7 +246,8 @@ def modulo_home():
                             st.session_state["validando_docente"] = False
                             st.session_state["codigo_validado"] = True
                             st.success("✅ Acceso autorizado. Bienvenido docente.")
-                            st.experimental_rerun()
+                            st.rerun()
+
                         else:
                             st.error("❌ Código incorrecto. Intenta nuevamente.")
                     else:
