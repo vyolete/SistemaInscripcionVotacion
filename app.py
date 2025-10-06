@@ -163,7 +163,7 @@ def render_student_ui():
 
 def render_docente_ui():
     st.header("👨‍🏫 Panel - Docente")
-    st.markdown("Bienvenido docente. Aquí están las herramientas del docente:")
+    st.markdown("Bienvenido docente. Aquí están las herramientas del docente revisa el menu lateral izquierdo:")
     opcion = st.radio("Selecciona una opción:", ["Validar inscripciones", "Reportes", "Mi perfil", "Ayuda"])
     if opcion == "Validar inscripciones":
         st.write("Lista de inscripciones pendientes para validar...")
@@ -174,7 +174,7 @@ def render_docente_ui():
     else:
         st.write("Soporte y documentación para docentes.")
 
-    if st.button("🔁 Cambiar rol / Cerrar sesión"):
+    if st.button("Cerrar sesión"):
         reset_role()
 
 def modulo_home():
