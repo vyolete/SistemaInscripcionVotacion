@@ -555,6 +555,88 @@ def modulo_resultados():
     </div>
     """, unsafe_allow_html=True)
 
+import streamlit as st
+import pandas as pd
+from google.oauth2 import service_account
+import gspread
+
+def modulo_resultados():
+    st.header("🏆 Resultados en Tiempo Real – Concurso Analítica Financiera")
+
+    # ================= Parámetros de pesos =================
+    st.subheader("⚖️ Ajusta los pesos de los criterios (sumen 100%)")
+    default_docente = [33, 33, 34]  # Rigor, Viabilidad, Innovación
+    default_estudiante = [33, 33, 34]  # Creatividad, Claridad, Impacto
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        peso1 = st.number_input("Peso Criterio 1", min_value=0, max_value=100, value=default_docente[0], step=1)
+    with col2:
+        peso2 = st.number_input("Peso Criterio 2", min_value=0, max_value=100, value=default_docente[1], step=1)
+    with col3:
+        peso3 = st.number_input("Peso Criterio 3", min_value=0, max_value=100, value=default_docente[2], step=1)
+
+    if peso1 + peso2 + peso3 != 100:
+        st.warning("⚠️ La suma de los pesos debe ser 100%.")
+        return
+
+    # ================= Conexión a hoja de votaciones =================
+    try:
+        credentials = service_account.Credentials.from_service_account_info(
+            st.secrets["gcp"], scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
+        gc = gspread.authorize(credentials)
+        sh = gc.open_by_key(st.secrets["spreadsheet"]["id"])
+        ws_votos = sh.worksheet("Votaciones")
+        df_votos = pd.DataFrame(ws_votos.get_all_records())
+
+        if df_votos.empty:
+            st.info("No hay votos registrados aún.")
+            return
+
+    except Exception as e:
+        st.error(f"⚠️ Error al cargar los votos: {e}")
+        return
+
+    # ================= Cálculo de puntaje ponderado =================
+    def calcular_puntaje(row):
+        # Según rol del votante
+        pesos = [peso1, peso2, peso3]
+        return (row["Criterio 1"] * pesos[0] + row["Criterio 2"] * pesos[1] + row["Criterio 3"] * pesos[2]) / 100
+
+    df_votos["puntaje_ponderado"] = df_votos.apply(calcular_puntaje, axis=1)
+
+    # ================= Ranking por equipo =================
+    df_ranking = df_votos.groupby("Id_equipo").agg({
+        "puntaje_ponderado": "sum",
+        "Rol Votante": lambda x: ", ".join(x.unique())
+    }).reset_index().sort_values("puntaje_ponderado", ascending=False)
+
+    # ================= Mostrar ranking =================
+    st.subheader("📋 Ranking de Equipos")
+    for i, row in df_ranking.iterrows():
+        rank = i + 1
+        equipo = row["Id_equipo"]
+        puntaje = row["puntaje_ponderado"]
+        roles = row["Rol Votante"]
+
+        if rank == 1:
+            st.markdown(f"🥇 **{equipo}** – Puntaje: {puntaje:.2f} – Votado por: {roles}")
+        elif rank == 2:
+            st.markdown(f"🥈 **{equipo}** – Puntaje: {puntaje:.2f} – Votado por: {roles}")
+        elif rank == 3:
+            st.markdown(f"🥉 **{equipo}** – Puntaje: {puntaje:.2f} – Votado por: {roles}")
+        else:
+            st.markdown(f"{rank}. {equipo} – Puntaje: {puntaje:.2f} – Votado por: {roles}")
+
+    # ================= Gráfico de barras =================
+    st.subheader("📊 Visualización de Puntajes")
+    st.bar_chart(df_ranking.set_index("Id_equipo")["puntaje_ponderado"])
+
+    # ================= Botón de actualización =================
+    if st.button("🔄 Actualizar resultados"):
+        st.rerun()
+
 
 def modulo_eventos():
     st.markdown("<h2 style='color:#1B396A; text-align:center;'>📅 Próximo Evento</h2>", unsafe_allow_html=True)
