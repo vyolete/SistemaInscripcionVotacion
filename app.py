@@ -210,85 +210,85 @@ def modulo_home():
         # ======================================================
     # 🔹 VALIDACIÓN DE DOCENTE (correo + código)
     # ======================================================
-        if st.session_state["validando_docente"]:
-            # Encabezado con mejor formato
-            st.markdown("""
-                <div style='text-align:center; margin-top:20px;'>
-                    <h2 style='color:#1B396A;'>👨‍🏫 Validación Docente</h2>
-                    <p style='font-size:17px;'>
-                        Ingresa tu correo institucional del ITM para validar tu acceso como docente.<br>
-                        Si no estás autorizado, podrás volver al inicio.
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
-    
-            # Campo para correo
-            correo_input = st.text_input(
-                "📧 Ingresa tu correo institucional:",
-                value=st.session_state.get("correo_docente", ""),
-                placeholder="ejemplo@itm.edu.co"
-            )
-    
+    if st.session_state["validando_docente"]:
+        # Encabezado con mejor formato
+        st.markdown("""
+            <div style='text-align:center; margin-top:20px;'>
+                <h2 style='color:#1B396A;'>👨‍🏫 Validación Docente</h2>
+                <p style='font-size:17px;'>
+                    Ingresa tu correo institucional del ITM para validar tu acceso como docente.<br>
+                    Si no estás autorizado, podrás volver al inicio.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Campo para correo
+        correo_input = st.text_input(
+            "📧 Ingresa tu correo institucional:",
+            value=st.session_state.get("correo_docente", ""),
+            placeholder="ejemplo@itm.edu.co"
+        )
+
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            validar_correo = st.button("✅ Validar correo", use_container_width=True)
+        with col2:
+            volver_inicio = st.button("⬅️ Volver al inicio", use_container_width=True)
+
+        # Acción: volver
+        if volver_inicio:
+            reset_role()
+            st.rerun()
+
+        # Acción: validar correo
+        if validar_correo:
+            df_docentes = cargar_docentes(st.secrets)
+            if correo_input in df_docentes["Correo"].values:
+                st.session_state["correo_docente"] = correo_input
+                st.session_state["correo_valido"] = True
+                st.session_state["df_docentes"] = df_docentes
+                st.success("✅ Correo verificado. Ingresa tu código de validación. 👨‍🏫")
+            else:
+                st.error("❌ Tu correo no está autorizado como docente.")
+                st.info("Puedes volver al inicio si ingresaste un correo incorrecto.")
+                # Mostrar botón adicional debajo
+                st.button("⬅️ Regresar al inicio", on_click=reset_role, use_container_width=True)
+
+        # Si el correo fue validado correctamente
+        if st.session_state.get("correo_valido", False):
+            if "codigo_validado" not in st.session_state:
+                st.session_state["codigo_validado"] = False
+
+            st.markdown("---")
+            st.markdown("<h4 style='color:#1B396A;'>🔐 Ingresa tu código de validación:</h4>", unsafe_allow_html=True)
+            codigo_input = st.text_input("Código de validación:", placeholder="Ejemplo: ITM2025DOC")
+
             col1, col2 = st.columns([1, 1])
             with col1:
-                validar_correo = st.button("✅ Validar correo", use_container_width=True)
+                validar_codigo = st.button("Verificar código ✅", use_container_width=True)
             with col2:
-                volver_inicio = st.button("⬅️ Volver al inicio", use_container_width=True)
-    
-            # Acción: volver
-            if volver_inicio:
+                volver_inicio2 = st.button("⬅️ Volver al inicio", use_container_width=True)
+
+            if volver_inicio2:
                 reset_role()
                 st.rerun()
-    
-            # Acción: validar correo
-            if validar_correo:
-                df_docentes = cargar_docentes(st.secrets)
-                if correo_input in df_docentes["Correo"].values:
-                    st.session_state["correo_docente"] = correo_input
-                    st.session_state["correo_valido"] = True
-                    st.session_state["df_docentes"] = df_docentes
-                    st.success("✅ Correo verificado. Ingresa tu código de validación. 👨‍🏫")
-                else:
-                    st.error("❌ Tu correo no está autorizado como docente.")
-                    st.info("Puedes volver al inicio si ingresaste un correo incorrecto.")
-                    # Mostrar botón adicional debajo
-                    st.button("⬅️ Regresar al inicio", on_click=reset_role, use_container_width=True)
-    
-            # Si el correo fue validado correctamente
-            if st.session_state.get("correo_valido", False):
-                if "codigo_validado" not in st.session_state:
-                    st.session_state["codigo_validado"] = False
-    
-                st.markdown("---")
-                st.markdown("<h4 style='color:#1B396A;'>🔐 Ingresa tu código de validación:</h4>", unsafe_allow_html=True)
-                codigo_input = st.text_input("Código de validación:", placeholder="Ejemplo: ITM2025DOC")
-    
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    validar_codigo = st.button("Verificar código ✅", use_container_width=True)
-                with col2:
-                    volver_inicio2 = st.button("⬅️ Volver al inicio", use_container_width=True)
-    
-                if volver_inicio2:
-                    reset_role()
+
+            if validar_codigo and not st.session_state["codigo_validado"]:
+                df_docentes = st.session_state["df_docentes"]
+                correo = st.session_state["correo_docente"]
+                codigo_real = df_docentes.loc[df_docentes["Correo"] == correo, "Codigo"].values[0]
+
+                if str(codigo_input).strip() == str(codigo_real).strip():
+                    st.session_state["rol_seleccionado"] = True
+                    st.session_state["rol"] = "Docente"
+                    st.session_state["validando_docente"] = False
+                    st.session_state["codigo_validado"] = True
+                    st.success("✅ Acceso autorizado. Bienvenido docente. Revisa los ítems del menú 👨‍🏫")
+                    st.toast("👨‍🏫 Acceso docente habilitado correctamente.")
                     st.rerun()
-    
-                if validar_codigo and not st.session_state["codigo_validado"]:
-                    df_docentes = st.session_state["df_docentes"]
-                    correo = st.session_state["correo_docente"]
-                    codigo_real = df_docentes.loc[df_docentes["Correo"] == correo, "Codigo"].values[0]
-    
-                    if str(codigo_input).strip() == str(codigo_real).strip():
-                        st.session_state["rol_seleccionado"] = True
-                        st.session_state["rol"] = "Docente"
-                        st.session_state["validando_docente"] = False
-                        st.session_state["codigo_validado"] = True
-                        st.success("✅ Acceso autorizado. Bienvenido docente. Revisa los ítems del menú 👨‍🏫")
-                        st.toast("👨‍🏫 Acceso docente habilitado correctamente.")
-                        st.rerun()
-                    else:
-                        st.error("❌ Código incorrecto. Intenta nuevamente.")
-                        reset_role()
+                else:
+                    st.error("❌ Código incorrecto. Intenta nuevamente.")
+                    reset_role()
 
     # Si ya se seleccionó un rol, mostrar la vista correspondiente
     if st.session_state.get("rol_seleccionado", False):
