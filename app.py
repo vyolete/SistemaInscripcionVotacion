@@ -197,7 +197,7 @@ def modulo_home():
                 st.session_state["rol"] = "Estudiante"
                 st.session_state["rol_seleccionado"] = True
                 st.success("✅ Rol seleccionado: Estudiante")
-                st.st.rerun()
+                st.rerun()
 
         with c2:
             if st.button("👨‍🏫 Soy Docente", use_container_width=True):
