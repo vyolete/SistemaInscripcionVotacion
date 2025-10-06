@@ -466,7 +466,7 @@ def modulo_votacion():
                     try:
                         # Conectar y preparar datos de inscripciones
                         df_insc = preparar_dataframe(conectar_google_sheets(st.secrets))
-                        if equipo_input not in df_insc["ID Equipo"].astype(str).tolist():
+                        if equipo_input not in df_insc["Id_equipo"].astype(str).tolist():
                             st.error("❌ El código del equipo no existe.")
                         else:
                             # Validación de docente
@@ -505,7 +505,7 @@ def modulo_votacion():
             ws_votos = sh.worksheet("Votaciones")
 
             votos = pd.DataFrame(ws_votos.get_all_records())
-            ya_voto = not votos[(votos["Correo"] == correo) & (votos["ID Equipo"] == equipo_id)].empty if not votos.empty else False
+            ya_voto = not votos[(votos["Correo"] == correo) & (votos["Id_equipo"] == equipo_id)].empty if not votos.empty else False
 
             if ya_voto:
                 st.warning(f"⚠️ Ya registraste un voto para el equipo **{equipo_id}**.")
