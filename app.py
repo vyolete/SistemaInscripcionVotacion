@@ -167,23 +167,23 @@ def modulo_home():
             st.toast("Valida tu correo institucional 👨‍🏫")
             st.rerun()
 
-if st.session_state.get("validando_docente", False):
-    correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
-
-    if st.button("Validar correo"):
-        df_docentes = cargar_docentes(st.secrets)
+    if st.session_state.get("validando_docente", False):
+        correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
     
-        if correo in df_docentes["Correo"].values:
-            st.session_state["correo_docente"] = correo
-            st.session_state["correo_valido"] = True
-            st.session_state["df_docentes"] = df_docentes  # ✅ Guardar en sesión
-            st.success("✅ Correo verificado. Ingresa tu código de validación. 👨‍🏫")
-
-        else:
-            st.error("❌ Tu correo no está autorizado como docente.")
-            if st.button("Volver al inicio"):
-                st.session_state.clear()
-                st.rerun()
+        if st.button("Validar correo"):
+            df_docentes = cargar_docentes(st.secrets)
+        
+            if correo in df_docentes["Correo"].values:
+                st.session_state["correo_docente"] = correo
+                st.session_state["correo_valido"] = True
+                st.session_state["df_docentes"] = df_docentes  # ✅ Guardar en sesión
+                st.success("✅ Correo verificado. Ingresa tu código de validación. 👨‍🏫")
+    
+            else:
+                st.error("❌ Tu correo no está autorizado como docente.")
+                if st.button("Volver al inicio"):
+                    st.session_state.clear()
+                    st.rerun()
 
     # Si el correo fue validado, solicita el código IPTU
     if st.session_state.get("correo_valido", False):
