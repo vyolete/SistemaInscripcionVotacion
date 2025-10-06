@@ -575,8 +575,6 @@ def modulo_resultados(peso_docente=0.5, peso_estudiante=0.5, refresh_interval=10
     # 3. Colocamos la imagen en la segunda columna (más estrecha)
     with col2:
      # Agregamos un poco de espacio vertical (vacío) para alinear la imagen mejor con el texto
-     st.write("")
-     st.write("")
 
      # La imagen se cargará desde la URL y se ajustará a la columna
      st.image(URL_IMAGEN)
