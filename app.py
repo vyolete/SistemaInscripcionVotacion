@@ -516,8 +516,20 @@ def modulo_votacion():
                 with st.spinner("🎯 Enviando tu voto..."):
                     time.sleep(1.8)
                     try:
-                        # Registrar voto en la hoja, incluyendo correo
-                        registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total]
+                        # --- Determinar los tres criterios según el rol ---
+                        if rol == "Docente":
+                            criterio1 = rigor
+                            criterio2 = viabilidad
+                            criterio3 = innovacion
+                        else:
+                            criterio1 = creatividad
+                            criterio2 = claridad
+                            criterio3 = impacto
+                            
+                        puntaje_total = criterio1 + criterio2 + criterio3
+
+                       # Registrar voto en la hoja, incluyendo correo
+                        registro = [str(datetime.now()), rol, correo, equipo_id, puntaje_total,criterio1,criterio2,criterio3]
                         ws_votos.append_row(registro)
                         st.success("✅ ¡Tu voto ha sido registrado!")
                         st.balloons()
