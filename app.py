@@ -433,16 +433,16 @@ def modulo_votacion():
     if "validado_voto" not in st.session_state:
         st.session_state.validado_voto = False
 
-    # ================= Validación inicial =================
+# ================= Validación inicial =================
     if not st.session_state.validado_voto:
         # Determinar rol
-        if st.session_state.get("rol") == "Docente":
-            correo = st.session_state["correo"]
+        if st.session_state.get("rol") == "Docente" and st.session_state.get("correo"):
+            # Si ya está logueado como docente
+            correo = st.session_state.get("correo")
             rol = "Docente"
             st.info(f"👨‍🏫 Sesión docente detectada: {correo}")
         else:
             rol = "Estudiante / Asistente"
-            correo = st.text_input("📧 Ingresa tu correo institucional:")
 
         equipo_id = st.text_input("🏷️ Código del equipo a evaluar:", value=equipo_qr or "")
 
