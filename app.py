@@ -152,21 +152,38 @@ def modulo_home():
             st.toast("Valida tu correo institucional 👨‍🏫")
             st.rerun()
 
-    if st.session_state.get("validando_docente", False):
-        correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
-        if st.button("Validar"):
-            df_docentes = cargar_docentes(st.secrets)
-            if correo in df_docentes["Correo"].values:
+if st.session_state.get("validando_docente", False):
+    correo = st.text_input("📧 Ingresa tu correo institucional para validar:")
+
+    if st.button("Validar correo"):
+        df_docentes = cargar_docentes(st.secrets)
+
+        if correo in df_docentes["Correo"].values:
+            st.session_state["correo_docente"] = correo
+            st.session_state["correo_valido"] = True
+            st.success("✅ Correo verificado. Ingresa tu código de validación. 👨‍🏫")
+        else:
+            st.error("❌ Tu correo no está autorizado como docente.")
+            if st.button("Volver al inicio"):
+                st.session_state.clear()
+                st.rerun()
+
+    # Si el correo fue validado, solicita el código IPTU
+    if st.session_state.get("correo_valido", False):
+        codigo_input = st.text_input("🔐 Ingresa tu código de validación:")
+
+        if st.button("Validar código"):
+            correo = st.session_state["correo_docente"]
+            codigo_real = df_docentes.loc[df_docentes["Correo"] == correo, "Codigo"].values[0]
+
+            if str(codigo_input).strip() == str(codigo_real).strip():
                 st.session_state["rol_seleccionado"] = True
                 st.session_state["rol"] = "Docente"
                 st.session_state["validando_docente"] = False
                 st.success("✅ Acceso autorizado. Bienvenido docente.")
                 st.rerun()
             else:
-                st.error("❌ Tu correo no está autorizado como docente.")
-                if st.button("Volver al inicio"):
-                    st.session_state.clear()
-                    st.rerun()
+                st.error("❌ Código incorrecto. Intenta nuevamente.")
 
 
 def modulo_inscripcion():
