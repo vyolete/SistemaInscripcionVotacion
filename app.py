@@ -208,7 +208,7 @@ URL_IMAGEN_ESTUDIANTE = "https://i.ibb.co/XxMRDkx7/IMG-1659.jpg"
 
 def render_student_ui():
     st.header("🎓 Panel - Estudiante")
-    st.title('¡Bienvenido estudiante!')
+    st.title('¡Bienvenido 🧑‍🎓🧑‍🎓!')
 
     # 1. Agregamos la imagen justo después del encabezado
     try:
