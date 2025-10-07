@@ -220,7 +220,7 @@ def render_student_ui():
         # Esto es útil si la URL no es válida o si el usuario no la ha reemplazado
         st.error("Error: La URL de la imagen no es válida o no ha sido actualizada.")
 
-    st.markdown(" Revisa el menu lateral izquierdo:")
+    st.markdown(" Revisa el menu lateral izquierdo para ver las opciones:")
     st.markdown(
         """
         <div style="
