@@ -187,7 +187,7 @@ def reset_role():
 
 def render_student_ui():
     st.header("🎓 Panel - Estudiante")
-    st.markdown("¡Bienvenido estudiante! Aquí tienes las opciones disponibles:")
+    st.markdown("¡Bienvenido estudiante! Revisa el menu lateral izquierdo:")
     opcion = st.radio("Selecciona una opción:", ["Mi inscripción", "Mi equipo", "Votaciones", "Ayuda"])
     if opcion == "Mi inscripción":
         st.write("Mostrar formulario/estado de inscripción del estudiante...")
@@ -200,6 +200,52 @@ def render_student_ui():
         st.write("FAQs, contacto o tutoriales.")
 
     if st.button("Cerrar sesión"):
+        reset_role()
+
+
+
+URL_IMAGEN_ESTUDIANTE = "https://i.ibb.co/XxMRDkx7/IMG-1659.jpg"
+
+def render_student_ui():
+    st.header("🎓 Panel - Estudiante")
+
+    # 1. Agregamos la imagen justo después del encabezado
+    try:
+        st.image(
+            URL_IMAGEN_ESTUDIANTE,
+            caption="Logo de la Iniciativa",
+            width=300 # Opcional: define un ancho fijo para que no sea muy grande
+        )
+    except Exception:
+        # Esto es útil si la URL no es válida o si el usuario no la ha reemplazado
+        st.error("Error: La URL de la imagen no es válida o no ha sido actualizada.")
+
+    st.markdown("---") # Separador visual
+
+    st.markdown("¡Bienvenido estudiante! Revisa el menu lateral izquierdo:")
+    st.markdown(
+        """
+        <div style="
+            background-color: #f0f8ff; /* Color azul muy claro */
+            padding: 15px;
+            border-left: 6px solid #4682b4; /* Línea de color azul marino */
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+        ">
+            <p style="font-style: italic; font-weight: bold; color: #333333; margin: 0; font-size: 1.1em;">
+                "Nunca inviertas en un negocio que no puedes entender."
+            </p>
+            <p style="text-align: right; margin: 5px 0 0 0; color: #666666;">
+                — Warren Buffett
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if st.button("Cerrar sesión"):
+
         reset_role()
 
 
