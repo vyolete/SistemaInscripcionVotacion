@@ -208,21 +208,19 @@ URL_IMAGEN_ESTUDIANTE = "https://i.ibb.co/XxMRDkx7/IMG-1659.jpg"
 
 def render_student_ui():
     st.header("🎓 Panel - Estudiante")
+    st.title('¡Bienvenido estudiante!')
 
     # 1. Agregamos la imagen justo después del encabezado
     try:
         st.image(
             URL_IMAGEN_ESTUDIANTE,
-            caption="Logo de la Iniciativa",
             width=300 # Opcional: define un ancho fijo para que no sea muy grande
         )
     except Exception:
         # Esto es útil si la URL no es válida o si el usuario no la ha reemplazado
         st.error("Error: La URL de la imagen no es válida o no ha sido actualizada.")
 
-    st.markdown("---") # Separador visual
-
-    st.markdown("¡Bienvenido estudiante! Revisa el menu lateral izquierdo:")
+    st.markdown(" Revisa el menu lateral izquierdo:")
     st.markdown(
         """
         <div style="
